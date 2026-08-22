@@ -184,10 +184,10 @@ function coverSlide(mod) {
   const guideColumns = [
     { x: 84, width: 364, label: "지금 배우는 내용", value: mod.partLearn },
     { x: 448, width: 430, label: "이 차시에서 이해할 것", value: mod.partUnderstand },
-    { x: 878, width: 298, label: "손에 남길 결과", value: mod.partOutput },
+    { x: 878, width: 298, label: "함께 챙길 내용", value: mod.partOutput },
   ];
-  guideColumns.forEach((column, index) => {
-    shape(slide, "rect", { left: column.x, top: 448, width: column.width, height: 30 }, index === 2 ? C.blue : C.navy);
+  guideColumns.forEach((column) => {
+    shape(slide, "rect", { left: column.x, top: 448, width: column.width, height: 30 }, C.navy);
     textBox(slide, column.label, { left: column.x + 14, top: 454, width: column.width - 28, height: 18 }, { size: 11, bold: true, color: C.white, valign: "middle" });
     shape(slide, "rect", { left: column.x, top: 478, width: column.width, height: 58 }, C.white);
     textBox(slide, column.value, { left: column.x + 14, top: 486, width: column.width - 28, height: 42 }, { size: 14, bold: true, color: C.ink, valign: "middle", lineSpacing: 1.08 });
@@ -208,17 +208,17 @@ function sectionSlide(mod) {
   const guideColumns = [
     { x: 84, width: 364, label: "지금 배우는 내용", value: mod.partLearn },
     { x: 448, width: 430, label: "이 차시에서 이해할 것", value: mod.partUnderstand },
-    { x: 878, width: 298, label: "손에 남길 결과", value: mod.partOutput },
+    { x: 878, width: 298, label: "함께 챙길 내용", value: mod.partOutput },
   ];
-  guideColumns.forEach((column, index) => {
-    shape(slide, "rect", { left: column.x, top: 336, width: column.width, height: 44 }, index === 2 ? C.blue : C.black);
+  guideColumns.forEach((column) => {
+    shape(slide, "rect", { left: column.x, top: 336, width: column.width, height: 44 }, C.black);
     textBox(slide, column.label, { left: column.x + 16, top: 346, width: column.width - 32, height: 24 }, { size: 14, bold: true, color: C.white, valign: "middle" });
     shape(slide, "rect", { left: column.x, top: 380, width: column.width, height: 172 }, C.white);
-    textBox(slide, column.value, { left: column.x + 18, top: 400, width: column.width - 36, height: 130 }, { size: index === 1 ? 20 : 21, bold: true, color: C.ink, valign: "middle", lineSpacing: 1.14 });
+    textBox(slide, column.value, { left: column.x + 18, top: 400, width: column.width - 36, height: 130 }, { size: 20, bold: true, color: C.ink, valign: "middle", lineSpacing: 1.14 });
   });
   shape(slide, "line", { left: 84, top: 594, width: 1092, height: 0 }, "none", C.blue, 3);
   textBox(slide, `슬라이드 ${mod.partSlides}`, { left: 88, top: 612, width: 1088, height: 28 }, { size: 15, bold: true, color: C.gray300, align: "right" });
-  addNotes(slide, talkTrack(mod, "차시 구분 표지", "시간을 먼저 읽고, 지금 배울 내용·이해할 기준·남길 결과를 왼쪽부터 확인한다."));
+  addNotes(slide, talkTrack(mod, "차시 구분 표지", "시간을 먼저 읽고, 지금 배울 내용·이해할 기준·함께 챙길 내용을 왼쪽부터 확인한다."));
 }
 
 function dayTimetableSlide(mod) {
@@ -759,7 +759,7 @@ const MODULES = [
       p('실습 완료는 “작동했다”가 아니라 “다시 확인할 수 있다”입니다', ['결과 파일이 저장되어 있습니다'], ['같은 명령을 다시 실행해도 성공합니다'], ['test 또는 schema 검사가 통과합니다'], ['왜 안전한지 한 문장으로 설명할 수 있습니다'], {
         variant: 'proof',
         lead: '다음 네 가지 중 하나라도 없으면, 아직 실습이 끝난 것이 아닙니다.',
-        terminal: '$ python3 -m src.day1_agent\nstatus: SUCCESS\n\n$ python3 -m pytest -q\n9 passed\n\n$ git status --short\nM src/day1_agent.py',
+        terminal: '$ python3 -m src.day1_agent\nstatus: SUCCESS\n\n$ python3 -m pytest -q\n10 passed\n\n$ git status --short\nM src/day1_agent.py',
         bottom: '오늘 남길 것  |  실행 화면 1장 + test 결과 1줄 + 내가 설명한 안전 기준 1문장',
       }),
       p('강사 Harness Engineering 데모', ['SPEC', '작업을 파일로 명시'], ['AGENT', 'Codex·Claude 실행'], ['DIFF', '변경 범위 검토'], ['TEST', '증거 없으면 미완료']),
@@ -773,7 +773,7 @@ const MODULES = [
     examples: [
       e('작업 요청을 먼저 spec으로 고정', 'goal: 안전한 파일 읽기 Agent\ninput: 공개 txt/md\nallowed_tools: [read_public_text]\nstop: validation_error | success\nevidence: pytest + output json', ['목표를 한 문장으로', '입력·출력 형식', '허용 행동', '중단과 완료 증거']),
       e('Agent의 최소 반복 구조', 'while state.status == \"RUNNING\":\n    call = planner(state)\n    checked = validate(call)\n    result = execute(checked)\n    state = observe(state, result)\nreturn state', ['판단과 실행을 분리', '매 step 결과 관찰', '무한 반복 금지', 'state로 감사 가능']),
-      e('Day 1 완료조건을 명령으로 표현', 'python3 -m src.day1_agent\npython3 -m pytest -q\ngit status --short\ngit diff -- src tests\n\n# success: 9 passed', ['실행 결과', '테스트', '변경 범위', '설명 가능한 diff']),
+      e('Day 1 완료조건을 명령으로 표현', 'python3 -m src.day1_agent\npython3 -m pytest -q\ngit status --short\ngit diff -- src tests\n\n# success: 10 passed', ['실행 결과', '테스트', '변경 범위', '설명 가능한 diff']),
       e('저장소가 말해주는 역할 분리', 'src/        # 실행 코드\ntests/      # 실패·정상 증거\nmaterials/  # 따라하기 notebook\ndata/       # 공개·합성 입력\nslides/     # 수업 화면', ['코드와 데이터 분리', '노트북과 모듈 분리', '테스트를 1급 산출물로', '장표와 파일명 연결']),
       e('강사 회의음성 Demo · 실패해도 수업은 계속', 'python3 -m src.meeting_demo \\\n  --audio data/demo_meeting.wav \\\n  --transcript data/demo_meeting_transcript.txt \\\n  --out output/day1-demo\n\n# outputs\n# transcript.json + meeting_result.json', ['오디오가 있으면 Local STT', '실패하면 같은 60초 transcript', '사전 생성 JSON 즉시 확인', '자동 메일 false·사람 승인 true']),
       e('Exit ticket도 구조화 데이터다', '{\n  \"agent_difference\": \"...\",\n  \"first_validation\": \"...\",\n  \"human_reason\": \"...\",\n  \"confidence\": 0.0\n}', ['세 문장으로 회수', '다음 날 복습 데이터', '모호한 답은 재질문', '점수가 아닌 진단']),
@@ -781,7 +781,7 @@ const MODULES = [
     labs: [
       l('실습 1 · 강사 Demo를 보고 내 업무를 고릅니다', '06 MIN', ['강사가 준비한 짧은 회의 음성을 코드에 넣습니다.', '전사문·회의 요약·할 일 JSON이 만들어지는 화면을 봅니다.', '자동 메일 발송이 차단되는 결과를 확인합니다.', '같은 형식으로 내가 자동화할 일을 한 문장으로 적습니다.'], '입력 1개 + 결과 1개 + 금지 행동 1개', {
         example: '강사 시연  |  demo_meeting.wav → transcript.json → meeting_result.json / 자동 메일 발송은 하지 않음',
-        note: '구두 예시로 끝내지 않는다. 강사는 data/demo_meeting.wav 또는 본인이 녹음한 30–60초 WAV를 넣고 실제 코드 결과를 먼저 보여준다. 네트워크·모델 실패에 대비해 data/meeting_sample_ko.txt와 사전 생성 JSON을 즉시 여는 fallback을 준비한다. 온라인 개인 실습이므로 수강생에게 발표나 공개를 요구하지 않는다.',
+        note: '구두 예시로 끝내지 않는다. 강사는 data/demo_meeting.wav 또는 본인이 녹음한 약 1분 WAV를 넣고 실제 코드 결과를 먼저 보여준다. 네트워크·모델 실패에 대비해 data/meeting_sample_ko.txt와 사전 생성 JSON을 즉시 여는 fallback을 준비한다. 온라인 개인 실습이므로 수강생에게 발표나 공개를 요구하지 않는다.',
       }),
       l('실습 2 · 오늘 사용할 예시를 혼자 정합니다', '05 MIN', ['재직자는 회사명·고객 정보를 뺀 반복 업무를 고릅니다.', '구직자는 제공된 공개·합성 예시 중 하나를 고릅니다.', '입력 자료와 원하는 결과를 한 줄씩 적습니다.', '이후 실습에서 같은 예시를 계속 사용합니다.'], '내가 사용할 예시 한 문장', {
         example: '회의 음성 → 결정·담당자·기한이 있는 회의 기록',
@@ -837,7 +837,7 @@ const MODULES = [
       s('Ollama API · 호출 형식을 공식 문서로 확인', 'ollama-api-official.png', 'Ollama API Introduction 공식 화면', 'https://docs.ollama.com/api/introduction', ['base URL 확인', 'request/response 형식', 'timeout·stream 선택', 'adapter 뒤에 감추기']),
       s('GitHub REST · 인증은 코드와 분리', 'github-rest-auth-official.png', 'GitHub REST authentication 공식 문서', 'https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api', ['token은 환경 변수', '학생 필수 실습은 dry-run', '최소 권한 확인', '화면에 secret 노출 금지']),
       s('pytest · 실패를 재현하는 가장 작은 도구', 'pytest-getting-started-official.png', 'pytest Get Started 공식 문서', 'https://docs.pytest.org/en/stable/getting-started.html', ['test_ 함수 규칙', 'assert로 계약 고정', '정상·예외 함께', '짧은 명령으로 반복']),
-      s('실제 실행 · 9 tests 통과', 'vscode-pytest-9-passed-local.png', 'VS Code 통합 터미널의 실제 pytest 결과', 'local://python3-m-pytest-q', ['......... 9개 test', '[100%] 완료', '실행 시간 확인', '완료 증거로 캡처']),
+      s('실제 실행 · 10 tests 통과', 'vscode-pytest-10-passed-local.png', 'VS Code 통합 터미널의 실제 pytest 결과', 'local://python3-m-pytest-q', ['.......... 10개 test', '[100%] 완료', '실행 시간 확인', '완료 증거로 캡처']),
     ],
     examples: [
       e('도구 schema · 허용 입력만', 'TOOL_SCHEMAS = {\n  \"read_public_text\": {\n    \"required\": {\"path\": str},\n    \"description\": \"공개 txt/md 읽기\"\n  }\n}', ['한 도구 한 책임', '필수 인자 명시', '설명은 모델용', '실행 함수와 분리']),
@@ -1012,9 +1012,9 @@ const MODULES = [
       p('코드 읽기 순서', ['DATA', 'dataclass·schema'], ['POLICY', 'validate·guard'], ['EXECUTE', 'registry·result'], ['DEMO', '__main__']),
       p('Run All 순서', ['KERNEL', 'interpreter'], ['IMPORT', 'module'], ['NORMAL', 'success'], ['FAIL', '4 error cases']),
       p('실패 주입 순서', ['UNKNOWN', '도구 없음'], ['MISSING', '인자 누락'], ['TRAVERSAL', '경로 이탈'], ['DUPLICATE', 'cache 확인']),
-      p('pytest 빨강→초록', ['RUN', '현재 실패'], ['READ', '첫 오류'], ['FIX', '최소 변경'], ['RERUN', '전체 9개']),
+      p('pytest 빨강→초록', ['RUN', '현재 실패'], ['READ', '첫 오류'], ['FIX', '최소 변경'], ['RERUN', '전체 10개']),
       p('Git checkpoint 만들기', ['STATUS', '변경 분리'], ['DIFF', '의도 확인'], ['STAGE', 'src·tests만'], ['COMMIT', '메시지·log']),
-      p('점심 전 Gate', ['NOTEBOOK', 'Run All'], ['PYTEST', '9 passed'], ['DIFF', '설명 가능'], ['RECOVERY', '미완료 lane']),
+      p('점심 전 Gate', ['NOTEBOOK', 'Run All'], ['PYTEST', '10 passed'], ['DIFF', '설명 가능'], ['RECOVERY', '미완료 lane']),
     ],
     screenshots: [
       s('Jupyter 설치 · notebook 실행기의 공식 경로', 'jupyter-install-official.png', 'Jupyter Install 공식 화면', 'https://jupyter.org/install', ['JupyterLab·Notebook 구분', 'VS Code extension과 kernel', '프로젝트 가상환경 사용', 'Run All이 완료 증거']),
@@ -1028,13 +1028,13 @@ const MODULES = [
       e('파일 확장자 allowlist', 'if candidate.suffix.lower() not in {\".txt\", \".md\"}:\n    raise ToolValidationError(\n      \"Day 1에서는 .txt와 .md만 허용합니다.\"\n    )', ['목적에 필요한 형식만', 'binary 제외', '정책 메시지', 'POLICY_BLOCKED로 매핑']),
       e('중복 호출 cache', 'call_id = make_call_id(name, args)\nif call_id in self._cache:\n    prev = self._cache[call_id]\n    return replace(prev, cached=True)\nresult = call_tool()\nself._cache[call_id] = result', ['실행 전 조회', '성공·실패 정책 결정', 'cached 표시', '외부 쓰기에는 영속 저장']),
       e('Agent event 한 건', 'event = {\n  \"input\": user_message,\n  \"planned_call\": call,\n  \"tool_result\": result.to_dict(),\n  \"needs_human_review\": not result.ok\n}', ['입력', '결정', '결과', '사람 검토 여부']),
-      e('pytest 완료 명령', 'python3 -m pytest -q\n# .........                    [100%]\n# 9 passed in 0.01s\n\ngit diff --check\ngit status --short', ['9개 테스트', 'whitespace 검사', '변경 파일', '점심 전 checkpoint']),
+      e('pytest 완료 명령', 'python3 -m pytest -q\n# ..........                   [100%]\n# 10 passed in 0.05s\n\ngit diff --check\ngit status --short', ['10개 테스트', 'whitespace 검사', '변경 파일', '점심 전 checkpoint']),
     ],
     labs: [
       l('실습 1 · Notebook Run All', '12 MIN', ['올바른 kernel을 선택한다.', 'Restart Kernel을 실행한다.', 'Run All을 실행한다.', '첫 실패 셀에서 멈추고 원인을 기록한다.'], '모든 셀 성공'),
       l('실습 2 · 정상 도구 호출', '08 MIN', ['sample txt 경로를 입력한다.', 'planned_call을 확인한다.', 'ToolResult ok와 data를 확인한다.', '원문 글자 수와 경로를 검증한다.'], '정상 event 1건'),
       l('실습 3 · 실패 4종 재현', '10 MIN', ['unknown tool을 실행한다.', '필수 인자를 지운다.', '../ 경로를 넣는다.', '같은 호출을 두 번 실행한다.'], 'error_code 3개 + cached 1개'),
-      l('실습 4 · pytest 9개 확인', '08 MIN', ['terminal을 연다.', 'python3 -m pytest -q를 실행한다.', '실패 시 첫 오류만 읽는다.', '9 passed 화면을 저장한다.'], '9 passed'),
+      l('실습 4 · pytest 10개 확인', '08 MIN', ['terminal을 연다.', 'python3 -m pytest -q를 실행한다.', '실패 시 첫 오류만 읽는다.', '10 passed 화면을 저장한다.'], '10 passed'),
       l('실습 5 · 점심 전 Git checkpoint', '10 MIN', ['git status를 확인한다.', 'src·tests diff를 읽는다.', '관련 파일만 stage한다.', 'commit 후 log 한 줄을 확인한다.'], 'commit 1개 + hash'),
     ],
     pitfalls: [
@@ -1047,7 +1047,7 @@ const MODULES = [
       { title: '재직자 · Safe loop를 현업 tool에 매핑', leftTitle: '교육 도구', rightTitle: '현업 예시', left: ['txt 읽기', 'marker 세기', '결과 JSON', '로컬 cache'], right: ['FAQ 조회', '티켓 분류', '검토 draft', 'request dedupe'] },
       { title: '구직자 · commit을 설명 가능한 증거로', leftTitle: '나쁜 history', rightTitle: '좋은 history', left: ['final', 'fix', '수십 파일 한 번', 'test 후첨'], right: ['feat: schema', 'test: traversal', 'refactor: result', '각 commit green'] },
     ],
-    checkpoint: { title: 'Gate 5 · 14:00 점심 전 실행 증거', prompt: '지금부터 점심시간입니다. 14:55까지 돌아오면 15:00에 Local LLM 연결부터 바로 시작합니다.', questions: ['Notebook Run All 결과가 남았는가?', 'pytest 9개 통과 화면이 남았는가?', '내 commit diff에서 바뀐 경계를 한 문장으로 말할 수 있는가?'], note: '14:00에 정확히 점심을 시작하고 14:55 복귀를 공지한다. 점심 변경 사유와 사과는 오프닝 운영 장표에서 이미 전달했으므로 여기서는 반복하지 않는다.' },
+    checkpoint: { title: 'Gate 5 · 14:00 점심 전 실행 증거', prompt: '지금부터 점심시간입니다. 14:55까지 돌아오면 15:00에 Local LLM 연결부터 바로 시작합니다.', questions: ['Notebook Run All 결과가 남았는가?', 'pytest 10개 통과 화면이 남았는가?', '내 commit diff에서 바뀐 경계를 한 문장으로 말할 수 있는가?'], note: '14:00에 정확히 점심을 시작하고 14:55 복귀를 공지한다. 점심 변경 사유와 사과는 오프닝 운영 장표에서 이미 전달했으므로 여기서는 반복하지 않는다.' },
   },
   {
     time: '15:00–17:30 · PART 1/3',
@@ -1273,7 +1273,7 @@ const MODULE_LENSES = [
     claimLabel: "실행 전에 고정할 경계",
     tutorialTitle: "‘실행 허가’가 생기는 화면을 순서대로 봅니다",
     tutorialLead: "API 형식 → 인증 경계 → test 규칙 → 실제 통과 화면",
-    tutorialRoutes: [["요청·응답 형식 확인", "base URL·payload"], ["인증을 코드 밖으로 분리", "환경 변수·최소 권한"], ["실패를 test 함수로 고정", "assert·error code"], ["정상·예외를 한 번에 실행", "9 passed"]],
+    tutorialRoutes: [["요청·응답 형식 확인", "base URL·payload"], ["인증을 코드 밖으로 분리", "환경 변수·최소 권한"], ["실패를 test 함수로 고정", "assert·error code"], ["정상·예외를 한 번에 실행", "10 passed"]],
     fieldNotes: [
       "Tool schema가 친절할수록 모델은 똑똑해 보이고, allowlist가 단단할수록 제품은 안전해진다.",
       "오류 메시지도 제품 계약이다. 복구할 수 없는 오류는 관측되지 않은 오류다.",

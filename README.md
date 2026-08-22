@@ -27,10 +27,11 @@ STT를 로컬에서 실행하려면 선택 의존성을 추가합니다.
 ```bash
 python -m pip install -r requirements-stt-optional.txt
 python -m src.meeting_demo --audio data/demo_meeting.wav \
-  --transcript data/demo_meeting_transcript.txt
+  --transcript data/demo_meeting_transcript.txt \
+  --model tiny --device cpu --compute-type int8
 ```
 
-모델 설치가 없거나 STT가 실패해도 제공된 전사문으로 동일한 후속 파이프라인을 검증할 수 있습니다.
+`tiny`는 강의 전 smoke test용입니다. 품질 비교용 `small` 모델은 수업 전에 미리 내려받습니다. 모델 설치가 없거나 STT가 실패하면 제공된 전사문으로 후속 파이프라인을 계속하되 `quality_gate=HOLD`로 사람 검증을 요구합니다.
 
 ## 저장소 운영 기준
 

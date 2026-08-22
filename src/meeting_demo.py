@@ -22,6 +22,47 @@ TIMESTAMP_LINE = re.compile(
 )
 
 
+def detect_quality_flags(
+    text: str,
+    *,
+    average_log_probability: float | None = None,
+    no_speech_probability: float | None = None,
+) -> list[str]:
+    """Return machine-checkable STT warnings that require human review."""
+
+    flags: list[str] = []
+    if not text.strip():
+        flags.append("EMPTY_TEXT")
+    if "\ufffd" in text:
+        flags.append("REPLACEMENT_CHARACTER")
+    if average_log_probability is not None and average_log_probability < -1.0:
+        flags.append("LOW_AVERAGE_LOG_PROBABILITY")
+    if no_speech_probability is not None and no_speech_probability > 0.6:
+        flags.append("HIGH_NO_SPEECH_PROBABILITY")
+    return flags
+
+
+def build_quality_gate(segments: list[dict[str, Any]], *, mode: str) -> dict[str, Any]:
+    """Separate technical execution success from STT quality readiness."""
+
+    flagged = [segment for segment in segments if segment.get("quality_flags")]
+    reasons = sorted(
+        {
+            flag
+            for segment in flagged
+            for flag in segment.get("quality_flags", [])
+        }
+    )
+    if mode != "local_stt":
+        reasons.insert(0, "STT_FALLBACK_USED")
+    return {
+        "decision": "HOLD" if reasons else "READY",
+        "flagged_segment_count": len(flagged),
+        "reasons": reasons,
+        "human_decision_required": True,
+    }
+
+
 def parse_transcript(text: str) -> list[dict[str, Any]]:
     """Convert the classroom timestamp format into evidence-ready segments."""
 
@@ -45,7 +86,7 @@ def parse_transcript(text: str) -> list[dict[str, Any]]:
                 "start": start,
                 "speaker": speaker,
                 "text": body,
-                "quality_flags": [],
+                "quality_flags": detect_quality_flags(body),
             }
         )
     return segments
@@ -73,6 +114,8 @@ def transcribe_with_faster_whisper(
     lines: list[str] = []
     for index, segment in enumerate(raw_segments, start=1):
         body = segment.text.strip()
+        average_log_probability = getattr(segment, "avg_logprob", None)
+        no_speech_probability = getattr(segment, "no_speech_prob", None)
         segments.append(
             {
                 "id": f"s{index:02d}",
@@ -80,7 +123,11 @@ def transcribe_with_faster_whisper(
                 "end": round(segment.end, 2),
                 "speaker": None,
                 "text": body,
-                "quality_flags": [],
+                "quality_flags": detect_quality_flags(
+                    body,
+                    average_log_probability=average_log_probability,
+                    no_speech_probability=no_speech_probability,
+                ),
             }
         )
         lines.append(f"[{segment.start:06.2f}] {body}")
@@ -123,6 +170,7 @@ def run_demo(
         segments = parse_transcript(transcript_text)
 
     summary = build_day1_summary(transcript_text)
+    quality_gate = build_quality_gate(segments, mode=mode)
     evidence_ids = [segment["id"] for segment in segments if "id" in segment]
     for index, action in enumerate(summary["action_items"]):
         evidence_index = min(index + 3, len(evidence_ids) - 1)
@@ -140,12 +188,17 @@ def run_demo(
             "automatic_email": False,
             "requires_human_approval": True,
         },
+        "quality_gate": quality_gate,
         "segments": segments,
         "meeting_result": summary,
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "transcript.json").write_text(
-        json.dumps({"mode": mode, "segments": segments}, ensure_ascii=False, indent=2),
+        json.dumps(
+            {"mode": mode, "quality_gate": quality_gate, "segments": segments},
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
     )
     (output_dir / "meeting_result.json").write_text(
@@ -184,6 +237,7 @@ def main() -> None:
                 ],
                 "automatic_email": result["policy"]["automatic_email"],
                 "requires_human_approval": result["policy"]["requires_human_approval"],
+                "quality_gate": result["quality_gate"]["decision"],
             },
             ensure_ascii=False,
             indent=2,

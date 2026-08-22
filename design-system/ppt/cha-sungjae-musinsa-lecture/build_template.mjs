@@ -64,7 +64,7 @@ function header(slide, index, kicker, title) {
   slide.background.fill = C.navy;
   text(slide, "02", { left: 72, top: 68, width: 120, height: 72 }, { size: 48, bold: true, color: C.blue });
   text(slide, "SECTION TITLE", { left: 72, top: 214, width: 1080, height: 92 }, { size: 54, bold: true, color: C.white });
-  text(slide, "이 시간에 학습자가 손에 남길 결과를 한 문장으로 씁니다.", { left: 76, top: 356, width: 980, height: 70 }, { size: 25, color: C.gray200 });
+  text(slide, "이 차시에서 함께 챙길 내용을 한 문장으로 씁니다.", { left: 76, top: 356, width: 980, height: 70 }, { size: 25, color: C.gray200 });
   shape(slide, "line", { left: 72, top: 594, width: 1128, height: 0 }, "none", C.blue, 3);
   notes(slide, "Layout 02 · Section divider. Navy is allowed only as a secondary dark field.");
 }
@@ -155,7 +155,7 @@ function header(slide, index, kicker, title) {
   text(slide, "① 실행 위치\n② 명령\n③ 예상 출력\n④ 실패 시 복구", { left: 64, top: 226, width: 350, height: 220 }, { size: 23, bold: true, lineSpacing: 1.45 });
   shape(slide, "rect", { left: 470, top: 166, width: 746, height: 438 }, C.black, C.black, 1);
   shape(slide, "rect", { left: 470, top: 166, width: 6, height: 438 }, C.blue);
-  text(slide, "python3 -m pytest -q\n# ......... [100%]\n# 9 passed in 0.02s", { left: 508, top: 214, width: 650, height: 210 }, { size: 19, bold: false, color: C.white, font: T.fonts.mono, lineSpacing: 1.3 });
+  text(slide, "python3 -m pytest -q\n# .......... [100%]\n# 10 passed in 0.05s", { left: 508, top: 214, width: 650, height: 210 }, { size: 19, bold: false, color: C.white, font: T.fonts.mono, lineSpacing: 1.3 });
   notes(slide, "Layout 09 · Black code field with a single blue rule.");
 }
 
@@ -172,7 +172,7 @@ function header(slide, index, kicker, title) {
     shape(slide, "line", { left: 390, top: y + 57, width: 730, height: 0 }, "none", C.gray200, 1);
   });
   shape(slide, "rect", { left: 320, top: 522, width: 836, height: 64 }, C.blueSoft);
-  text(slide, "완료 증거  |  pytest 9 passed 화면", { left: 344, top: 538, width: 788, height: 34 }, { size: 19, bold: true, color: C.navy });
+  text(slide, "완료 증거  |  pytest 10 passed 화면", { left: 344, top: 538, width: 788, height: 34 }, { size: 19, bold: true, color: C.navy });
   notes(slide, "Layout 10 · Exercise with a visible artifact and recovery route.");
 }
 

@@ -18,7 +18,7 @@
 | BLOCK A · PART 2/3 | 58 | 59-62 | Ollama API, GitHub REST 인증, pytest 공식 문서, 로컬 9 tests | Tool 계약과 검증·side effect 경계를 설명한다. |
 | BLOCK A · PART 3/3 | 96 | 97-100 | 서울 열린데이터광장, 국립국어원 말뭉치, 국회도서관 데이터셋, Google Meet 전사 | 공개 한국어 입력과 근거 보존 원칙을 구분한다. |
 | BLOCK B · PART 1/2 | 134 | 135-138 | Python 설치, VS Code Python, Git 첫 설정, GitHub repository quickstart | Python·interpreter·repository의 연결을 직접 확인한다. |
-| BLOCK B · PART 2/2 | 171 | 172-175 | Jupyter 설치, VS Code Python, Codex CLI, Claude Code | Notebook Run All, pytest 9개, 첫 commit 전 준비를 끝낸다. |
+| BLOCK B · PART 2/2 | 171 | 172-175 | Jupyter 설치, VS Code Python, Codex CLI, Claude Code | Notebook Run All, pytest 10개, 첫 commit 전 준비를 끝낸다. |
 | BLOCK C · PART 1/3 | 208 | 209-212 | Ollama 다운로드, Qwen3 library, LM Studio server, Jan server | 로컬 provider와 fixture fallback을 같은 계약으로 연결한다. |
 | BLOCK C · PART 2/3 | 245 | 246-249 | LangChain overview, LangGraph overview, interrupts, persistence | state·retry·checkpoint·human approval 경계를 설계한다. |
 | BLOCK C · PART 3/3 | 281 | 282-286 | faster-whisper, whisper.cpp, Google Meet 자동 노트, LangSmith observability, LangSmith evaluation | STT 입력부터 trace·dataset·release gate까지 한 흐름으로 설명한다. |

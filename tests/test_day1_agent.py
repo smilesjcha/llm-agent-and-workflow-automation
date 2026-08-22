@@ -6,7 +6,7 @@ from src.day1_agent import (
     count_action_markers,
     run_agent_once,
 )
-from src.meeting_demo import run_demo
+from src.meeting_demo import detect_quality_flags, run_demo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,5 +84,8 @@ def test_meeting_demo_falls_back_and_writes_outputs(tmp_path: Path) -> None:
     assert result["mode"] == "fixture"
     assert result["policy"]["automatic_email"] is False
     assert result["policy"]["requires_human_approval"] is True
+    assert result["quality_gate"]["decision"] == "HOLD"
+    assert "STT_FALLBACK_USED" in result["quality_gate"]["reasons"]
+    assert detect_quality_flags("깨진 \ufffd 문자") == ["REPLACEMENT_CHARACTER"]
     assert (tmp_path / "demo-output/transcript.json").exists()
     assert (tmp_path / "demo-output/meeting_result.json").exists()
