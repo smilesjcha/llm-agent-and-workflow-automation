@@ -116,7 +116,7 @@ function addFooter(slide, page, mod) {
 function participantLabel(kicker) {
   const value = String(kicker ?? "");
   const tutorial = value.match(/^TUTORIAL\s+(\d+\/\d+)/i);
-  if (tutorial) return `실습 화면 ${tutorial[1]}`;
+  if (tutorial) return `실행 화면 ${tutorial[1]}`;
   const labels = {
     "DAY 1 · FOLLOW ALONG": "",
     "CORE IDEA": "",
@@ -129,11 +129,17 @@ function participantLabel(kicker) {
     "BEGINNER GLOSSARY · 4 TERMS": "처음 보는 용어 · 한 장으로 비교",
     "TOOL DECISION · WHY THIS STACK": "도구 선택 기준",
     "NEXT QUESTION": "오늘의 질문",
-    "SCREEN ROUTE": "실습 화면 순서",
+    "SCREEN ROUTE": "실행 화면 순서",
     "WORKFLOW": "진행 순서",
     "ACTUAL SCREEN": "실제 화면",
     "LIVE CODE": "코드 실습",
     "FOLLOW ALONG": "직접 실습",
+    "SOFTWARE LAB": "소프트웨어 실습",
+    "ENVIRONMENT LAB": "개발환경 세팅 실습",
+    "IDEATION": "Ideation",
+    "DATA COLLECTION": "자료 수집",
+    "DESIGN WORKSHOP": "설계 워크숍",
+    "EXECUTION CHECK": "실행 확인",
     "FAILURE → RECOVERY": "실패 사례와 복구",
     "CAREER TRACK": "재직자·구직자 관점",
     "APPLICATION GATE": "판단 실습",
@@ -224,29 +230,29 @@ function sectionSlide(mod) {
 function dayTimetableSlide(mod) {
   const slide = deck.slides.add();
   addHeader(slide, "1일차는 여덟 개 차시로 진행합니다", mod, "첫날 전체 시간표");
-  textBox(slide, "현재 차시의 시간·내용·결과를 확인하고, 쉬는 시간에는 실습 상태를 저장합니다.", { left: 68, top: 134, width: 1108, height: 30 }, { size: 17, bold: true, color: C.muted });
+  textBox(slide, "현재 차시의 시간·내용·활동을 확인하고, 쉬는 시간 전에는 실행 상태를 저장합니다.", { left: 68, top: 134, width: 1108, height: 30 }, { size: 17, bold: true, color: C.muted });
 
   const columns = [
     { x: 68, width: 146, label: "시간" },
     { x: 214, width: 78, label: "슬라이드" },
     { x: 292, width: 308, label: "진행 내용" },
-    { x: 600, width: 284, label: "강의·시연·실습" },
+    { x: 600, width: 284, label: "강의·시연·개인 활동" },
     { x: 884, width: 292, label: "수강생이 남길 것" },
   ];
   const rows = [
-    ["09:00-09:50", "1-29", "1일차 1차시 · Agent와 문제 정의", "강의 12 · 시연 8 · 실습 22 · 확인 8분", "자동화할 일 한 문장", "part"],
-    ["09:50-10:40", "30-64", "1일차 2차시 · Tool Calling과 실행 권한", "강의 15 · 시연 10 · 실습 20 · 확인 5분", "허용할 도구와 막을 행동", "part"],
-    ["10:40-11:30", "65-99", "1일차 3차시 · 한국어 데이터와 PBL 사례", "강의 14 · 시연 10 · 실습 21 · 확인 5분", "입력·결과·근거 예시", "part"],
+    ["09:00-09:50", "1-29", "1일차 1차시 · Agent와 문제 정의", "강의 12 · 시연 8 · Ideation 22 · 확인 8분", "자동화할 일 한 문장", "part"],
+    ["09:50-10:40", "30-64", "1일차 2차시 · Tool Calling과 실행 권한", "강의 15 · 시연 10 · 코드 실행 20 · 확인 5분", "허용할 도구와 막을 행동", "part"],
+    ["10:40-11:30", "65-99", "1일차 3차시 · 한국어 데이터와 PBL 사례", "강의 14 · 시연 10 · 자료 확인 21 · 저장 5분", "입력·결과·근거 예시", "part"],
     ["11:30-12:00", "-", "쉬는 시간", "1-3차시 종료 후 휴식", "빠른 점심 또는 간식 권장", "break"],
-    ["12:00-12:50", "100-134", "1일차 4차시 · Python·VS Code·Git 환경", "강의 10 · 시연 15 · 실습 20 · 확인 5분", "버전·경로·PR 준비 상태", "part"],
-    ["12:50-13:40", "135-168", "1일차 5차시 · 안전한 Agent 실행 루프", "강의 10 · 시연 10 · 실습 25 · 확인 5분", "정상·실패 test 결과", "part"],
-    ["13:40-14:00", "-", "쉬는 시간", "4-5차시 종료 후 휴식", "점심 전 실습 상태 저장", "break"],
+    ["12:00-12:50", "100-134", "1일차 4차시 · Python·VS Code·Git 환경", "강의 10 · 시연 15 · 환경 세팅 20 · 확인 5분", "버전·경로·PR 준비 상태", "part"],
+    ["12:50-13:40", "135-168", "1일차 5차시 · 안전한 Agent 실행 루프", "강의 10 · 시연 10 · 코드 실행 25 · 확인 5분", "정상·실패 test 결과", "part"],
+    ["13:40-14:00", "-", "쉬는 시간", "4-5차시 종료 후 휴식", "점심 전 실행 상태 저장", "break"],
     ["14:00-15:00", "-", "점심시간", "1시간", "14:55까지 복귀", "lunch"],
-    ["15:00-15:40", "169-202", "1일차 6차시 · 무료·로컬 LLM과 Adapter", "강의 8 · 시연 10 · 실습 17 · 확인 5분", "성공 또는 예상된 실패 결과", "part"],
-    ["15:40-16:20", "203-236", "1일차 7차시 · LangGraph와 사람 승인", "강의 8 · 시연 12 · 실습 15 · 확인 5분", "승인·수정·거절 상태", "part"],
-    ["16:20-17:00", "237-269", "1일차 8차시 · STT와 LangSmith", "강의 8 · 시연 10 · 실습 15 · 확인 7분", "품질 기준과 READY/HOLD 판단", "part"],
+    ["15:00-15:40", "169-202", "1일차 6차시 · 무료·로컬 LLM과 Adapter", "강의 8 · 시연 10 · 코드 실행 17 · 확인 5분", "성공 또는 예상된 실패 결과", "part"],
+    ["15:40-16:20", "203-236", "1일차 7차시 · LangChain·LangGraph", "강의 8 · 시연 7 · 코드 실행 23 · 확인 2분", "LCEL·승인·수정·거절 상태", "part"],
+    ["16:20-17:00", "237-269", "1일차 8차시 · STT와 LangSmith", "강의 8 · 시연 8 · 코드 실행 17 · 판단 7분", "품질 기준과 READY/HOLD 판단", "part"],
     ["17:00-17:30", "-", "쉬는 시간", "6-8차시 종료 후 휴식", "질문 정리", "break"],
-    ["17:30-18:00", "270", "Q&A · 실습 복구 · Exit Ticket", "질문 15 · 복구 10 · Exit 5분", "오늘의 핵심 세 문장", "qa"],
+    ["17:30-18:00", "270", "Q&A · 실행 오류 복구 · Exit Ticket", "질문 15 · 복구 10 · Exit 5분", "오늘의 핵심 세 문장", "qa"],
   ];
 
   shape(slide, "rect", { left: 68, top: 172, width: 1108, height: 34 }, C.black);
@@ -288,7 +294,7 @@ function openingScheduleSlide(mod) {
     ["12:00-14:00", "4-5차시", "12:00-13:40 수업 (13:40-14:00 쉬는 시간)", "총 2시간"],
     ["14:00-15:00", "LUNCH", "점심시간", "이번 주만 14시 시작"],
     ["15:00-17:30", "6-8차시", "15:00-17:00 수업 (17:00-17:30 쉬는 시간)", "총 2시간 30분"],
-    ["17:30-18:00", "Q&A", "질문·실습 복구·Exit Ticket", "쉬는 시간 뒤 시작"],
+    ["17:30-18:00", "Q&A", "질문·실행 오류 복구·Exit Ticket", "쉬는 시간 뒤 시작"],
   ];
   blocks.forEach((block, i) => {
     const y = 318 + i * 58;
@@ -571,7 +577,18 @@ function codeSlide(mod, item) {
 
 function exerciseSlide(mod, item) {
   const slide = deck.slides.add();
-  addHeader(slide, item.title, mod, "FOLLOW ALONG");
+  const activityKicker = item.title.startsWith("소프트웨어 실습")
+    ? "SOFTWARE LAB"
+    : item.title.startsWith("개발환경 세팅 실습")
+      ? "ENVIRONMENT LAB"
+      : item.title.startsWith("Ideation")
+        ? "IDEATION"
+        : item.title.startsWith("자료 수집") || item.title.startsWith("데이터 확인")
+          ? "DATA COLLECTION"
+          : item.title.startsWith("설계 워크숍")
+            ? "DESIGN WORKSHOP"
+            : "EXECUTION CHECK";
+  addHeader(slide, item.title, mod, activityKicker);
   textBox(slide, item.duration, { left: 64, top: 190, width: 184, height: 60 }, { size: 34, bold: true, color: C.black });
   shape(slide, "line", { left: 64, top: 264, width: 184, height: 0 }, "none", C.blue, 3);
   textBox(slide, "강사 화면을 보며\n각자 진행합니다", { left: 64, top: 306, width: 196, height: 74 }, { size: 18, bold: true, color: C.ink, lineSpacing: 1.16 });
@@ -586,7 +603,7 @@ function exerciseSlide(mod, item) {
   }
   shape(slide, "rect", { left: 318, top: 536, width: 854, height: 70 }, C.blueSoft);
   textBox(slide, `완료 증거  |  ${item.done}`, { left: 342, top: 551, width: 806, height: 40 }, { size: 19, bold: true, color: C.navy, valign: "middle" });
-  addNotes(slide, talkTrack(mod, item.title, `실습 ${item.duration}. 5분·2분·1분 전에 남은 시간을 공지한다. ${item.note ?? ""}`), item.sources ?? []);
+  addNotes(slide, talkTrack(mod, item.title, `개인 활동 ${item.duration}. 5분·2분·1분 전에 남은 시간을 공지한다. ${item.note ?? ""}`), item.sources ?? []);
 }
 
 function compareSlide(mod, item) {
@@ -696,7 +713,7 @@ const GLOSSARIES = [
     g("Idempotency", "Same Request, One Effect", "같은 요청을 여러 번 실행해도 외부 결과가 한 번만 생기게 하는 성질입니다.", "재시도·중단 후 재개에서 메일·게시글·결제가 중복되는 것을 막습니다.", "request_id가 이미 성공했으면 저장된 결과를 반환합니다.")
   ],
   [
-    g("Local LLM", "Model on My Computer", "외부 API가 아니라 내 PC에서 실행되는 언어 모델입니다.", "무료 실습과 데이터 통제에 유리하지만 설치·메모리·속도 제약이 있습니다.", "Ollama에서 qwen3 계열 작은 모델을 실행합니다."),
+    g("Local LLM", "Model on My Computer", "외부 API가 아니라 내 PC에서 실행되는 언어 모델입니다.", "무료 소프트웨어 실습과 데이터 통제에 유리하지만 설치·메모리·속도 제약이 있습니다.", "Ollama에서 qwen3 계열 작은 모델을 실행합니다."),
     g("Provider", "Model Access Method", "OpenAI·Anthropic·Ollama처럼 모델을 호출하는 서비스 또는 실행 방식입니다.", "Provider마다 URL·인증·응답 형식이 달라 코드 결합을 줄여야 합니다.", "local provider와 fixture provider를 같은 인터페이스로 부릅니다."),
     g("Adapter", "Common Interface", "서로 다른 Provider 호출 방식을 하나의 공통 함수로 감싸는 계층입니다.", "모델을 교체해도 나머지 Workflow를 바꾸지 않게 합니다.", "generate(prompt) 함수 뒤에 Ollama·LM Studio·fixture를 숨깁니다."),
     g("Fallback", "Alternative Path", "주 경로가 실패했을 때 학습이나 업무를 계속할 대체 경로입니다.", "설치와 네트워크 문제 때문에 전체 실습이 멈추지 않게 합니다.", "Local LLM이 없으면 고정 JSON fixture로 Schema·Graph 실습을 계속합니다.")
@@ -758,7 +775,7 @@ const MODULES = [
       p('실습 완료는 “작동했다”가 아니라 “다시 확인할 수 있다”입니다', ['결과 파일이 저장되어 있습니다'], ['같은 명령을 다시 실행해도 성공합니다'], ['test 또는 schema 검사가 통과합니다'], ['왜 안전한지 한 문장으로 설명할 수 있습니다'], {
         variant: 'proof',
         lead: '다음 네 가지 중 하나라도 없으면, 아직 실습이 끝난 것이 아닙니다.',
-        terminal: '$ python3 -m src.day1_agent\nstatus: SUCCESS\n\n$ python3 -m pytest -q\n10 passed\n\n$ git status --short\nM src/day1_agent.py',
+        terminal: '$ python3 -m src.day1_agent\nstatus: SUCCESS\n\n$ python3.12 -m pytest -q\n19 passed\n\n$ git status --short\nM src/day1_agent.py',
         bottom: '오늘 남길 것  |  실행 화면 1장 + test 결과 1줄 + 내가 설명한 안전 기준 1문장',
       }),
       p('강사 Harness Engineering 데모', ['SPEC', '작업을 파일로 명시'], ['AGENT', 'Codex·Claude 실행'], ['DIFF', '변경 범위 검토'], ['TEST', '증거 없으면 미완료']),
@@ -772,23 +789,23 @@ const MODULES = [
     examples: [
       e('작업 요청을 먼저 spec으로 고정', 'goal: 안전한 파일 읽기 Agent\ninput: 공개 txt/md\nallowed_tools: [read_public_text]\nstop: validation_error | success\nevidence: pytest + output json', ['목표를 한 문장으로', '입력·출력 형식', '허용 행동', '중단과 완료 증거']),
       e('Agent의 최소 반복 구조', 'while state.status == \"RUNNING\":\n    call = planner(state)\n    checked = validate(call)\n    result = execute(checked)\n    state = observe(state, result)\nreturn state', ['판단과 실행을 분리', '매 step 결과 관찰', '무한 반복 금지', 'state로 감사 가능']),
-      e('Day 1 완료조건을 명령으로 표현', 'python3 -m src.day1_agent\npython3 -m pytest -q\ngit status --short\ngit diff -- src tests\n\n# success: 10 passed', ['실행 결과', '테스트', '변경 범위', '설명 가능한 diff']),
+      e('Day 1 완료조건을 명령으로 표현', 'python3 -m src.day1_agent\npython3.12 -m pytest -q\ngit status --short\ngit diff -- src tests\n\n# success: 19 passed', ['실행 결과', '테스트', '변경 범위', '설명 가능한 diff']),
       e('저장소가 말해주는 역할 분리', 'src/        # 실행 코드\ntests/      # 실패·정상 증거\nmaterials/  # 따라하기 notebook\ndata/       # 공개·합성 입력\nslides/     # 수업 화면', ['코드와 데이터 분리', '노트북과 모듈 분리', '테스트를 1급 산출물로', '장표와 파일명 연결']),
       e('강사 회의음성 Demo · 실패해도 수업은 계속', 'python3 -m src.meeting_demo \\\n  --audio data/demo_meeting.wav \\\n  --transcript data/demo_meeting_transcript.txt \\\n  --out output/day1-demo\n\n# outputs\n# transcript.json + meeting_result.json', ['오디오가 있으면 Local STT', '실패하면 같은 60초 transcript', '사전 생성 JSON 즉시 확인', '자동 메일 false·사람 승인 true']),
       e('Exit ticket도 구조화 데이터다', '{\n  \"agent_difference\": \"...\",\n  \"first_validation\": \"...\",\n  \"human_reason\": \"...\",\n  \"confidence\": 0.0\n}', ['세 문장으로 회수', '다음 날 복습 데이터', '모호한 답은 재질문', '점수가 아닌 진단']),
     ],
     labs: [
-      l('실습 1 · 강사 Demo를 보고 내 업무를 고릅니다', '06 MIN', ['강사가 준비한 짧은 회의 음성을 코드에 넣습니다.', '전사문·회의 요약·할 일 JSON이 만들어지는 화면을 봅니다.', '자동 메일 발송이 차단되는 결과를 확인합니다.', '같은 형식으로 내가 자동화할 일을 한 문장으로 적습니다.'], '입력 1개 + 결과 1개 + 금지 행동 1개', {
+      l('Ideation 1 · 강사 Demo를 보고 내 업무를 고릅니다', '06 MIN', ['강사가 준비한 짧은 회의 음성을 코드에 넣습니다.', '전사문·회의 요약·할 일 JSON이 만들어지는 화면을 봅니다.', '자동 메일 발송이 차단되는 결과를 확인합니다.', '같은 형식으로 내가 자동화할 일을 한 문장으로 적습니다.'], '입력 1개 + 결과 1개 + 금지 행동 1개', {
         example: '강사 시연  |  demo_meeting.wav → transcript.json → meeting_result.json / 자동 메일 발송은 하지 않음',
-        note: '구두 예시로 끝내지 않는다. 강사는 data/demo_meeting.wav 또는 본인이 녹음한 약 1분 WAV를 넣고 실제 코드 결과를 먼저 보여준다. 네트워크·모델 실패에 대비해 data/meeting_sample_ko.txt와 사전 생성 JSON을 즉시 여는 fallback을 준비한다. 온라인 개인 실습이므로 수강생에게 발표나 공개를 요구하지 않는다.',
+        note: '구두 예시로 끝내지 않는다. 강사는 data/demo_meeting.wav 또는 본인이 녹음한 약 1분 WAV를 넣고 실제 코드 결과를 먼저 보여준다. 네트워크·모델 실패에 대비해 data/meeting_sample_ko.txt와 사전 생성 JSON을 즉시 여는 fallback을 준비한다. 이후 개인 Ideation은 발표나 공개 없이 notebook에 적는다.',
       }),
-      l('실습 2 · 오늘 사용할 예시를 혼자 정합니다', '05 MIN', ['재직자는 회사명·고객 정보를 뺀 반복 업무를 고릅니다.', '구직자는 제공된 공개·합성 예시 중 하나를 고릅니다.', '입력 자료와 원하는 결과를 한 줄씩 적습니다.', '이후 실습에서 같은 예시를 계속 사용합니다.'], '내가 사용할 예시 한 문장', {
+      l('Ideation 2 · 오늘 사용할 예시를 혼자 정합니다', '05 MIN', ['재직자는 회사명·고객 정보를 뺀 반복 업무를 고릅니다.', '구직자는 제공된 공개·합성 예시 중 하나를 고릅니다.', '입력 자료와 원하는 결과를 한 줄씩 적습니다.', '이후 소프트웨어 실습에서 같은 예시를 계속 사용합니다.'], '내가 사용할 예시 한 문장', {
         example: '회의 음성 → 결정·담당자·기한이 있는 회의 기록',
-        note: '온라인 개인 실습이다. 선택한 업무나 구직 상태를 공개하게 하지 않고, 개인 notebook에만 적게 한다. 발표는 진행하지 않는다.',
+        note: '온라인 개인 Ideation이다. 선택한 업무나 구직 상태를 공개하게 하지 않고, 개인 notebook에만 적게 한다. 발표는 진행하지 않는다.',
       }),
-      l('실습 3 · 최종 데모 역산', '08 MIN', ['최종 입력 한 건을 정한다.', '보여줄 출력 JSON을 그린다.', '사람이 승인할 지점을 표시한다.', 'LangSmith에서 보고 싶은 실패를 적는다.'], '입력→출력→승인 sketch'),
-      l('실습 4 · 환경 신호등', '06 MIN', ['Python·VS Code·Git 설치 여부를 표시한다.', '관리자 권한 여부를 표시한다.', 'RAM·디스크 제약을 적는다.', 'GREEN/YELLOW/RED lane을 선택한다.'], '개인 환경 진단표'),
-      l('실습 5 · Agent를 쉬운 말로 적기', '07 MIN', ['Chatbot을 한 문장으로 적습니다.', 'Agent가 도구를 쓰는 순간을 추가합니다.', '실패했을 때 멈추거나 다시 시도하는 행동을 추가합니다.', '내 문장을 다시 읽고 어려운 단어를 하나 줄입니다.'], 'Agent 설명 2문장', {
+      l('설계 워크숍 1 · 최종 데모 역산', '08 MIN', ['최종 입력 한 건을 정한다.', '보여줄 출력 JSON을 그린다.', '사람이 승인할 지점을 표시한다.', 'LangSmith에서 보고 싶은 실패를 적는다.'], '입력→출력→승인 sketch'),
+      l('실행 확인 1 · 환경 신호등', '06 MIN', ['Python·VS Code·Git 설치 여부를 표시한다.', '관리자 권한 여부를 표시한다.', 'RAM·디스크 제약을 적는다.', 'GREEN/YELLOW/RED lane을 선택한다.'], '개인 환경 진단표'),
+      l('Ideation 3 · Agent를 쉬운 말로 적기', '07 MIN', ['Chatbot을 한 문장으로 적습니다.', 'Agent가 도구를 쓰는 순간을 추가합니다.', '실패했을 때 멈추거나 다시 시도하는 행동을 추가합니다.', '내 문장을 다시 읽고 어려운 단어를 하나 줄입니다.'], 'Agent 설명 2문장', {
         example: 'Agent는 답만 만드는 것이 아니라, 필요한 도구를 고르고 결과를 확인한 뒤 다음 행동을 정합니다.',
       }),
     ],
@@ -834,9 +851,9 @@ const MODULES = [
     ],
     screenshots: [
       s('Ollama API · 호출 형식을 공식 문서로 확인', 'ollama-api-official.png', 'Ollama API Introduction 공식 화면', 'https://docs.ollama.com/api/introduction', ['base URL 확인', 'request/response 형식', 'timeout·stream 선택', 'adapter 뒤에 감추기']),
-      s('GitHub REST · 인증은 코드와 분리', 'github-rest-auth-official.png', 'GitHub REST authentication 공식 문서', 'https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api', ['token은 환경 변수', '학생 필수 실습은 dry-run', '최소 권한 확인', '화면에 secret 노출 금지']),
+      s('GitHub REST · 인증은 코드와 분리', 'github-rest-auth-official.png', 'GitHub REST authentication 공식 문서', 'https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api', ['token은 환경 변수', '학생 필수 경로는 dry-run', '최소 권한 확인', '화면에 secret 노출 금지']),
       s('pytest · 실패를 재현하는 가장 작은 도구', 'pytest-getting-started-official.png', 'pytest Get Started 공식 문서', 'https://docs.pytest.org/en/stable/getting-started.html', ['test_ 함수 규칙', 'assert로 계약 고정', '정상·예외 함께', '짧은 명령으로 반복']),
-      s('실제 실행 · 10 tests 통과', 'vscode-pytest-10-passed-local.png', 'VS Code 통합 터미널의 실제 pytest 결과', 'local://python3-m-pytest-q', ['.......... 10개 test', '[100%] 완료', '실행 시간 확인', '완료 증거로 캡처']),
+      s('실제 실행 · 19 tests 통과', 'vscode-pytest-19-passed-local.png', 'VS Code 통합 터미널의 실제 Python 3.12 pytest 결과', 'local://python312-m-pytest-q', ['................... 19개 test', '[100%] 완료', '실행 시간 확인', '완료 증거로 캡처']),
     ],
     examples: [
       e('도구 schema · 허용 입력만', 'TOOL_SCHEMAS = {\n  \"read_public_text\": {\n    \"required\": {\"path\": str},\n    \"description\": \"공개 txt/md 읽기\"\n  }\n}', ['한 도구 한 책임', '필수 인자 명시', '설명은 모델용', '실행 함수와 분리']),
@@ -847,11 +864,11 @@ const MODULES = [
       e('실패 테스트 네 가지', 'def test_unknown_tool(): ...\ndef test_missing_argument(): ...\ndef test_path_traversal(): ...\ndef test_duplicate_call_cached(): ...', ['허용되지 않은 도구', '필수 인자 누락', 'workspace 이탈', '같은 호출 중복']),
     ],
     labs: [
-      l('실습 1 · 도구 한 개를 schema로', '08 MIN', ['업무 동사를 한 개 고른다.', '필수 인자를 1–2개로 제한한다.', '타입과 허용값을 적는다.', '정상 호출 예시를 JSON으로 쓴다.'], 'tool schema 1개'),
-      l('실습 2 · 잘못된 호출 3개 만들기', '08 MIN', ['unknown tool 호출을 만든다.', '필수 인자를 하나 지운다.', '예상 밖 인자를 하나 넣는다.', '각 error_code를 예상한다.'], '실패 fixture 3개'),
-      l('실습 3 · workspace guard 읽기', '09 MIN', ['정상 상대경로를 넣는다.', '../를 포함한 경로를 넣는다.', '.py 확장자를 넣는다.', '어느 단계에서 차단되는지 표시한다.'], '정상 1 + 차단 2'),
-      l('실습 4 · ToolResult 계약 검증', '08 MIN', ['성공 result 필드를 적는다.', '실패 result 필드를 적는다.', 'downstream이 exception을 몰라도 되는 이유를 쓴다.', 'needs_human_review 조건을 정한다.'], '공통 result 표'),
-      l('실습 5 · pytest 한 건 추가', '10 MIN', ['tests 파일을 연다.', '실패 사례를 함수로 추가한다.', 'pytest -q를 실행한다.', '실패→수정→통과를 캡처한다.'], '새 test 1개 + 통과 화면'),
+      l('설계 워크숍 1 · 도구 한 개를 schema로', '07 MIN', ['업무 동사를 한 개 고른다.', '필수 인자를 1–2개로 제한한다.', '타입과 허용값을 적는다.', '정상 호출 예시를 JSON으로 쓴다.'], 'tool schema 1개'),
+      l('소프트웨어 실습 1 · 잘못된 Tool Call 실행', '09 MIN', ['unknown tool을 실제로 호출한다.', '필수 인자를 지운 호출을 실행한다.', '예상 밖 인자를 넣어 실행한다.', '세 error_code를 결과 객체에서 확인한다.'], '실패 ToolResult 3개'),
+      l('소프트웨어 실습 2 · workspace guard 실행', '09 MIN', ['정상 상대경로로 함수를 실행한다.', '../를 포함한 경로로 다시 실행한다.', '.py 확장자를 넣어 실행한다.', '어느 guard에서 차단됐는지 test와 비교한다.'], '정상 1 + 차단 2'),
+      l('소프트웨어 실습 3 · ToolResult 계약 검증', '08 MIN', ['성공·실패 호출을 같은 셀에서 실행한다.', '두 result의 공통 필드를 비교한다.', 'needs_human_review 값을 확인한다.', '결과 JSON을 파일로 저장한다.'], '공통 result JSON'),
+      l('소프트웨어 실습 4 · pytest 한 건 추가', '10 MIN', ['tests 파일을 연다.', '실패 사례를 함수로 추가한다.', 'pytest -q를 실행한다.', '실패→수정→통과를 캡처한다.'], '새 test 1개 + 통과 화면'),
     ],
     pitfalls: [
       f('실패 1 · 모델 JSON을 바로 실행', ['schema 검증 생략', '임의 도구 이름', '추가 인자 허용', 'side effect 직행'], ['plan은 제안', 'validator가 허가', 'registry 함수만', '쓰기 전 preview']),
@@ -908,11 +925,11 @@ const MODULES = [
       e('PBL KPI를 계산 가능한 식으로', 'evidence_rate = linked_claims / total_claims\nschema_pass = valid_outputs / all_outputs\nhuman_edit = changed_chars / draft_chars\nfalse_publish = 0', ['근거 연결률', 'schema 통과율', '사람 수정량', '오발행 0건']),
     ],
     labs: [
-      l('실습 1 · 한국어 사례 후보 3개', '08 MIN', ['공식 데이터 사이트에서 검색어를 정한다.', '사례 후보를 세 개 적는다.', '업무 흐름과 가장 가까운 한 개를 고른다.', '선택 이유를 한 문장으로 쓴다.'], '후보 3개 + 선택 1개'),
-      l('실습 2 · 이용 조건 확인표', '08 MIN', ['제공 기관과 URL을 기록한다.', '다운로드·신청 필요 여부를 적는다.', '재배포 가능 여부를 확인한다.', '불확실하면 강사 fixture를 선택한다.'], 'source checklist'),
-      l('실습 3 · 상세 회의에서 근거 구간 찾기', '10 MIN', ['meeting_sample_ko_12min.txt를 엽니다.', '결정 1개와 정정 발언 1개를 찾습니다.', '담당·기한 Action Item 2개를 찾습니다.', '“다음 주 중”을 needs_review로 표시합니다.'], 'evidence segment 4개'),
-      l('실습 4 · Golden JSON과 비교', '10 MIN', ['내가 찾은 title·decision을 구조화합니다.', 'Action Item 두 개에 evidence ID를 연결합니다.', 'meeting_sample_ko_12min_expected.json과 비교합니다.', '다른 부분을 오류·허용 표현 차이로 나눕니다.'], '내 JSON + 기준 JSON diff'),
-      l('실습 5 · PBL canvas 혼자 점검하기', '08 MIN', ['이 서비스를 사용할 사람과 불편을 적습니다.', 'AI가 할 일과 사람이 확인할 일을 나눕니다.', '시간 절감과 품질 기준을 하나씩 적습니다.', '질문 체크리스트를 보며 범위를 한 번 더 줄입니다.'], '한 장짜리 PBL canvas'),
+      l('자료 수집 1 · 한국어 사례 후보 3개', '08 MIN', ['공식 데이터 사이트에서 검색어를 정한다.', '사례 후보를 세 개 적는다.', '업무 흐름과 가장 가까운 한 개를 고른다.', '선택 이유를 한 문장으로 쓴다.'], '후보 3개 + 선택 1개'),
+      l('자료 수집 2 · 이용 조건 확인표', '08 MIN', ['제공 기관과 URL을 기록한다.', '다운로드·신청 필요 여부를 적는다.', '재배포 가능 여부를 확인한다.', '불확실하면 강사 fixture를 선택한다.'], 'source checklist'),
+      l('데이터 확인 1 · 상세 회의에서 근거 구간 찾기', '10 MIN', ['meeting_sample_ko_12min.txt를 엽니다.', '결정 1개와 정정 발언 1개를 찾습니다.', '담당·기한 Action Item 2개를 찾습니다.', '“다음 주 중”을 needs_review로 표시합니다.'], 'evidence segment 4개'),
+      l('소프트웨어 실습 1 · Golden JSON diff 실행', '10 MIN', ['내 결과를 JSON으로 저장합니다.', 'Action Item 두 개에 evidence ID를 연결합니다.', '기준 JSON과 diff 명령을 실행합니다.', '다른 부분을 오류·허용 표현 차이로 나눕니다.'], '내 JSON + 기준 JSON diff'),
+      l('Ideation 1 · PBL canvas 혼자 점검하기', '08 MIN', ['이 서비스를 사용할 사람과 불편을 적습니다.', 'AI가 할 일과 사람이 확인할 일을 나눕니다.', '시간 절감과 품질 기준을 하나씩 적습니다.', '질문 체크리스트를 보며 범위를 한 번 더 줄입니다.'], '한 장짜리 PBL canvas'),
     ],
     pitfalls: [
       f('실패 1 · 데이터가 너무 크다', ['수십 시간 audio', '수백 MB 전체 말뭉치', '전처리만 수업 소진', '정답 만들기 불가'], ['2–3분 audio', '10–30건 text', 'golden 3–5건', '확장 과제는 별도']),
@@ -932,10 +949,10 @@ const MODULES = [
     title: '무료 환경과 Harness Engineering',
     subtitle: '모든 학습자가 완주하는 필수 경로와 Codex·Claude로 가속하는 강사 경로를 분리합니다.',
     output: 'Python·VS Code·Git·repo · 무료/선택 lane',
-    outcome: 'API 종량 비용 없이 필수 실습을 실행하고, 설치 실패 시에도 fixture와 notebook으로 같은 학습목표를 유지합니다.',
+    outcome: 'API 종량 비용 없이 필수 코드를 실행하고, 설치 실패 시에도 fixture와 notebook으로 같은 학습목표를 유지합니다.',
     accent: C.green,
     concepts: [
-      c('무료의 정의를 먼저 합의한다', '학생은 외부 LLM API 비용 없이 필수 실습을 완주할 수 있어야 한다.', 'Python·Git·VS Code / fixture·local LLM / 선택 서비스 초과 과금 주의'),
+      c('무료의 정의를 먼저 합의한다', '학생은 외부 LLM API 비용 없이 필수 실행 경로를 완주할 수 있어야 한다.', 'Python·Git·VS Code / fixture·local LLM / 선택 서비스 초과 과금 주의'),
       c('필수 경로와 강사 가속 경로를 분리', '학생은 로컬·결정론적 코드, 강사는 Codex·Claude live demo를 사용한다.', '필수: 직접 실행 / 강사: 생성·수정 가속 / 공통: diff·test 검토'),
       c('Python은 실행기, VS Code는 작업 공간', 'extension이 Python 자체를 설치해 주는 것은 아니다.', 'Python interpreter / VS Code editor / Python·Jupyter extension'),
       c('가상환경은 프로젝트의 재현 경계', '전역 환경 대신 프로젝트별 dependency를 격리한다.', 'python -m venv / interpreter 선택 / requirements·pyproject'),
@@ -969,11 +986,11 @@ const MODULES = [
       e('Agent에게 주는 작업 계약', 'Objective: add one validation test\nScope: tests/test_day1_agent.py\nDo not: change src behavior\nVerify: python3 -m pytest -q\nDeliver: diff + result', ['한 번에 한 목적', '파일 범위', '금지 조건', '검증 명령']),
     ],
     labs: [
-      l('실습 1 · 버전 확인 캡처', '08 MIN', ['새 terminal을 연다.', 'Python·Git 버전을 확인한다.', 'VS Code가 같은 폴더를 열었는지 확인한다.', '실패 항목을 표에 표시한다.'], '버전 3개 + 상태표'),
-      l('실습 2 · 가상환경과 interpreter', '10 MIN', ['.venv를 만든다.', '가상환경을 활성화한다.', 'VS Code interpreter를 선택한다.', 'sys.executable을 출력한다.'], '가상환경 경로 출력'),
-      l('실습 3 · notebook 열기', '08 MIN', ['materials/day1 notebook을 연다.', '선택한 kernel을 확인한다.', '첫 Markdown·Code 셀을 실행한다.', 'output이 남는 위치를 확인한다.'], '첫 셀 성공 화면'),
-      l('실습 4 · Branch→Codex→Test→PR 준비', '12 MIN', ['교육용 branch를 만들고 변경 목표를 네 줄로 적습니다.', 'Codex에는 tests/test_day1_agent.py 한 파일만 허용합니다.', '생성된 diff를 직접 읽고 pytest를 실행합니다.', 'GitHub 연결이 되면 Draft PR, 아니면 local diff를 저장합니다.'], 'branch + test + Draft PR 또는 local diff', { note: '강사는 연결된 sandbox repo에서 push와 Draft PR을 시연한다. 수강생은 계정·권한·gh 설치가 준비된 경우에만 PR까지 따라 한다. 자동 리뷰는 @codex review로 요청할 수 있지만 결과는 참고 의견이며, CI와 사람의 diff 확인 뒤에만 merge한다.', example: 'Objective: .py 읽기 차단 test 추가 / Scope: tests/test_day1_agent.py / Do not: src 변경 / Verify: python3 -m pytest -q' }),
-      l('실습 5 · Harness spec 쓰기', '08 MIN', ['작은 변경 목표를 적는다.', '허용 파일을 한 개 정한다.', '금지 행동을 한 개 적는다.', '검증 명령을 한 줄로 쓴다.'], '4줄 작업 계약'),
+      l('개발환경 세팅 실습 1 · 버전 확인', '08 MIN', ['새 terminal을 연다.', 'Python·Git 버전을 확인한다.', 'VS Code가 같은 저장소를 열었는지 확인한다.', '실패 항목을 상태표에 표시한다.'], '버전 3개 + 상태표'),
+      l('개발환경 세팅 실습 2 · 가상환경과 interpreter', '10 MIN', ['Python 3.12로 .venv를 만든다.', '가상환경을 활성화한다.', 'VS Code interpreter를 선택한다.', 'sys.executable을 출력한다.'], 'Python 3.12 가상환경 경로'),
+      l('개발환경 세팅 실습 3 · notebook kernel', '08 MIN', ['7차시 notebook을 연다.', '선택한 kernel을 확인한다.', '첫 Markdown·Code 셀을 실행한다.', 'output이 남는 위치를 확인한다.'], '첫 셀 성공 화면'),
+      l('소프트웨어 실습 1 · Branch→Codex→Test→PR 준비', '12 MIN', ['교육용 branch를 만들고 변경 목표를 네 줄로 적습니다.', 'Codex에는 tests/test_day1_agent.py 한 파일만 허용합니다.', '생성된 diff를 직접 읽고 pytest를 실행합니다.', 'GitHub 연결이 되면 Draft PR, 아니면 local diff를 저장합니다.'], 'branch + test + Draft PR 또는 local diff', { note: '강사는 연결된 sandbox repo에서 push와 Draft PR을 시연한다. 수강생은 계정·권한·gh 설치가 준비된 경우에만 PR까지 따라 한다. 자동 리뷰는 @codex review로 요청할 수 있지만 결과는 참고 의견이며, CI와 사람의 diff 확인 뒤에만 merge한다.', example: 'Objective: .py 읽기 차단 test 추가 / Scope: tests/test_day1_agent.py / Do not: src 변경 / Verify: python3 -m pytest -q' }),
+      l('설계 워크숍 1 · Harness spec 쓰기', '08 MIN', ['작은 변경 목표를 적는다.', '허용 파일을 한 개 정한다.', '금지 행동을 한 개 적는다.', '검증 명령을 한 줄로 쓴다.'], '4줄 작업 계약'),
     ],
     pitfalls: [
       f('실패 1 · 설치를 끝없이 붙잡는다', ['한 명의 PATH에 30분', '전체 대기', '학습 목표 상실', '다운로드 경쟁'], ['10분 timebox', 'checkpoint zip', 'fixture lane', '점심 후 재합류']),
@@ -992,7 +1009,7 @@ const MODULES = [
     short: 'SAFE LOOP',
     title: 'Safe Tool Loop 구현',
     subtitle: '점심 전 한 시간에 결정론적 planner·validator·executor·test·Git checkpoint를 완성합니다.',
-    output: '실행 가능한 src · 9 tests · 첫 commit',
+    output: '실행 가능한 src · 19 tests · 첫 commit',
     outcome: 'Framework와 외부 모델 없이도 Agent 제어 루프를 실행하고, 정상 1건과 실패 4종을 스스로 재현합니다.',
     accent: C.amber,
     concepts: [
@@ -1013,7 +1030,7 @@ const MODULES = [
       p('실패 주입 순서', ['UNKNOWN', '도구 없음'], ['MISSING', '인자 누락'], ['TRAVERSAL', '경로 이탈'], ['DUPLICATE', 'cache 확인']),
       p('pytest 빨강→초록', ['RUN', '현재 실패'], ['READ', '첫 오류'], ['FIX', '최소 변경'], ['RERUN', '전체 10개']),
       p('Git checkpoint 만들기', ['STATUS', '변경 분리'], ['DIFF', '의도 확인'], ['STAGE', 'src·tests만'], ['COMMIT', '메시지·log']),
-      p('점심 전 Gate', ['NOTEBOOK', 'Run All'], ['PYTEST', '10 passed'], ['DIFF', '설명 가능'], ['RECOVERY', '미완료 lane']),
+      p('점심 전 Gate', ['NOTEBOOK', 'Run All'], ['PYTEST', '19 passed'], ['DIFF', '설명 가능'], ['RECOVERY', '미완료 lane']),
     ],
     screenshots: [
       s('Jupyter 설치 · notebook 실행기의 공식 경로', 'jupyter-install-official.png', 'Jupyter Install 공식 화면', 'https://jupyter.org/install', ['JupyterLab·Notebook 구분', 'VS Code extension과 kernel', '프로젝트 가상환경 사용', 'Run All이 완료 증거']),
@@ -1027,14 +1044,14 @@ const MODULES = [
       e('파일 확장자 allowlist', 'if candidate.suffix.lower() not in {\".txt\", \".md\"}:\n    raise ToolValidationError(\n      \"Day 1에서는 .txt와 .md만 허용합니다.\"\n    )', ['목적에 필요한 형식만', 'binary 제외', '정책 메시지', 'POLICY_BLOCKED로 매핑']),
       e('중복 호출 cache', 'call_id = make_call_id(name, args)\nif call_id in self._cache:\n    prev = self._cache[call_id]\n    return replace(prev, cached=True)\nresult = call_tool()\nself._cache[call_id] = result', ['실행 전 조회', '성공·실패 정책 결정', 'cached 표시', '외부 쓰기에는 영속 저장']),
       e('Agent event 한 건', 'event = {\n  \"input\": user_message,\n  \"planned_call\": call,\n  \"tool_result\": result.to_dict(),\n  \"needs_human_review\": not result.ok\n}', ['입력', '결정', '결과', '사람 검토 여부']),
-      e('pytest 완료 명령', 'python3 -m pytest -q\n# ..........                   [100%]\n# 10 passed in 0.05s\n\ngit diff --check\ngit status --short', ['10개 테스트', 'whitespace 검사', '변경 파일', '점심 전 checkpoint']),
+      e('pytest 완료 명령', 'python3.12 -m pytest -q\n# ...................          [100%]\n# 19 passed\n\ngit diff --check\ngit status --short', ['19개 테스트', 'whitespace 검사', '변경 파일', '점심 전 checkpoint']),
     ],
     labs: [
-      l('실습 1 · Notebook Run All', '12 MIN', ['올바른 kernel을 선택한다.', 'Restart Kernel을 실행한다.', 'Run All을 실행한다.', '첫 실패 셀에서 멈추고 원인을 기록한다.'], '모든 셀 성공'),
-      l('실습 2 · 정상 도구 호출', '08 MIN', ['sample txt 경로를 입력한다.', 'planned_call을 확인한다.', 'ToolResult ok와 data를 확인한다.', '원문 글자 수와 경로를 검증한다.'], '정상 event 1건'),
-      l('실습 3 · 실패 4종 재현', '10 MIN', ['unknown tool을 실행한다.', '필수 인자를 지운다.', '../ 경로를 넣는다.', '같은 호출을 두 번 실행한다.'], 'error_code 3개 + cached 1개'),
-      l('실습 4 · pytest 10개 확인', '08 MIN', ['terminal을 연다.', 'python3 -m pytest -q를 실행한다.', '실패 시 첫 오류만 읽는다.', '10 passed 화면을 저장한다.'], '10 passed'),
-      l('실습 5 · 점심 전 Git checkpoint', '10 MIN', ['git status를 확인한다.', 'src·tests diff를 읽는다.', '관련 파일만 stage한다.', 'commit 후 log 한 줄을 확인한다.'], 'commit 1개 + hash'),
+      l('소프트웨어 실습 1 · Notebook Run All', '10 MIN', ['올바른 kernel을 선택한다.', 'Restart Kernel을 실행한다.', 'Run All을 실행한다.', '첫 실패 셀에서 멈추고 원인을 기록한다.'], '모든 셀 성공'),
+      l('소프트웨어 실습 2 · 정상 도구 호출', '08 MIN', ['sample txt 경로를 입력한다.', 'planned_call을 확인한다.', 'ToolResult ok와 data를 확인한다.', '원문 글자 수와 경로를 검증한다.'], '정상 event 1건'),
+      l('소프트웨어 실습 3 · 실패 4종 재현', '10 MIN', ['unknown tool을 실행한다.', '필수 인자를 지운다.', '../ 경로를 넣는다.', '같은 호출을 두 번 실행한다.'], 'error_code 3개 + cached 1개'),
+      l('소프트웨어 실습 4 · pytest 전체 확인', '08 MIN', ['terminal을 연다.', 'Python 3.12 환경에서 pytest -q를 실행한다.', '실패 시 첫 오류만 읽는다.', '19 passed 화면을 저장한다.'], '19 passed'),
+      l('소프트웨어 실습 5 · 점심 전 Git checkpoint', '10 MIN', ['git status를 확인한다.', 'src·tests diff를 읽는다.', '관련 파일만 stage한다.', 'commit 후 log 한 줄을 확인한다.'], 'commit 1개 + hash'),
     ],
     pitfalls: [
       f('실패 1 · Notebook과 module이 다른 Python', ['import error', '설치했는데 못 찾음', 'terminal은 성공', 'kernel은 실패'], ['sys.executable 비교', 'interpreter 재선택', 'kernel restart', '같은 .venv']),
@@ -1046,7 +1063,7 @@ const MODULES = [
       { title: '재직자 · Safe loop를 현업 tool에 매핑', leftTitle: '교육 도구', rightTitle: '현업 예시', left: ['txt 읽기', 'marker 세기', '결과 JSON', '로컬 cache'], right: ['FAQ 조회', '티켓 분류', '검토 draft', 'request dedupe'] },
       { title: '구직자 · commit을 설명 가능한 증거로', leftTitle: '나쁜 history', rightTitle: '좋은 history', left: ['final', 'fix', '수십 파일 한 번', 'test 후첨'], right: ['feat: schema', 'test: traversal', 'refactor: result', '각 commit green'] },
     ],
-    checkpoint: { title: 'Gate 5 · 14:00 점심 전 실행 증거', prompt: '지금부터 점심시간입니다. 14:55까지 돌아오면 15:00에 Local LLM 연결부터 바로 시작합니다.', questions: ['Notebook Run All 결과가 남았는가?', 'pytest 10개 통과 화면이 남았는가?', '내 commit diff에서 바뀐 경계를 한 문장으로 말할 수 있는가?'], note: '14:00에 정확히 점심을 시작하고 14:55 복귀를 공지한다. 점심 변경 사유와 사과는 오프닝 운영 장표에서 이미 전달했으므로 여기서는 반복하지 않는다.' },
+    checkpoint: { title: 'Gate 5 · 14:00 점심 전 실행 증거', prompt: '지금부터 점심시간입니다. 14:55까지 돌아오면 15:00에 Local LLM 연결부터 바로 시작합니다.', questions: ['Notebook Run All 결과가 남았는가?', 'pytest 19개 통과 화면이 남았는가?', '내 commit diff에서 바뀐 경계를 한 문장으로 말할 수 있는가?'], note: '14:00에 정확히 점심을 시작하고 14:55 복귀를 공지한다. 점심 변경 사유와 사과는 오프닝 운영 장표에서 이미 전달했으므로 여기서는 반복하지 않는다.' },
   },
   {
     time: '15:00–17:30 · PART 1/3',
@@ -1091,11 +1108,11 @@ const MODULES = [
       e('Provider 비교 로그', 'run = {\n  \"provider\": provider_name,\n  \"model\": model_name,\n  \"latency_ms\": elapsed,\n  \"schema_pass\": passed,\n  \"fallback_used\": fallback,\n  \"error_code\": error_code\n}', ['provider·model', 'latency', 'schema pass', 'fallback·error']),
     ],
     labs: [
-      l('실습 1 · Ollama health 확인', '08 MIN', ['ollama list를 실행한다.', '서버 연결 여부를 확인한다.', '모델이 없으면 설치를 강행하지 않는다.', 'fixture lane을 선택해 기록한다.'], 'provider 상태 1줄'),
-      l('실습 2 · 선택 provider 호출', '12 MIN', ['prompt를 짧게 입력한다.', 'timeout을 지정한다.', '성공이면 response 일부를 확인한다.', '실패면 error_code를 확인한다.'], '성공/실패 result 1건'),
-      l('실습 3 · 공통 contract 비교', '08 MIN', ['fixture result 필드를 적는다.', 'local result 필드를 적는다.', '공통 필드와 provider 전용 필드를 구분한다.', 'downstream이 볼 필드를 정한다.'], 'provider 비교표'),
-      l('실습 4 · 깨진 JSON 복구', '10 MIN', ['마지막 괄호가 없는 fixture를 넣는다.', 'parse 오류를 확인한다.', 'repair를 한 번 실행한다.', '두 번째 실패 시 NEEDS_REVIEW로 멈춘다.'], 'repair 1회 + stop'),
-      l('실습 5 · 모델을 바꾸면 무엇이 달라질까?', '08 MIN', ['Ollama와 LM Studio 중 하나를 고릅니다.', '모델을 바꾸면 달라지는 설정을 적습니다.', '바뀌지 않는 schema·validator를 적습니다.', 'adapter가 필요한 이유를 한 문장으로 정리합니다.'], '변경/불변 표 + 한 문장'),
+      l('소프트웨어 실습 1 · Ollama health 확인', '07 MIN', ['ollama list를 실행한다.', '서버 연결 여부를 확인한다.', '모델이 없으면 설치를 강행하지 않는다.', 'fixture lane을 선택해 기록한다.'], 'provider 상태 1줄'),
+      l('소프트웨어 실습 2 · LCEL Provider 호출', '10 MIN', ['langchain_lab.py를 fixture로 실행한다.', 'Ollama가 있으면 provider만 바꿔 다시 실행한다.', '성공이면 typed output을 확인한다.', '실패면 fallback_reason을 확인한다.'], '성공/예상 실패 result 1건'),
+      l('실행 확인 1 · 공통 contract 비교', '07 MIN', ['fixture result 필드를 적는다.', 'local result 필드를 적는다.', '공통 필드와 provider 전용 필드를 구분한다.', 'downstream이 볼 필드를 정한다.'], 'provider 비교표'),
+      l('소프트웨어 실습 3 · 깨진 JSON 복구', '08 MIN', ['마지막 괄호가 없는 fixture를 넣는다.', 'parse 오류를 확인한다.', 'repair를 한 번 실행한다.', '두 번째 실패 시 NEEDS_REVIEW로 멈춘다.'], 'repair 1회 + stop'),
+      l('설계 워크숍 1 · 모델 교체 범위', '08 MIN', ['Ollama와 LM Studio 중 하나를 고릅니다.', '모델을 바꾸면 달라지는 설정을 적습니다.', '바뀌지 않는 schema·validator를 적습니다.', 'adapter가 필요한 이유를 한 문장으로 정리합니다.'], '변경/불변 표 + 한 문장'),
     ],
     pitfalls: [
       f('실패 1 · 큰 모델 다운로드를 기다림', ['수업 전체 대기', '디스크 부족', 'RAM swap', '학습 목표 상실'], ['작은 모델 하나', '사전 설치', 'fixture 즉시 전환', '모델 비교는 심화']),
@@ -1112,10 +1129,10 @@ const MODULES = [
   {
     time: '15:00–17:30 · PART 2/3',
     short: 'LANGGRAPH & HITL',
-    title: 'State·Retry·Human Approval',
-    subtitle: '여러 단계가 실패·중단·재개되는 흐름을 LangGraph의 state와 interrupt 관점으로 설계합니다.',
-    output: 'State schema · branch · approve/edit/reject event',
-    outcome: '재시도와 중복 방지를 구분하고, 승인 전 side effect가 안전하게 재실행되도록 Human-in-the-loop 경계를 그립니다.',
+    title: 'LangChain 조합부터 LangGraph 승인까지',
+    subtitle: 'LCEL로 typed output을 만든 뒤 StateGraph를 실제로 실행하고, interrupt에서 멈춘 상태를 사람 결정으로 재개합니다.',
+    output: 'LCEL 결과 · interrupt payload · approve/edit/reject state · 웹 JSON',
+    outcome: 'Prompt·Model·Parser·Validator를 조합하고, 같은 thread에서 중단·승인·수정·거절·재개가 동작하는 소프트웨어를 실행합니다.',
     accent: C.blue,
     concepts: [
       c('State는 다음 행동의 근거', '대화 전체가 아니라 node가 판단에 필요한 최소 구조를 저장한다.', 'request_id·step / draft·errors / retry·approval·status'),
@@ -1143,25 +1160,25 @@ const MODULES = [
       p('LangSmith 연결 지점', ['RUN', 'graph 전체'], ['CHILD', 'node·LLM·tool'], ['META', 'thread·dataset'], ['FEEDBACK', 'human decision']),
     ],
     screenshots: [
-      s('LangChain overview · 조합 계층', 'langchain-overview-official.png', 'LangChain overview 공식 문서', 'https://docs.langchain.com/oss/python/langchain/overview', ['model·messages·tools', 'structured output', '빠른 조합', '제어 흐름은 LangGraph']),
-      s('LangGraph overview · stateful orchestration', 'langgraph-overview-official.png', 'LangGraph overview 공식 문서', 'https://docs.langchain.com/oss/python/langgraph/overview', ['state·nodes·edges', 'durable execution', 'human-in-the-loop', '장기 실행 workflow']),
-      s('LangGraph interrupts · 사람 입력에서 중단', 'langgraph-interrupts-official.png', 'LangGraph Interrupts 공식 문서', 'https://docs.langchain.com/oss/python/langgraph/interrupts', ['interrupt payload', 'Command resume', 'JSON-serializable', 'side effect idempotent']),
-      s('LangGraph persistence · checkpoint와 thread', 'langgraph-persistence-official.png', 'LangGraph Persistence 공식 문서', 'https://docs.langchain.com/oss/python/langgraph/persistence', ['checkpointer', 'thread_id', 'state history', 'fault tolerance']),
+      s('실제 실행 · LCEL 네 단계와 Policy Check', 'langchain-lcel-demo-local.png', 'Vercel Demo의 실제 LangChain 결과 화면', 'https://web-demo-five-sigma.vercel.app/#pipeline', ['Prompt→Adapter→Parser→Validator', 'typed output', '네 정책 검사 통과', 'Python 결과 JSON을 UI에서 읽음']),
+      s('실제 실행 · interrupt payload에서 멈춤', 'langgraph-interrupt-demo-local.png', 'Vercel Demo의 실제 사람 검토 화면', 'https://web-demo-five-sigma.vercel.app/#review', ['REVIEW_REQUIRED', '초안·Action Item·근거', 'approve·edit·reject', '자동 메일 false']),
+      s('실제 실행 · 거절은 REJECTED와 HOLD', 'langgraph-reject-result-local.png', 'Vercel Demo의 실제 거절 결과', 'https://web-demo-five-sigma.vercel.app/#result', ['같은 thread 재개', 'terminal state', 'release gate', 'local JSON only']),
+      s('실제 실행 · Python 3.12 test 19개 통과', 'vscode-pytest-19-passed-local.png', 'VS Code 통합 터미널의 실제 전체 test 결과', 'local://python312-pytest-19', ['LangChain typed output', 'interrupt·resume', '승인·수정·거절', 'trace·READY/HOLD']),
     ],
     examples: [
-      e('State schema', 'class State(TypedDict):\n    request_id: str\n    transcript: list[dict]\n    draft: dict | None\n    errors: list[dict]\n    retry_count: int\n    approval: dict | None\n    status: str', ['다음 node에 필요한 필드', 'raw data 유지', '오류 누적', 'terminal status']),
-      e('오류 route 함수', 'def route_after_validate(state):\n    if state[\"status\"] == \"READY\":\n        return \"human_review\"\n    if state[\"status\"] == \"TRANSIENT_ERROR\" and state[\"retry_count\"] < 2:\n        return \"retry\"\n    return \"failed\"', ['status 기반', 'bounded retry', '정책 오류 제외', '명시적 failed']),
-      e('Interrupt로 검토 요청', 'review = interrupt({\n  \"draft\": state[\"draft\"],\n  \"evidence\": state[\"evidence\"],\n  \"target\": state[\"publish_target\"],\n  \"options\": [\"approve\", \"edit\", \"reject\"]\n})', ['검토 정보 한 화면', '직렬화 가능한 값', '버튼만 전달 금지', '결정은 event로']),
+      e('실제 WorkflowState', 'class WorkflowState(TypedDict, total=False):\n    request_id: str\n    draft: dict[str, Any]\n    validation_errors: list[str]\n    status: str\n    review: dict[str, Any]\n    audit_events: list[dict[str, Any]]\n    export_ready: bool\n    automatic_email: bool', ['다음 node에 필요한 필드', '승인 event 유지', '오류 누적', '외부 쓰기 정책']),
+      e('실제 조건 route', 'def route_after_validate(state):\n    return (\n        \"review\"\n        if not state.get(\"validation_errors\")\n        else \"failed\"\n    )', ['오류 필드 기반', 'review 또는 failed', '암묵적 분기 없음', 'test로 두 경로 검증']),
+      e('사람 검토에 넘기는 데이터 구조', 'human_input = interrupt({\n  \"request_id\": state[\"request_id\"],\n  \"summary\": state[\"draft\"][\"summary\"],\n  \"action_items\": state[\"draft\"][\"action_items\"],\n  \"options\": [\"approve\", \"edit\", \"reject\"],\n  \"automatic_email\": False\n})', ['초안·근거 한 화면', '직렬화 가능한 값', '자동 메일 금지', '결정은 resume 값']),
       e('Command로 같은 thread 재개', 'config = {\"configurable\": {\"thread_id\": request_id}}\nfirst = graph.invoke(input_state, config)\n# interrupt에서 멈춤\nsecond = graph.invoke(Command(resume={\"decision\": \"approve\"}), config)', ['thread_id 유지', 'checkpoint load', 'resume value', 'new thread와 구분']),
       e('승인 event', 'approval = {\n  \"decision\": \"edit\",\n  \"reviewer\": \"role-reviewer\",\n  \"reason\": \"담당자 근거 부족\",\n  \"edited_payload\": corrected,\n  \"at\": iso_time\n}', ['누가', '무슨 결정', '이유', '수정 payload·시각']),
       e('중복 publish 방지', 'if outbox.exists(request_id):\n    return outbox.result(request_id)\nexternal_id = publish(approved_payload)\noutbox.save(request_id, external_id)\nreturn external_id', ['먼저 조회', '승인 payload만', '외부 ID 저장', 'resume에도 한 번']),
     ],
     labs: [
-      l('실습 1 · State 필드 설계', '08 MIN', ['입력·중간·오류·승인 필드를 나눈다.', '각 node가 읽을 필드를 표시한다.', 'terminal status를 세 개 정한다.', '불필요한 chat history를 제거한다.'], 'State schema 1개'),
-      l('실습 2 · Node와 edge 카드', '10 MIN', ['transcribe부터 publish까지 카드를 놓는다.', '각 node 한 책임을 쓴다.', '성공 edge를 연결한다.', '오류·review edge를 다른 색으로 연결한다.'], 'graph sketch'),
-      l('실습 3 · Retry 정책표', '08 MIN', ['오류 네 종류를 적는다.', '각 오류의 retry 여부를 정한다.', 'max attempts와 backoff를 적는다.', 'exhausted 후 상태를 정한다.'], 'retry matrix'),
-      l('실습 4 · Reviewer 역할극', '12 MIN', ['A는 Agent, B는 Reviewer가 된다.', '초안과 evidence를 비교한다.', 'approve/edit/reject와 이유를 남긴다.', '역할을 바꾸고 낮은 confidence 사례를 반복한다.'], 'review event 2건'),
-      l('실습 5 · Idempotency 질문', '08 MIN', ['interrupt 이전 side effect를 찾는다.', '재실행 시 중복되는 행동을 찾는다.', 'request_id 저장 위치를 정한다.', 'side effect를 interrupt 뒤로 옮길지 결정한다.'], '중복 방지 설계 1개'),
+      l('소프트웨어 실습 1 · LangChain LCEL 실행', '07 MIN', ['7차시 notebook을 연다.', 'Prompt→Adapter→Parser→Validator 셀을 실행한다.', 'MeetingBrief 타입과 policy check를 확인한다.', 'Prompt 한 줄을 바꾸고 다시 실행한다.'], 'typed JSON + 네 policy check'),
+      l('소프트웨어 실습 2 · StateGraph 조립', '07 MIN', ['build_graph 코드를 연다.', 'validate·review·finalize node를 확인한다.', '조건 edge와 END를 연결한다.', 'InMemorySaver로 graph를 compile한다.'], '실행 가능한 StateGraph'),
+      l('소프트웨어 실습 3 · interrupt와 같은 thread 재개', '08 MIN', ['최초 invoke를 실행한다.', '__interrupt__ payload를 출력한다.', '같은 thread_id로 Command(resume)를 실행한다.', 'READY_FOR_EXPORT state를 저장한다.'], 'interrupt payload + 승인 state'),
+      l('소프트웨어 실습 4 · 세 결정과 웹 결과 저장', '10 MIN', ['approve·edit·reject를 각각 실행한다.', 'READY·HOLD terminal state를 비교한다.', 'Vercel Demo에서 같은 결정을 눌러본다.', '내 결정이 담긴 JSON을 내려받는다.'], '상태 3개 + 결과 JSON'),
+      l('설계 워크숍 1 · Idempotency 위치 확인', '05 MIN', ['interrupt 이전 side effect를 찾는다.', '재실행 시 중복되는 행동을 찾는다.', 'request_id 저장 위치를 정한다.', 'side effect를 interrupt 뒤로 옮길지 결정한다.'], '중복 방지 설계 1개'),
     ],
     pitfalls: [
       f('실패 1 · State에 모든 것을 저장', ['거대한 message history', 'binary audio 포함', '개인정보 장기 보존', 'node coupling'], ['최소 structured state', '원본은 보호 저장소', 'reference ID', 'node별 계약']),
@@ -1218,11 +1235,11 @@ const MODULES = [
       e('Release gate', 'gate = (\n  schema_pass_rate >= 0.98\n  and evidence_rate >= 0.90\n  and false_publish == 0\n  and p95_latency_ms <= target\n)\nstatus = \"READY\" if gate else \"HOLD\"', ['품질', '안전', '지연시간', '보류 상태']),
     ],
     labs: [
-      l('실습 1 · Managed vs Local 선택표', '07 MIN', ['현재 조직의 회의 도구를 적는다.', '전사·요약 제공 여부를 적는다.', '계정·보존·권한 제약을 적는다.', 'local 최소 실습이 필요한 이유를 쓴다.'], 'Managed/Local 비교표'),
-      l('실습 2 · STT quality policy', '08 MIN', ['무음 기준을 정한다.', '반복 기준을 정한다.', '이름·날짜 오류를 정한다.', '사람 검토로 보내는 조건을 적는다.'], 'STT review rule'),
-      l('실습 3 · Trace에서 답할 질문', '08 MIN', ['가장 느린 node를 묻는다.', '가장 자주 실패한 오류를 묻는다.', '사람이 많이 수정한 필드를 묻는다.', '각 질문에 필요한 metadata를 적는다.'], '질문 3개 + 필드'),
-      l('실습 4 · Evaluation dataset 설계', '10 MIN', ['정상 회의 2건을 정한다.', '무음·모호한 날짜·근거 누락 사례를 추가한다.', 'reference JSON을 정한다.', 'schema·evidence evaluator를 연결한다.'], 'dataset 5건 설계'),
-      l('실습 5 · 전체 흐름을 한 장으로 연결하기', '10 MIN', ['STT부터 최종 저장까지 순서를 그립니다.', 'LangChain·LangGraph·LangSmith가 쓰이는 위치를 표시합니다.', '사람의 승인과 fallback 위치를 표시합니다.', '그림 아래에 전체 흐름을 세 문장으로 적습니다.'], '전체 흐름 1장 + 설명 3문장'),
+      l('Ideation 1 · Managed vs Local 선택', '05 MIN', ['현재 조직의 회의 도구를 적는다.', '전사·요약 제공 여부를 적는다.', '계정·보존·권한 제약을 적는다.', '직접 STT가 필요한 이유를 한 줄로 정한다.'], 'Managed/Local 선택 한 줄'),
+      l('소프트웨어 실습 1 · STT quality gate 실행', '08 MIN', ['meeting_demo.py를 fixture mode로 실행한다.', 'segment의 quality_flags를 확인한다.', 'READY/HOLD와 fallback_reason을 확인한다.', 'transcript.json을 저장한다.'], 'quality gate JSON'),
+      l('소프트웨어 실습 2 · 로컬 trace 생성', '08 MIN', ['workflow_service를 approve로 실행한다.', 'trace.json의 세 span을 연다.', 'latency·status·metadata를 확인한다.', 'reject로 다시 실행해 차이를 본다.'], 'approve/reject trace 2개'),
+      l('소프트웨어 실습 3 · Release Gate 테스트', '09 MIN', ['pytest에서 READY test를 실행한다.', 'reject가 HOLD인지 확인한다.', 'evidence_rate와 자동 메일 금지를 확인한다.', 'LangSmith 연결 전 local fallback 상태를 저장한다.'], 'READY/HOLD test + trace'),
+      l('설계 워크숍 1 · 전체 흐름 연결', '08 MIN', ['STT부터 최종 저장까지 순서를 그립니다.', 'LangChain·LangGraph·LangSmith 위치를 표시합니다.', '사람 승인과 fallback 위치를 표시합니다.', '그림 아래에 전체 흐름을 세 문장으로 적습니다.'], '전체 흐름 1장 + 설명 3문장'),
     ],
     pitfalls: [
       f('실패 1 · STT 결과를 정답으로 간주', ['이름·숫자 오류', '무음 반복', '화자 혼동', 'timestamp 유실'], ['quality flags', '원문 audio link', '사람 correction', 'segment evidence']),
@@ -1234,7 +1251,7 @@ const MODULES = [
       { title: '재직자 · 운영 dashboard 질문', leftTitle: '매일 볼 것', rightTitle: '배포 전 볼 것', left: ['failure rate', 'review queue', 'latency', 'cost·fallback'], right: ['dataset score', 'schema·evidence', 'false publish', 'rollback 기준'] },
       { title: '구직자 · 포트폴리오 README 정리', leftTitle: 'README에 쓸 내용', rightTitle: '함께 넣을 증거', left: ['풀려는 문제', '실행 방법', '실패와 복구', '한계와 다음 단계'], right: ['audio/text', 'approved output', 'failure recovery', 'repo·tests·eval'] },
     ],
-    checkpoint: { title: '17:30–18:00 · Q&A와 Exit Ticket', prompt: '오늘 막힌 부분을 먼저 복구하고, 마지막에는 내 Workflow를 READY 또는 HOLD로 판단합니다.', questions: ['내 흐름에서 자동 실행과 사람 승인의 경계는 어디인가?', '실패 뒤 다시 시작할 checkpoint와 fallback은 무엇인가?', '어떤 trace·dataset 신호가 나오면 다음 배포를 HOLD할 것인가?'], note: '17:30부터 30분을 Q&A·실습 복구·Exit Ticket에 사용한다. 여기서만 Day 1 전체 구조를 짧게 회수한다. Day2–5는 일반 점심 12:00–13:00으로 운영한다고 공지한다.' },
+    checkpoint: { title: '17:30–18:00 · Q&A와 Exit Ticket', prompt: '오늘 막힌 부분을 먼저 복구하고, 마지막에는 내 Workflow를 READY 또는 HOLD로 판단합니다.', questions: ['내 흐름에서 자동 실행과 사람 승인의 경계는 어디인가?', '실패 뒤 다시 시작할 checkpoint와 fallback은 무엇인가?', '어떤 trace·dataset 신호가 나오면 다음 배포를 HOLD할 것인가?'], note: '17:30부터 30분을 Q&A·실행 오류 복구·Exit Ticket에 사용한다. 여기서만 Day 1 전체 구조를 짧게 회수한다. Day2–5는 일반 점심 12:00–13:00으로 운영한다고 공지한다.' },
   },
 ];
 
@@ -1272,7 +1289,7 @@ const MODULE_LENSES = [
     claimLabel: "실행 전에 고정할 경계",
     tutorialTitle: "‘실행 허가’가 생기는 화면을 순서대로 봅니다",
     tutorialLead: "API 형식 → 인증 경계 → test 규칙 → 실제 통과 화면",
-    tutorialRoutes: [["요청·응답 형식 확인", "base URL·payload"], ["인증을 코드 밖으로 분리", "환경 변수·최소 권한"], ["실패를 test 함수로 고정", "assert·error code"], ["정상·예외를 한 번에 실행", "10 passed"]],
+    tutorialRoutes: [["요청·응답 형식 확인", "base URL·payload"], ["인증을 코드 밖으로 분리", "환경 변수·최소 권한"], ["실패를 test 함수로 고정", "assert·error code"], ["정상·예외를 한 번에 실행", "19 passed"]],
     fieldNotes: [
       "Tool schema가 친절할수록 모델은 똑똑해 보이고, allowlist가 단단할수록 제품은 안전해진다.",
       "오류 메시지도 제품 계약이다. 복구할 수 없는 오류는 관측되지 않은 오류다.",
@@ -1340,8 +1357,8 @@ const MODULE_LENSES = [
     ],
   },
   {
-    title: "무료 실습의 핵심은 교체 가능한 구조",
-    insightLabel: "무료 실습의 진짜 조건",
+    title: "무료 실행의 핵심은 교체 가능한 구조",
+    insightLabel: "무료 소프트웨어 실습의 조건",
     thesis: "Ollama가 없어도 fixture로 계속되고, provider가 바뀌어도 나머지 코드는 남아야 한다.",
     question: "특정 모델과 프로그램이 사라져도 이 실습의 핵심 계약은 그대로 실행되는가?",
     glossaryTitle: "모델을 교체하기 위한 네 가지 층",
@@ -1372,15 +1389,15 @@ const MODULE_LENSES = [
     mapTitle: "사람 검토를 버튼이 아니라 State 전이로 만듭니다",
     mapSteps: [["상태", "다음 node에 필요한 필드만 선언"], ["분기", "edge에 retry·review·failed 조건을 둠"], ["중단", "interrupt payload로 근거와 초안을 전달"], ["결정", "approve·edit·reject event를 저장"], ["재개", "같은 thread에서 idempotent하게 이어감"]],
     claimLabel: "Graph에 남겨야 할 상태",
-    tutorialTitle: "LangChain의 조합과 LangGraph의 중단 지점을 구분해서 봅니다",
-    tutorialLead: "조합 계층 → stateful orchestration → interrupt → persistence",
+    tutorialTitle: "공식 문서를 구경하지 않고, 코드 실행과 웹 결과를 연결합니다",
+    tutorialLead: "LCEL 실행 → StateGraph 조립 → interrupt·resume → Vercel 결과 저장",
     toolComparison: [
       ["LangChain", "모델·Prompt·Tool 조합", "개별 AI 구성요소를 공통 인터페이스로 연결", "단순 호출은 SDK만으로도 가능"],
       ["LangGraph", "상태 기반 Workflow", "분기·중단·승인·재개를 State로 명시", "짧은 직선 흐름에는 과할 수 있음"],
       ["LangSmith", "관측·평가", "trace·dataset·experiment를 같은 실행 계보로 확인", "Local JSONL은 무료지만 UI·협업이 약함"],
       ["Pydantic·pytest", "계약·결정론적 검사", "Schema와 실패 조건을 빠르고 재현 가능하게 검증", "의미 품질 평가는 별도 rubric 필요"],
     ],
-    tutorialRoutes: [["model·tool 조합 계층 확인", "LangChain 역할"], ["State와 route를 graph로 표현", "node·edge"], ["사람 입력 전에 안전하게 중단", "interrupt payload"], ["같은 thread에서 이어가기", "checkpoint·resume"]],
+    tutorialRoutes: [["LCEL 네 단계가 실제로 통과", "typed output·policy"], ["사람 결정 직전에 실행이 멈춤", "interrupt payload"], ["거절하면 발행 없이 HOLD", "REJECTED·local only"], ["전체 정상·실패 경로를 test", "Python 3.12·19 passed"]],
     fieldNotes: [
       "State에 모든 것을 넣는 순간 Graph는 기억장치가 아니라 쓰레기통이 된다.",
       "Human Approval은 버튼이 아니라 근거·결정·책임을 남기는 event다.",
@@ -1420,7 +1437,7 @@ const PART_GUIDES = [
     partTime: "09:00-09:50",
     partSlides: "1-29",
     partTopic: "Agent와 문제 정의",
-    partFlow: "09:00-09:12 강의 · 09:12-09:20 강사 시연 · 09:20-09:42 개인 실습 · 09:42-09:50 확인",
+    partFlow: "09:00-09:12 강의 · 09:12-09:20 강사 시연 · 09:20-09:42 개인 Ideation · 09:42-09:50 확인",
     partLearn: "Chatbot과 Agent의 차이 · 자동화 범위",
     partUnderstand: "모델보다 먼저 입력·결과·금지 행동을 정한다",
     partOutput: "자동화할 일 한 문장",
@@ -1430,7 +1447,7 @@ const PART_GUIDES = [
     partTime: "09:50-10:40",
     partSlides: "30-64",
     partTopic: "Tool Calling과 실행 권한",
-    partFlow: "09:50-10:05 강의 · 10:05-10:15 코드 시연 · 10:15-10:35 개인 실습 · 10:35-10:40 확인",
+    partFlow: "09:50-10:05 강의 · 10:05-10:15 코드 시연 · 10:15-10:35 소프트웨어 실습 · 10:35-10:40 확인",
     partLearn: "Tool schema · 허용 목록 · 실행 전 검사",
     partUnderstand: "모델의 제안과 실제 실행 권한은 다르다",
     partOutput: "허용할 도구와 막을 행동",
@@ -1440,7 +1457,7 @@ const PART_GUIDES = [
     partTime: "10:40-11:30",
     partSlides: "65-99",
     partTopic: "한국어 데이터와 PBL 사례",
-    partFlow: "10:40-10:54 강의 · 10:54-11:04 Prompt·데이터 시연 · 11:04-11:25 개인 실습 · 11:25-11:30 저장",
+    partFlow: "10:40-10:54 강의 · 10:54-11:04 Prompt·데이터 시연 · 11:04-11:25 자료 수집·데이터 확인 · 11:25-11:30 저장",
     partLearn: "회의 데이터 · 담당자·기한·원문 근거",
     partUnderstand: "자연스러운 요약보다 근거가 남아야 한다",
     partOutput: "입력·결과·근거 예시",
@@ -1450,7 +1467,7 @@ const PART_GUIDES = [
     partTime: "12:00-12:50",
     partSlides: "100-134",
     partTopic: "Python·VS Code·Git 환경",
-    partFlow: "12:00-12:10 강의 · 12:10-12:25 강사 세팅 시연 · 12:25-12:45 개인 실습 · 12:45-12:50 확인",
+    partFlow: "12:00-12:10 강의 · 12:10-12:25 강사 세팅 시연 · 12:25-12:45 개발환경 세팅 실습 · 12:45-12:50 확인",
     partLearn: "Python 경로 · Interpreter · Git branch·PR · Codex review",
     partUnderstand: "설치보다 같은 명령으로 다시 실행되는 것이 중요하다",
     partOutput: "버전·경로·Draft PR 또는 local diff",
@@ -1460,7 +1477,7 @@ const PART_GUIDES = [
     partTime: "12:50-13:40",
     partSlides: "135-168",
     partTopic: "안전한 Agent 실행 루프",
-    partFlow: "12:50-13:00 강의 · 13:00-13:10 코드 시연 · 13:10-13:35 개인 실습 · 13:35-13:40 확인",
+    partFlow: "12:50-13:00 강의 · 13:00-13:10 코드 시연 · 13:10-13:35 소프트웨어 실습 · 13:35-13:40 확인",
     partLearn: "Planner · Validator · Executor · Test",
     partUnderstand: "LLM 전에 정상과 실패를 규칙으로 검증한다",
     partOutput: "정상·실패 test 결과",
@@ -1470,7 +1487,7 @@ const PART_GUIDES = [
     partTime: "15:00-15:40",
     partSlides: "169-202",
     partTopic: "무료·로컬 LLM과 Adapter",
-    partFlow: "15:00-15:08 강의 · 15:08-15:18 연결 시연 · 15:18-15:35 개인 실습 · 15:35-15:40 확인",
+    partFlow: "15:00-15:08 강의 · 15:08-15:18 연결 시연 · 15:18-15:35 소프트웨어 실습 · 15:35-15:40 확인",
     partLearn: "Ollama · LM Studio · Fixture Provider",
     partUnderstand: "모델이 없어도 같은 구조로 실습을 계속한다",
     partOutput: "성공 또는 예상된 실패 결과",
@@ -1479,9 +1496,9 @@ const PART_GUIDES = [
     partNumber: "1일차 7차시",
     partTime: "15:40-16:20",
     partSlides: "203-236",
-    partTopic: "LangGraph와 사람 승인",
-    partFlow: "15:40-15:48 강의 · 15:48-16:00 Graph 시연 · 16:00-16:15 개인 실습 · 16:15-16:20 확인",
-    partLearn: "State · Node · Checkpoint · 승인·수정·거절",
+    partTopic: "LangChain·LangGraph와 사람 승인",
+    partFlow: "15:40-15:48 개념 · 15:48-15:55 LCEL 시연 · 15:55-16:18 소프트웨어 실습 · 16:18-16:20 확인",
+    partLearn: "LCEL · State · Node · Checkpoint · 승인·수정·거절",
     partUnderstand: "중요한 행동 전에는 멈추고 사람이 결정한다",
     partOutput: "승인·수정·거절 상태",
   },
@@ -1490,7 +1507,7 @@ const PART_GUIDES = [
     partTime: "16:20-17:00",
     partSlides: "237-269",
     partTopic: "STT와 LangSmith",
-    partFlow: "16:20-16:28 강의 · 16:28-16:38 Trace 시연 · 16:38-16:53 개인 실습 · 16:53-17:00 판단",
+    partFlow: "16:20-16:28 강의 · 16:28-16:36 실행 시연 · 16:36-16:53 소프트웨어 실습 · 16:53-17:00 판단",
     partLearn: "STT 품질 · Trace · Dataset · 평가",
     partUnderstand: "실행 기록으로 READY와 HOLD를 결정한다",
     partOutput: "STT 품질 기준 + READY/HOLD 결정",

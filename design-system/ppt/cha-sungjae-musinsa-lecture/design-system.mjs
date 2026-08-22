@@ -19,9 +19,9 @@ export const MUSINSA_PPT = Object.freeze({
   fonts: Object.freeze({
     // Use one installed Gothic family so PDF export does not split Korean
     // glyphs across unavailable substitute fonts.
-    korean: "NanumGothic",
-    english: "NanumGothic",
-    mono: "NanumGothic"
+    korean: "Nanum Gothic",
+    english: "Nanum Gothic",
+    mono: "Nanum Gothic"
   }),
   type: Object.freeze({
     deckTitle: 52,
