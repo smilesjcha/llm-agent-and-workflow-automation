@@ -1,0 +1,3 @@
+# Optional instructor-only path for the live local STT demo.
+# Day 1 learners can use the checked-in transcript fixture without this file.
+faster-whisper>=1.1,<2

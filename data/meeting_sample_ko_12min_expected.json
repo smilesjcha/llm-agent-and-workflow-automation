@@ -1,0 +1,87 @@
+{
+  "meeting_id": "synthetic-kwork-001",
+  "title": "고객 문의 자동화 PoC 범위·안전·평가 기준 회의",
+  "meeting_date": "2026-08-23",
+  "duration_hint": "합성 WAV 약 16분 57초 · transcript 타임라인 약 17분 30초",
+  "participants": [
+    {"name": "민지", "role": "Product Manager"},
+    {"name": "서연", "role": "CS Operations"},
+    {"name": "준호", "role": "Backend Engineer"},
+    {"name": "현우", "role": "AI Engineer"}
+  ],
+  "summary": "상담원용 고객 문의 Copilot의 1차 범위를 합성 문의와 공개 FAQ 기반의 답변 초안 생성으로 제한하고, 외부 발행 전 사람 승인과 근거 연결을 필수화했다.",
+  "decisions": [
+    {
+      "decision": "1차 사용자는 고객이 아니라 상담원이며 결과는 답변 초안이다.",
+      "evidence_ids": ["s05", "s07"]
+    },
+    {
+      "decision": "고객정보 조회·환불/보상 결정·주문 상태 변경·외부 발행은 자동화 범위에서 제외한다.",
+      "evidence_ids": ["s08", "s42"]
+    },
+    {
+      "decision": "모호한 담당자·기한·정책은 추론하지 않고 needs_review로 보낸다.",
+      "evidence_ids": ["s11", "s15", "s31", "s32"]
+    },
+    {
+      "decision": "CI의 결정론적 검사와 LangSmith Golden Dataset 평가를 분리한다.",
+      "evidence_ids": ["s25"]
+    },
+    {
+      "decision": "Codex 리뷰는 참고 의견이며 CI와 사람 검토 없이 merge하지 않는다.",
+      "evidence_ids": ["s33", "s43"]
+    }
+  ],
+  "action_items": [
+    {
+      "task": "합성 문의 50건·FAQ 30건과 Dataset Card 초안 작성",
+      "owner": "서연",
+      "due_date": "2026-08-27T17:00:00+09:00",
+      "evidence_ids": ["s27"],
+      "needs_review": false
+    },
+    {
+      "task": "Tool schema·path guard·정상 1건·실패 4건 unit test 작성",
+      "owner": "준호",
+      "due_date": "2026-08-28T12:00:00+09:00",
+      "evidence_ids": ["s28"],
+      "needs_review": false
+    },
+    {
+      "task": "Golden JSON 5건과 evidence evaluator 작성",
+      "owner": "현우",
+      "due_date": "2026-08-28T16:00:00+09:00",
+      "evidence_ids": ["s29"],
+      "needs_review": false
+    },
+    {
+      "task": "승인 정책 초안 작성",
+      "owner": "민지",
+      "due_date": "2026-08-29T14:00:00+09:00",
+      "evidence_ids": ["s30", "s32"],
+      "needs_review": false,
+      "correction_note": "s30의 오전 일정을 s32에서 오후 2시로 정정"
+    },
+    {
+      "task": "상담원 화면 문구 최종 확정",
+      "owner": "민지",
+      "due_date": null,
+      "evidence_ids": ["s30", "s31", "s32"],
+      "needs_review": true,
+      "review_reason": "RELATIVE_DATE"
+    }
+  ],
+  "release_gate": {
+    "schema_pass_rate_min": 0.98,
+    "evidence_rate_min": 0.90,
+    "false_publish_max": 0,
+    "human_edit_rate": "관찰 지표",
+    "hold_if": ["근거 누락", "외부 발행 위험", "금지 정책 위반"]
+  },
+  "policy": {
+    "automatic_email": false,
+    "automatic_publish": false,
+    "requires_human_approval": true,
+    "pii_allowed": false
+  }
+}
