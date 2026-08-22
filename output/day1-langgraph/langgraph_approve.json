@@ -1,0 +1,121 @@
+{
+  "status": "READY_FOR_EXPORT",
+  "framework": "LangGraph",
+  "request_id": "meeting-approve-001",
+  "thread_id_reused": true,
+  "interrupted": true,
+  "interrupt_payload": {
+    "question": "회의 결과를 승인·수정·거절하시겠습니까?",
+    "request_id": "meeting-approve-001",
+    "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+    "action_items": [
+      {
+        "task": "공개 FAQ 30건 비식별 샘플 정리",
+        "owner": "서연",
+        "due_date": "2026-08-27",
+        "evidence_ids": [
+          "s12",
+          "s18"
+        ]
+      },
+      {
+        "task": "응답 JSON Schema와 실패 테스트 작성",
+        "owner": "준호",
+        "due_date": "2026-08-28",
+        "evidence_ids": [
+          "s27",
+          "s31"
+        ]
+      }
+    ],
+    "risk_flags": [
+      "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+    ],
+    "options": [
+      "approve",
+      "edit",
+      "reject"
+    ],
+    "automatic_email": false
+  },
+  "human_input": {
+    "decision": "approve",
+    "reviewer": "day1-learner",
+    "reason": "실습에서 선택한 결정"
+  },
+  "final_state": {
+    "request_id": "meeting-approve-001",
+    "draft": {
+      "title": "고객 문의 자동화 PoC 범위 회의",
+      "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+      "decisions": [
+        "배송 지연과 반품 절차 안내만 자동화한다.",
+        "개인정보·근거 부족·낮은 신뢰도는 상담원 검토 큐로 보낸다."
+      ],
+      "action_items": [
+        {
+          "task": "공개 FAQ 30건 비식별 샘플 정리",
+          "owner": "서연",
+          "due_date": "2026-08-27",
+          "evidence_ids": [
+            "s12",
+            "s18"
+          ]
+        },
+        {
+          "task": "응답 JSON Schema와 실패 테스트 작성",
+          "owner": "준호",
+          "due_date": "2026-08-28",
+          "evidence_ids": [
+            "s27",
+            "s31"
+          ]
+        }
+      ],
+      "risk_flags": [
+        "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+      ],
+      "requires_human_approval": true,
+      "automatic_email": false
+    },
+    "validation_errors": [],
+    "status": "READY_FOR_EXPORT",
+    "review": {
+      "decision": "approve",
+      "reviewer": "day1-learner",
+      "reason": "실습에서 선택한 결정"
+    },
+    "audit_events": [
+      {
+        "node": "validate",
+        "status": "REVIEW_REQUIRED",
+        "errors": []
+      },
+      {
+        "node": "review",
+        "decision": "approve"
+      },
+      {
+        "node": "finalize",
+        "side_effect": "local_json_only",
+        "automatic_email": false
+      }
+    ],
+    "export_ready": true,
+    "automatic_email": false
+  },
+  "evaluation": {
+    "decision": "READY",
+    "checks": {
+      "schema_valid": true,
+      "evidence_rate_at_least_0_90": true,
+      "human_decision_recorded": true,
+      "automatic_email_blocked": true,
+      "approved_for_local_export": true
+    },
+    "metrics": {
+      "evidence_rate": 1.0,
+      "action_item_count": 2
+    }
+  }
+}
