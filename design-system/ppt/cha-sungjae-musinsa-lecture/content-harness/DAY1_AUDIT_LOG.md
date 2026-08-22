@@ -184,3 +184,16 @@
 - PPT: 270장, overflow 0, exact/near duplicate headline 0, repeated narrative line 0.
 - PDF: 270쪽 전체 렌더와 주요 페이지 확대 검수 완료.
 - 강사용 문서에 당일 15분 사전 점검 명령, `tiny` smoke test, `small` 사전 다운로드, READY/HOLD 확인 기준을 반영했다.
+
+## 2026-08-23 · PDF 글꼴 호환성 수정
+
+- PPT 기본 글꼴이 `Apple SD Gothic Neo`, 코드 글꼴이 `Menlo`여서 LibreOffice PDF 변환 시 여러 대체 글꼴로 분리되는 문제를 확인했다.
+- 한글·영문·코드의 기본 글꼴을 로컬과 Fontconfig에서 모두 확인되는 `NanumGothic`으로 통일했다.
+- PPT 디자인 시스템과 재생성 Builder가 같은 글꼴 토큰을 사용하도록 고정했다.
+- PDF 변환 후 `pdffonts`에서 실제 포함 글꼴을 확인하고, 270쪽 전체를 다시 렌더해 한글 글리프·줄바꿈·표·코드 영역을 검수한다.
+- 일정·차시 지도·용어표·프로세스·실습 안내·판단 질문·용어 정의·화면 순서에서 마지막 항목에만 적용되던 파란색 조건을 제거했다.
+- 목록 순서만으로 색상을 달리하지 않고 같은 위계의 헤더·번호·구분선은 검정색으로 통일했다.
+- 최종 PDF는 별도 레이아웃 수정 없이 최종 PPTX를 LibreOffice의 Impress PDF Export로 그대로 인쇄·내보냈다.
+- 기존 LibreOffice 프로세스를 재사용하면 `NanumBrush`·`BMDoHyeon` 같은 잘못된 대체 글꼴이 섞이는 것을 확인해 해당 PDF를 폐기했다.
+- 새 사용자 프로필로 다시 변환한 최종 PDF에는 위 잘못된 대체 글꼴이 없으며, 270쪽 전체 PNG와 핵심 12쪽을 확대 검수했다.
+- 프로세스·용어·화면 순서·Q&A 등 마지막 항목은 검정색으로 통일됐고, 오버플로는 0건이다.

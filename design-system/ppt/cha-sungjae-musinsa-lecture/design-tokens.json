@@ -26,10 +26,10 @@
     "blueSoft": "#E0F0FE"
   },
   "typography": {
-    "koreanPreferred": "Pretendard",
-    "koreanRuntimeFallback": "Apple SD Gothic Neo",
-    "englishPreferred": "Helvetica Neue",
-    "monospace": "Menlo",
+    "koreanPreferred": "NanumGothic",
+    "koreanRuntimeFallback": "AppleGothic",
+    "englishPreferred": "NanumGothic",
+    "monospace": "NanumGothic",
     "deckTitlePt": 52,
     "sectionTitlePt": 46,
     "slideTitlePt": 32,

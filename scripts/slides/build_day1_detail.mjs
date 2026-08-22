@@ -255,9 +255,9 @@ function dayTimetableSlide(mod) {
   rows.forEach((row, index) => {
     const y = 206 + index * 34;
     const kind = row[5];
-    const fill = kind === "lunch" || kind === "qa" ? C.blueSoft : kind === "break" ? C.gray100 : index % 2 === 1 ? C.gray100 : C.white;
+    const fill = kind === "lunch" ? C.blueSoft : kind === "break" ? C.gray100 : index % 2 === 1 ? C.gray100 : C.white;
     shape(slide, "rect", { left: 68, top: y, width: 1108, height: 34 }, fill);
-    if (kind === "part" || kind === "qa") shape(slide, "rect", { left: 68, top: y, width: 5, height: 34 }, kind === "qa" ? C.navy : C.blue);
+    if (kind === "part" || kind === "qa") shape(slide, "rect", { left: 68, top: y, width: 5, height: 34 }, kind === "qa" ? C.black : C.blue);
     const values = row.slice(0, 5);
     columns.forEach((column, columnIndex) => {
       const color = columnIndex === 0 && kind === "part" ? C.blue : kind === "lunch" ? C.navy : C.ink;
@@ -292,10 +292,10 @@ function openingScheduleSlide(mod) {
   ];
   blocks.forEach((block, i) => {
     const y = 318 + i * 58;
-    const fill = i === 2 ? C.navy : i === 4 ? C.blue : C.black;
+    const fill = i === 2 ? C.navy : C.black;
     shape(slide, "rect", { left: 68, top: y, width: 162, height: 38 }, fill);
     textBox(slide, block[0], { left: 68, top: y + 5, width: 162, height: 28 }, { size: 14, bold: true, color: C.white, align: "center", valign: "middle" });
-    textBox(slide, block[1], { left: 260, top: y + 3, width: 142, height: 32 }, { size: 16, bold: true, color: i >= 2 ? C.blue : C.ink, valign: "middle" });
+    textBox(slide, block[1], { left: 260, top: y + 3, width: 142, height: 32 }, { size: 16, bold: true, color: C.ink, valign: "middle" });
     textBox(slide, block[2], { left: 410, top: y + 3, width: 500, height: 32 }, { size: 16, bold: true, color: C.ink, valign: "middle" });
     textBox(slide, block[3], { left: 930, top: y + 3, width: 246, height: 32 }, { size: 14, color: C.muted, align: "right", valign: "middle" });
     shape(slide, "line", { left: 260, top: y + 45, width: 916, height: 0 }, "none", C.faint, 1);
@@ -314,7 +314,7 @@ function moduleMap(mod, index) {
   const lanes = mod.mapSteps;
   lanes.forEach((lane, i) => {
     const y = 248 + i * 72;
-    shape(slide, "rect", { left: 78, top: y, width: 118, height: 48 }, i === 4 ? C.blue : C.black);
+    shape(slide, "rect", { left: 78, top: y, width: 118, height: 48 }, C.black);
     textBox(slide, lane[0], { left: 78, top: y + 7, width: 118, height: 34 }, { size: 18, bold: true, color: C.white, align: "center", valign: "middle" });
     textBox(slide, lane[1], { left: 228, top: y + 6, width: 920, height: 40 }, { size: 23, color: C.ink, valign: "middle" });
   });
@@ -386,7 +386,7 @@ function glossaryTableSlide(mod, items) {
   items.forEach((item, index) => {
     const y = 210 + index * 92;
     if (index % 2 === 1) shape(slide, "rect", { left: 68, top: y, width: 1108, height: 92 }, C.gray100);
-    textBox(slide, `${item.term}\n${item.english}`, { left: 82, top: y + 12, width: 192, height: 66 }, { size: 17, bold: true, color: index === 3 ? C.blue : C.ink, valign: "middle", lineSpacing: 1.15 });
+    textBox(slide, `${item.term}\n${item.english}`, { left: 82, top: y + 12, width: 192, height: 66 }, { size: 17, bold: true, color: C.ink, valign: "middle", lineSpacing: 1.15 });
     textBox(slide, plainTone(item.meaning), { left: 302, top: y + 12, width: 442, height: 66 }, { size: 17, color: C.ink, valign: "middle", lineSpacing: 1.13 });
     textBox(slide, plainTone(item.example), { left: 772, top: y + 12, width: 390, height: 66 }, { size: 16, bold: true, color: C.ink, valign: "middle", lineSpacing: 1.13 });
     shape(slide, "line", { left: 68, top: y + 92, width: 1108, height: 0 }, "none", C.faint, 1);
@@ -470,7 +470,7 @@ function processSlide(mod, item) {
   const w = (1140 - gap * (n - 1)) / n;
   item.steps.forEach((step, i) => {
     const x = left + i * (w + gap);
-    shape(slide, "line", { left: x, top, width: w, height: 0 }, "none", i === n - 1 ? C.blue : C.black, 3);
+    shape(slide, "line", { left: x, top, width: w, height: 0 }, "none", C.black, 3);
     textBox(slide, String(i + 1).padStart(2, "0"), { left: x, top: top + 22, width: 54, height: 28 }, { size: 14, bold: true, color: C.blue });
     textBox(slide, step[0], { left: x, top: top + 72, width: w - 18, height: 52 }, { size: 22, bold: true, color: C.ink, valign: "middle" });
     textBox(slide, step[1], { left: x, top: top + 136, width: w - 18, height: 70 }, { size: 17, color: C.muted, lineSpacing: 1.16 });
@@ -487,7 +487,7 @@ function openingGuidanceSlide(mod, item) {
     textBox(slide, item.lead, { left: 68, top: 154, width: 1108, height: 46 }, { size: 22, bold: true, color: C.muted });
     item.steps.forEach((step, index) => {
       const y = 218 + index * 88;
-      shape(slide, "rect", { left: 68, top: y, width: 64, height: 64 }, index === item.steps.length - 1 ? C.blue : C.black);
+      shape(slide, "rect", { left: 68, top: y, width: 64, height: 64 }, C.black);
       textBox(slide, String(index + 1), { left: 68, top: y, width: 64, height: 64 }, { size: 24, bold: true, color: C.white, align: "center", valign: "middle" });
       textBox(slide, step[0], { left: 166, top: y + 3, width: 310, height: 58 }, { size: 24, bold: true, color: C.ink, valign: "middle" });
       textBox(slide, step[1], { left: 500, top: y + 3, width: 650, height: 58 }, { size: 19, color: C.muted, valign: "middle", lineSpacing: 1.15 });
@@ -520,7 +520,7 @@ function openingGuidanceSlide(mod, item) {
     item.steps.forEach((row, index) => {
       const y = 256 + index * 76;
       if (index % 2 === 1) shape(slide, "rect", { left: 68, top: y, width: 1108, height: 76 }, C.gray100);
-      textBox(slide, row[0], { left: 82, top: y + 10, width: 222, height: 56 }, { size: 19, bold: true, color: index === item.steps.length - 1 ? C.blue : C.ink, valign: "middle" });
+      textBox(slide, row[0], { left: 82, top: y + 10, width: 222, height: 56 }, { size: 19, bold: true, color: C.ink, valign: "middle" });
       textBox(slide, row[1], { left: 332, top: y + 10, width: 472, height: 56 }, { size: 18, color: C.ink, valign: "middle" });
       textBox(slide, row[2], { left: 832, top: y + 10, width: 330, height: 56 }, { size: 17, bold: true, color: C.muted, valign: "middle" });
       shape(slide, "line", { left: 68, top: y + 76, width: 1108, height: 0 }, "none", C.faint, 1);
@@ -531,7 +531,7 @@ function openingGuidanceSlide(mod, item) {
     textBox(slide, "완료 체크", { left: 68, top: 218, width: 440, height: 42 }, { size: 24, bold: true, color: C.ink });
     item.steps.forEach((step, index) => {
       const y = 278 + index * 68;
-      shape(slide, "rect", { left: 72, top: y + 5, width: 34, height: 34 }, index === item.steps.length - 1 ? C.blue : C.black);
+      shape(slide, "rect", { left: 72, top: y + 5, width: 34, height: 34 }, C.black);
       textBox(slide, "✓", { left: 72, top: y + 4, width: 34, height: 34 }, { size: 20, bold: true, color: C.white, align: "center", valign: "middle" });
       textBox(slide, step[0], { left: 128, top: y, width: 410, height: 46 }, { size: 20, bold: true, color: C.ink, valign: "middle" });
     });
@@ -608,8 +608,7 @@ function checkpointSlide(mod, item) {
   if (isFinalQa) addComponentIcon(slide, "circle-question-mark", { left: 1094, top: 70, width: 84, height: 84 }, "질문과 답변 아이콘");
   textBox(slide, item.prompt ?? "처음 보는 상황입니다. 실행·차단·사람 검토 중 하나를 고르고 근거를 말해보세요.", { left: 72, top: 158, width: isFinalQa ? 930 : 1080, height: 58 }, { size: 22, color: C.muted });
   item.questions.forEach((q, i) => {
-    const colors = [C.black, C.navy, C.blue];
-    shape(slide, "rect", { left: 72, top: 236 + i * 112, width: 72, height: 72 }, colors[i]);
+    shape(slide, "rect", { left: 72, top: 236 + i * 112, width: 72, height: 72 }, C.black);
     textBox(slide, String(i + 1), { left: 72, top: 236 + i * 112, width: 72, height: 72 }, { size: 27, bold: true, color: C.white, align: "center", valign: "middle" });
     textBox(slide, q, { left: 176, top: 240 + i * 112, width: 950, height: 66 }, { size: 26, bold: true, color: C.ink, valign: "middle" });
   });
@@ -626,10 +625,10 @@ function definitionSlide(mod, item, index, total) {
   ];
   rows.forEach((row, i) => {
     const y = 178 + i * 142;
-    textBox(slide, `0${i + 1}`, { left: 68, top: y + 7, width: 42, height: 32 }, { size: 14, bold: true, color: i === 2 ? C.blue : C.black });
-    textBox(slide, row[0], { left: 126, top: y, width: 190, height: 44 }, { size: 18, bold: true, color: i === 2 ? C.blue : C.muted, valign: "middle" });
+    textBox(slide, `0${i + 1}`, { left: 68, top: y + 7, width: 42, height: 32 }, { size: 14, bold: true, color: C.black });
+    textBox(slide, row[0], { left: 126, top: y, width: 190, height: 44 }, { size: 18, bold: true, color: C.muted, valign: "middle" });
     textBox(slide, row[1], { left: 330, top: y, width: 842, height: 88 }, { size: i === 0 ? 27 : 21, bold: i !== 1, color: C.ink, lineSpacing: 1.14, valign: "middle" });
-    shape(slide, "line", { left: 126, top: y + 108, width: 1046, height: 0 }, "none", i === 2 ? C.blue : C.faint, i === 2 ? 2 : 1);
+    shape(slide, "line", { left: 126, top: y + 108, width: 1046, height: 0 }, "none", C.faint, 1);
   });
   addNotes(slide, talkTrack(mod, `${item.term} 용어 풀이`, `영문 철자보다 한 줄 뜻과 수업 예시를 먼저 이해시킨다.`), item.sources ?? []);
 }
@@ -645,10 +644,10 @@ function tutorialMapSlide(mod) {
   mod.screenshots.forEach((item, index) => {
     const route = mod.tutorialRoutes?.[index] ?? [item.title, item.bullets.at(-1)];
     const y = 230 + index * 74;
-    textBox(slide, String(index + 1).padStart(2, "0"), { left: 64, top: y, width: 64, height: 44 }, { size: 17, bold: true, color: index === mod.screenshots.length - 1 ? C.blue : C.black, valign: "middle" });
+    textBox(slide, String(index + 1).padStart(2, "0"), { left: 64, top: y, width: 64, height: 44 }, { size: 17, bold: true, color: C.black, valign: "middle" });
     shape(slide, "line", { left: 140, top: y + 22, width: 72, height: 0 }, "none", C.gray300, 1);
     textBox(slide, route[0], { left: 240, top: y, width: 686, height: 44 }, { size: 22, bold: true, color: C.ink, valign: "middle" });
-    textBox(slide, route[1], { left: 940, top: y, width: 238, height: 44 }, { size: 15, bold: true, color: index === mod.screenshots.length - 1 ? C.blue : C.muted, align: "right", valign: "middle" });
+    textBox(slide, route[1], { left: 940, top: y, width: 238, height: 44 }, { size: 15, bold: true, color: C.muted, align: "right", valign: "middle" });
     shape(slide, "line", { left: 240, top: y + 56, width: 938, height: 0 }, "none", C.faint, 1);
   });
   addNotes(slide, talkTrack(mod, "단계별 화면 지도", "화면을 보기 전에 전체 경로와 마지막 성공 신호를 먼저 공유한다."), mod.screenshots.map((item) => item.source));

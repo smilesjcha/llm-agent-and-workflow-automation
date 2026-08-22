@@ -17,9 +17,11 @@ export const MUSINSA_PPT = Object.freeze({
     blueSoft: "#E0F0FE"
   }),
   fonts: Object.freeze({
-    korean: "Apple SD Gothic Neo",
-    english: "Helvetica Neue",
-    mono: "Menlo"
+    // Use one installed Gothic family so PDF export does not split Korean
+    // glyphs across unavailable substitute fonts.
+    korean: "NanumGothic",
+    english: "NanumGothic",
+    mono: "NanumGothic"
   }),
   type: Object.freeze({
     deckTitle: 52,

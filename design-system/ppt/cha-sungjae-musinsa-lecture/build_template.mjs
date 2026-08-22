@@ -103,7 +103,7 @@ function header(slide, index, kicker, title) {
   rows.forEach((row, index) => {
     const y = 182 + index * 94;
     shape(slide, "line", { left: 64, top: y + 72, width: 1152, height: 0 }, "none", C.gray200, 1);
-    text(slide, row[0], { left: 64, top: y, width: 180, height: 54 }, { size: 16, bold: true, color: index === 3 ? C.blue : C.black, valign: "middle" });
+    text(slide, row[0], { left: 64, top: y, width: 180, height: 54 }, { size: 16, bold: true, color: C.black, valign: "middle" });
     text(slide, row[1], { left: 260, top: y, width: 880, height: 54 }, { size: 25, bold: true, valign: "middle" });
   });
   notes(slide, "Layout 05 · Four editorial rows instead of cards.");
@@ -115,7 +115,7 @@ function header(slide, index, kicker, title) {
   const steps = [["01", "READ", "원문 확인"], ["02", "PLAN", "도구 선택"], ["03", "EXECUTE", "한 번 실행"], ["04", "VERIFY", "증거 확인"]];
   steps.forEach((step, index) => {
     const x = 64 + index * 288;
-    shape(slide, "line", { left: x, top: 238, width: 252, height: 0 }, "none", index === 3 ? C.blue : C.black, 3);
+    shape(slide, "line", { left: x, top: 238, width: 252, height: 0 }, "none", C.black, 3);
     text(slide, step[0], { left: x, top: 184, width: 60, height: 32 }, { size: 15, bold: true, color: C.blue });
     text(slide, step[1], { left: x, top: 274, width: 244, height: 42 }, { size: 26, bold: true });
     text(slide, step[2], { left: x, top: 334, width: 244, height: 74 }, { size: 19, color: C.gray700 });
@@ -130,10 +130,10 @@ function header(slide, index, kicker, title) {
   const steps = ["공식 다운로드 화면", "설치·권한 확인", "VS Code에서 Interpreter 선택", "명령 실행", "성공 문구 저장"];
   steps.forEach((step, index) => {
     const y = 176 + index * 78;
-    text(slide, String(index + 1).padStart(2, "0"), { left: 64, top: y, width: 72, height: 48 }, { size: 18, bold: true, color: index === 4 ? C.blue : C.black, valign: "middle" });
+    text(slide, String(index + 1).padStart(2, "0"), { left: 64, top: y, width: 72, height: 48 }, { size: 18, bold: true, color: C.black, valign: "middle" });
     shape(slide, "line", { left: 144, top: y + 24, width: 74, height: 0 }, "none", C.gray300, 1);
     text(slide, step, { left: 246, top: y, width: 620, height: 48 }, { size: 24, bold: true, valign: "middle" });
-    text(slide, index === 4 ? "완료 증거" : "다음 화면", { left: 1000, top: y, width: 164, height: 48 }, { size: 15, bold: true, color: index === 4 ? C.blue : C.gray500, align: "right", valign: "middle" });
+    text(slide, index === 4 ? "완료 증거" : "다음 화면", { left: 1000, top: y, width: 164, height: 48 }, { size: 15, bold: true, color: C.gray500, align: "right", valign: "middle" });
   });
   notes(slide, "Layout 07 · Tutorial roadmap before actual screenshots.");
 }
@@ -193,7 +193,7 @@ function header(slide, index, kicker, title) {
   const qs = ["방금 실행한 입력과 출력은 무엇인가?", "성공을 증명하는 화면·파일·테스트는 무엇인가?", "같은 오류가 나면 어디에서 다시 시작하는가?"];
   qs.forEach((q, index) => {
     const y = 190 + index * 126;
-    text(slide, String(index + 1).padStart(2, "0"), { left: 64, top: y, width: 70, height: 60 }, { size: 21, bold: true, color: index === 2 ? C.blue : C.black, valign: "middle" });
+    text(slide, String(index + 1).padStart(2, "0"), { left: 64, top: y, width: 70, height: 60 }, { size: 21, bold: true, color: C.black, valign: "middle" });
     text(slide, q, { left: 170, top: y, width: 930, height: 60 }, { size: 27, bold: true, valign: "middle" });
     shape(slide, "line", { left: 170, top: y + 76, width: 930, height: 0 }, "none", C.gray200, 1);
   });
