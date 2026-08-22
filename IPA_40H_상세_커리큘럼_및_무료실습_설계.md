@@ -266,16 +266,16 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 
 ### 5.2 공통 1시간 운영 포맷
 
-2-5일차의 각 60분 block은 기본적으로 다음 리듬을 사용한다.
+2-5일차의 각 60분 차시는 기본적으로 다음 리듬을 사용한다.
 
 - 00–10분: 왜 필요한지, 이전 결과와 연결
 - 10–25분: 개념과 강사 live demo
 - 25–45분: 장표·notebook을 보며 그대로 따라하기
 - 45–53분: 변형 과제 또는 예외 주입
 - 53–58분: 체크포인트·화면 캡처·Git commit
-- 58–60분: 다음 block의 입력 확인
+- 58–60분: 다음 차시의 입력 확인
 
-1일차는 매시 정각마다 끊지 않고 **3시간-2시간-3시간의 세 블록**으로 운영한다. 시간당 10분 휴식 원칙은 블록 안에서 합산해 BLOCK A 30분, BLOCK B 20분, BLOCK C 30분으로 확보한다. 마지막 30분은 Q&A·실습 복구·Exit Ticket에 고정한다. 점심이 평소보다 늦은 이유와 불편에 대한 사과를 시작 장표와 12시 재공지 장표에 모두 넣는다.
+1일차는 `1일차 1차시~8차시`로 안내하되 매시 정각마다 쉬지 않는다. `09:00-11:30` 수업 뒤 30분, `12:00-13:40` 수업 뒤 20분, `15:00-17:00` 수업 뒤 30분을 묶어서 쉰다. 마지막 30분은 Q&A·실행 오류 복구·Exit Ticket에 고정한다. 점심이 평소보다 늦은 이유와 불편에 대한 사과를 시작 장표에 넣는다.
 
 ---
 
@@ -285,20 +285,23 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 
 > 첫날은 강사 외부 일정으로 일반적인 12:00-13:00 점심을 제공하지 못한다. 시작 시 “불편을 드려 죄송합니다”라고 먼저 안내하고, 점심은 14:00-15:00에 운영한다.
 
-| 운영 구간 | Part | 전달 내용 | 따라하기 실습 | 시간 종료 산출물 |
+| 시간 | 차시 | 전달 내용 | 개인 활동 | 완료 증거 |
 |---|---:|---|---|---|
-| BLOCK A · 09:00-12:00 | 1/3 | 과정의 문제, PBL 제품, Agent와 Chatbot 차이, 강사 소개 | 사전 진단, 최종 데모 입력·출력 관찰 | 개인 목표·환경 진단표 |
-| BLOCK A · 09:00-12:00 | 2/3 | LLM, token, context, temperature, structured output, hallucination | 같은 한국어 회의 문장을 서로 다른 instruction으로 변환 | prompt/response 비교표 |
-| BLOCK A · 09:00-12:00 | 3/3 | Agent loop: observe → decide → act → verify, Tool Calling schema | 순수 Python 함수와 JSON schema 작성 | `tool_registry`와 schema |
-| BLOCK B · 12:00-14:00 | 1/2 | Python/VS Code/Jupyter/venv 구조, 설치 오류 읽기 | notebook 열기, interpreter 선택, 환경 점검 cell 실행 | 동작하는 가상환경 |
-| BLOCK B · 12:00-14:00 | 2/2 | Git snapshot, working tree/stage/commit, 비밀정보 제외 | repo init, `.gitignore`, first commit, 의도적 수정과 diff | 첫 checkpoint commit |
-| 14:00-15:00 |  | **점심시간** | 모델 다운로드는 필요한 경우 백그라운드 진행 |  |
-| BLOCK C · 15:00-17:30 | 1/3 | 로컬 LLM, Ollama/LM Studio/Jan 비교, OpenAI-compatible API | Ollama 또는 대체 mock endpoint health check | model adapter 선택 |
-| BLOCK C · 15:00-17:30 | 2/3 | Tool Calling 실행 loop, parser, unknown tool, bad args | 계산·텍스트 도구 호출, 실패 주입, 1회 repair | 예외가 보이는 Agent loop |
-| BLOCK C · 15:00-17:30 | 3/3 | 5일 로드맵, 데이터·보안·HITL, Harness Engineering | Codex/Claude live repo 설명·테스트·문서화 데모 | Day 1 tag와 회고 |
-| 17:30-18:00 | Q&A | 질문 정리, 실습 복구, 다음 날 연결 | 미완료 checkpoint 복구, Exit Ticket | 질문 목록과 개인 다음 행동 |
+| 09:00-09:50 | 1일차 1차시 | Agent와 문제 정의 | 개인 Ideation | 입력·결과·금지 행동 한 문장 |
+| 09:50-10:40 | 1일차 2차시 | Tool Calling과 실행 권한 | Schema 설계·Tool 코드 실행 | 허용·차단 ToolResult |
+| 10:40-11:30 | 1일차 3차시 | 한국어 데이터와 Prompt 기본기 | 자료 수집·typed JSON 실행 | 근거가 있는 결과 JSON |
+| 11:30-12:00 | 쉬는 시간 | 빠른 점심 또는 간식 권장 | - | - |
+| 12:00-12:50 | 1일차 4차시 | Python·VS Code·Git·Codex | 개발환경 세팅 실습 | interpreter·diff·19 passed |
+| 12:50-13:40 | 1일차 5차시 | 안전한 Agent 실행 루프 | Agent 구현·실패 test | 정상·실패 test 결과 |
+| 13:40-14:00 | 쉬는 시간 | 점심 전 실행 상태 저장 | - | checkpoint |
+| 14:00-15:00 | 점심시간 | 14:55까지 복귀 | - | - |
+| 15:00-15:40 | 1일차 6차시 | 무료·로컬 LLM과 Adapter | fixture/Ollama 실행 | 성공 또는 예상된 fallback |
+| 15:40-16:20 | 1일차 7차시 | LangChain LCEL·LangGraph 승인 | StateGraph 구현 실습 | approve·edit·reject JSON |
+| 16:20-17:00 | 1일차 8차시 | STT·trace·LangSmith·Release Gate | 품질·관측·평가 실행 | trace.json·READY/HOLD |
+| 17:00-17:30 | 쉬는 시간 | 질문 정리 | - | 질문 목록 |
+| 17:30-18:00 | Q&A | 질문·실행 오류 복구·Exit Ticket | 미완료 checkpoint 복구 | 핵심 세 문장 |
 
-#### Block 1 — 과정의 끝을 먼저 보여준다
+#### 1일차 1차시 — 과정의 끝을 먼저 보여준다
 
 - 강사 소개와 서비스 경험은 “AI가 실제 사용자 경험으로 연결되는 지점”에 초점을 둔다.
 - 완성 데모는 3분을 넘기지 않는다. 음성 업로드 → 초안 → 승인 대기 → 보고서 생성 → trace 열기 순서만 보여준다.
@@ -306,7 +309,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - 진단 질문: Python 실행 경험, Git commit 경험, GPU/RAM, GitHub 계정, 설치 권한.
 - 실패 대비: 설문 도구가 없으면 notebook의 Markdown checklist로 대체한다.
 
-#### Block 2 — LLM을 “그럴듯한 문장 생성기”에서 “검증 가능한 구성요소”로 바꾼다
+#### 1일차 2차시 — Tool Calling의 제안과 실행 권한을 분리한다
 
 - token과 context를 한국어 형태소와 동일하다고 오해하지 않게 설명한다.
 - temperature는 정확성 스위치가 아니라 sampling parameter임을 강조한다.
@@ -314,7 +317,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - 잘못된 담당자·마감일을 일부러 생성하여 근거(`evidence`) 필드가 필요한 이유를 만든다.
 - 빠른 반 확장: 회의록 schema에 `unknown`과 `not_mentioned`를 구분한다.
 
-#### Block 3 — Tool Calling의 본질은 “모델이 함수를 직접 실행하는 것”이 아니다
+#### 1일차 3차시 — 한국어 업무 데이터에 Prompt·Schema·근거를 연결한다
 
 - 모델은 tool name과 arguments를 제안하고, 실제 실행은 application이 통제한다.
 - `description`, required fields, enum, type, validation이 호출 품질에 미치는 영향을 비교한다.
@@ -322,7 +325,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - `save_draft`는 실제 파일 쓰기 전에 승인해야 하는 위험 도구로 분류한다.
 - 예외: unknown tool, missing arg, wrong type, tool runtime error, duplicate call.
 
-#### Block 4 — 환경 구축도 학습 목표다
+#### 1일차 4차시 — 환경 구축도 학습 목표다
 
 - `python --version`, interpreter 경로, virtual environment의 목적을 확인한다.
 - VS Code Python/Jupyter extension과 kernel 선택 화면을 캡처 기준으로 안내한다.
@@ -330,15 +333,15 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - “재시작 후 처음부터 실행”이 되는 notebook만 제출 가능하게 한다.
 - 설치 실패 시 `materials/day1/01_agent_foundation.ipynb`의 표준 라이브러리 cell은 계속 진행한다.
 
-#### Block 5 — Git은 제출 수단이 아니라 Agent의 안전망이다
+#### 1일차 5차시 — 실패를 코드와 test로 통제한다
 
 - `git status`를 가장 먼저 보게 한다.
 - working tree → stage → commit의 차이를 실제 파일 변경으로 확인한다.
 - `.env`, audio 원본, 모델 weight, 개인정보 파일을 `.gitignore`에 추가한다.
 - commit message 예: `feat: add validated tool registry`.
-- 강사 checkpoint tag 예: `day1-block5-ready`.
+- 강사 checkpoint tag 예: `day1-period5-ready`.
 
-#### Block 6 — 로컬 LLM은 무료 baseline, frontier harness는 선택 가속기다
+#### 1일차 6차시 — 로컬 LLM은 무료 baseline, fixture는 필수 복구 경로다
 
 - Ollama의 model server와 model weight를 구분한다.
 - 한 PC에서 Ollama/LM Studio/Jan을 동시에 띄우지 않는다.
@@ -346,7 +349,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - health check 실패 시 mock adapter로 즉시 전환하고 프레임워크 학습은 계속한다.
 - 모델 다운로드가 느리면 강사가 준비한 response fixture를 사용한다.
 
-#### Block 7 — 오류를 숨기지 않는 첫 Agent loop
+#### 1일차 7차시 — LangChain 결과를 LangGraph의 사람 승인으로 연결한다
 
 - application이 tool allowlist를 가진다.
 - arguments는 실행 전에 검증한다.
@@ -354,7 +357,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - 같은 `request_id`의 쓰기 작업은 중복 실행하지 않는 idempotency를 소개한다.
 - 오류를 “재시도 가능 / 입력 수정 필요 / 사람 판단 필요 / 즉시 중단”으로 분류한다.
 
-#### Block 8 — Harness Engineering 데모와 다음 날 연결
+#### 1일차 8차시 — STT·관측·평가를 READY/HOLD 결정으로 연결한다
 
 - Codex 또는 Claude에게 repo를 설명하게 한 뒤 학생이 사실 여부를 검증한다.
 - Agent가 제시한 작업 계획 중 범위를 벗어난 항목을 사람이 제거한다.
@@ -796,17 +799,17 @@ LangSmith를 마지막 날 갑자기 켜는 것처럼 보이지만, 앞선 4일 
 
 ### 12.1 1일차 장표 분량 권장
 
-강사의 실제 진행 속도와 “장표만으로도 Tutorial을 재현”해야 한다는 요구를 반영해 1일차 상세판을 **총 300장**으로 고정한다. 콘텐츠 묶음은 `38·38·38·38·37·37·37·37장`을 유지하되, 장표의 시간 표기는 매시 단위가 아니라 `BLOCK A PART 1-3`, `BLOCK B PART 1-2`, `BLOCK C PART 1-3`으로 통일한다. 운영은 09:00-12:00(강의·실습 150분 + 휴식 30분), 12:00-14:00(강의·실습 100분 + 휴식 20분), 점심 14:00-15:00, 15:00-17:30(강의·실습 120분 + 휴식 30분), 17:30-18:00(Q&A·복구·Exit Ticket)이다. 300장을 모두 같은 속도로 넘기는 것이 아니라, 각 구간의 필수 본편·따라하기·실패 복구·심화 확장 묶음을 하나의 강의 자산으로 준비한다. 느린 반은 필수 본편과 따라하기를 사용하고, 빠른 반은 실패 복구와 심화 확장까지 이어간다.
+강사의 실제 진행 속도와 “장표만으로도 Tutorial을 재현”해야 한다는 요구를 반영해 1일차 상세판은 **총 270장**으로 운영한다. 8개 구간은 `29·35·35·35·34·34·34·34장`이며, 장표의 시간 표기는 `1일차 1차시~8차시`로 통일한다. 270장을 같은 속도로 읽지 않고 강의·강사 코드 시연·개인 소프트웨어 실습·실행 확인의 리듬으로 사용한다. 느린 반은 fixture와 executed notebook으로 복구하고, 빠른 반은 실패 주입과 provider 교체까지 이어간다.
 
 | 장표 유형 | 권장 수 | 목적 |
 |---|---:|---|
 | 초보자 용어 풀이 | 32 | 시간당 4개 용어를 한 줄 뜻·필요성·수업 예시로 설명 |
 | 개념·비교 | 80–90 | Agent, LLM, Tool Calling, local LLM, Git을 한 장 한 주장으로 설명 |
-| Tutorial Map·실제 화면 | 41 | 시간대별 Map 8장과 실제 화면 캡처 33장 |
-| 코드·실습 단계 | 95–105 | 명령·기대 결과·오류 복구·완료 증거를 화면 단위로 분리 |
+| Tutorial Map·실제 화면 | 36–44 | 차시별 Map과 실제 실행 화면 |
+| 코드·소프트웨어 실습 단계 | 85–100 | 명령·기대 결과·오류 복구·완료 증거를 화면 단위로 분리 |
 | 실패·복구·checkpoint | 32–42 | 설치 실패, schema 오류, timeout, 권한, 중복 실행과 이해 확인 |
 
-시간대별 37–38장의 기본 리듬은 다음과 같다.
+차시별 29–35장의 기본 리듬은 다음과 같다.
 
 1. 구간 표지·시간 지도 2장
 2. 초보자 용어 풀이 4장
@@ -972,7 +975,7 @@ PPT 제작 규칙은 `design-system/ppt/cha-sungjae-musinsa-lecture/`에 고정�
 - LangSmith tracing on/off 두 경로 확인
 - 화면 캡처의 key·email·개인정보 검수
 - 첫날 점심 변경 사유와 사과 문구를 시작 장표·12시 재공지 장표에 반영
-- BLOCK A 30분, BLOCK B 20분, BLOCK C 30분 휴식과 17:30-18:00 Q&A 표기를 확인
+- 11:30-12:00, 13:40-14:00, 17:00-17:30 쉬는 시간과 17:30-18:00 Q&A 표기를 확인
 
 ### 강의 시작 30분 전
 

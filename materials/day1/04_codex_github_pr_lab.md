@@ -10,8 +10,8 @@ Codex에게 코드를 맡기는 것이 목표가 아니다. 작은 요구사항�
 |---|---|---|---|---|
 | 12:00-12:10 | 강의 | Python·VS Code·Git·GitHub·Codex 역할 설명 | 화면을 보고 내 환경 상태 표시 | 준비 상태표 |
 | 12:10-12:25 | 강사 시연 | venv→interpreter→branch→Codex 작업 계약→pytest→Draft PR | 명령과 화면 순서 체크 | 따라하기 순서 |
-| 12:25-12:37 | 필수 개인 실습 | 막힌 지점 지원 | venv·interpreter·Git 상태 확인 | 버전·경로 |
-| 12:37-12:45 | 선택 개인 실습 | sandbox repo 지원 | Codex로 test 1건 작성, diff·pytest 확인 | local diff 또는 commit |
+| 12:25-12:37 | 개발환경 세팅 실습 | 막힌 지점 지원 | venv·interpreter·Git 상태 확인 | 버전·경로 |
+| 12:37-12:45 | 선택 소프트웨어 실습 | sandbox repo 지원 | Codex로 test 1건 작성, diff·pytest 확인 | local diff 또는 commit |
 | 12:45-12:50 | 확인 | 성공·fallback 화면 비교 | Draft PR 또는 local diff 저장 | 다음 차시 복구 지점 |
 
 GitHub 로그인, push 권한, GitHub CLI가 없는 수강생은 PR을 만들지 않아도 된다. local branch, diff, test 결과까지 남기면 같은 학습 목표를 달성한 것으로 본다.
@@ -76,7 +76,7 @@ git diff --check
 python3 -m pytest -q
 ~~~
 
-예상 결과는 10 passed다. 실패하면 새 기능을 만들기 전에 첫 오류 한 줄부터 복구한다.
+예상 결과는 19 passed다. 실패하면 새 기능을 만들기 전에 첫 오류 한 줄부터 복구한다.
 
 ### 3. 교육용 branch 생성
 

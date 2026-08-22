@@ -150,7 +150,7 @@
 - near headline duplicate pair: 0
 - repeated narrative line: 0
 - 최종 구간 밖 summary-like slide: 0
-- Python unit tests: 10 passed
+- Python unit tests: 19 passed
 
 ### PDF·사람 시각 검수
 
@@ -166,11 +166,11 @@
 - 1~8차시 표지의 결과 중심 표현을 `함께 챙길 내용`으로 바꿨다. 3쪽 시간표는 기존 요청대로 `수강생이 남길 것`을 유지했다.
 - 같은 위계의 표 헤더는 모두 같은 색으로 맞추고, 마지막 열에만 있던 파란색 강조를 제거했다.
 - 1·30·65·100·135·169·203·237쪽을 확대 확인해 표 구조와 색상 위계가 동일한지 검수했다.
-- PPT에 보이는 test 결과를 실제 현재 코드와 맞춰 `10 passed`로 통일하고, VS Code에서 직접 실행한 화면으로 교체했다.
+- PPT에 보이는 test 결과를 실제 현재 코드와 맞춰 `19 passed`로 통일하고, VS Code에서 직접 실행한 화면으로 교체했다.
 
 ### 코드·데모 실행 검증
 
-- 시스템 Python과 프로젝트 `.venv`에서 각각 `10 passed`를 확인했다.
+- 프로젝트 Python 3.12 가상환경에서 `19 passed`를 확인했다.
 - `01_agent_foundation.ipynb`를 nbconvert로 처음부터 끝까지 실행했다.
 - 음성 생성 스크립트로 66초 Demo와 1,017.5초 상세 회의 WAV 생성을 확인했다.
 - `faster-whisper tiny`로 두 WAV를 실제 전사했다. 66초 Demo는 `mode=local_stt`, `quality_gate=READY`였다.
@@ -197,3 +197,12 @@
 - 기존 LibreOffice 프로세스를 재사용하면 `NanumBrush`·`BMDoHyeon` 같은 잘못된 대체 글꼴이 섞이는 것을 확인해 해당 PDF를 폐기했다.
 - 새 사용자 프로필로 다시 변환한 최종 PDF에는 위 잘못된 대체 글꼴이 없으며, 270쪽 전체 PNG와 핵심 12쪽을 확대 검수했다.
 - 프로세스·용어·화면 순서·Q&A 등 마지막 항목은 검정색으로 통일됐고, 오버플로는 0건이다.
+
+## 2026-08-23 · 실행 중심 LangChain·LangGraph·관측 실습 보강
+
+- 홈페이지 탐색을 수강생 실습에서 제외하고, 공식 문서는 개념 근거로만 사용한다.
+- 7차시는 `LangChain LCEL → Pydantic typed output → LangGraph StateGraph → interrupt → Command(resume) → approve/edit/reject`를 직접 실행한다.
+- 8차시는 STT 품질 flag, local trace, release gate를 실행하고 LangSmith는 비식별 trace의 선택 업로드로 제한한다.
+- `실습`은 개발환경 세팅·코드 작성·명령 실행·test·배포에만 사용하고, 생각·탐색 활동은 Ideation·자료 수집·설계 워크숍으로 구분한다.
+- `scripts/run_day1_preflight.py`에서 전체 필수 경로와 비즈니스 상태를 한 번에 검증하고 JSON 보고서를 남긴다.
+- 검증 기준: Python 3.12, 19 passed, approve=`READY_FOR_EXPORT/READY`, reject=`REJECTED/HOLD`, automatic_email=false.
