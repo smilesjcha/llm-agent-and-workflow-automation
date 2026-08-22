@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-08-22",
+  "functionalIcons": {
+    "source": "https://github.com/lucide-icons/lucide",
+    "license": "ISC",
+    "files": [
+      "chart-no-axes-combined",
+      "circle-alert",
+      "circle-question-mark",
+      "clock-3",
+      "coffee",
+      "database",
+      "file-code",
+      "git-branch",
+      "message-square-text",
+      "mic-vocal",
+      "presentation",
+      "rotate-ccw",
+      "shield-check",
+      "terminal",
+      "user-check",
+      "workflow"
+    ]
+  },
+  "brandMarks": {
+    "source": "https://github.com/simple-icons/simple-icons",
+    "projectLicense": "CC0-1.0",
+    "restriction": "Use only for nominative educational reference; review each trademark and icon license before external redistribution.",
+    "files": ["anthropic", "git", "github", "jupyter", "langchain", "ollama", "python"]
+  },
+  "referenceImages": [
+    {
+      "file": "apple-wwdc25-keynote.jpg",
+      "source": "https://developer.apple.com/videos/play/wwdc2025/101/",
+      "usage": "reference-only"
+    },
+    {
+      "file": "google-io25-developer-keynote.png",
+      "source": "https://developers.googleblog.com/google-io-2025-developer-keynote-recap/",
+      "usage": "reference-only"
+    },
+    {
+      "file": "ibm-langgraph-hitl.png",
+      "source": "https://www.ibm.com/think/tutorials/human-in-the-loop-ai-agent-langraph-watsonx-ai",
+      "usage": "reference-only"
+    }
+  ]
+}
+
