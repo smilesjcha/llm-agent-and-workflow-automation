@@ -8,7 +8,14 @@
 - `output/pdf/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_MUSINSA_PARTS_270p.pdf`: 배포·검수용 PDF
 - `materials/day1/2026-08-23_Day1_강사용_핵심교안.md`: 시간대별 강의·시연·실습 운영안
 - `materials/day1/04_codex_github_pr_lab.md`: GitHub·Codex·PR 리뷰 실습 런북
+- `materials/day1/07_langchain_langgraph_workflow.ipynb`: LCEL·StateGraph·interrupt/resume 실행 notebook
+- `materials/day1/07_langchain_langgraph_workflow.executed.ipynb`: 설치 실패 시에도 흐름을 확인할 실행 완료본
+- `materials/day1/실행파일_차시별_맵.md`: 1~8차시별 파일·명령·완료 증거
 - `materials/day1/강사_회의음성_라이브데모_런북.md`: STT 라이브 데모 및 실패 복구 절차
+- `src/langchain_lab.py`: Prompt·Provider·Pydantic parser·policy validator LCEL
+- `src/langgraph_lab.py`: StateGraph·checkpoint·사람 승인·재개
+- `src/workflow_service.py`: LCEL→Graph→local trace→READY/HOLD 전체 흐름
+- `web-demo/`: Python 결과를 승인·수정·거절하고 JSON으로 저장하는 결과 UI
 - `data/meeting_sample_ko_12min.wav`: 4인 합성 한국어 회의 음성
 - `data/meeting_sample_ko_12min.txt`: 회의 원문과 타임라인
 
@@ -20,7 +27,16 @@ source .venv/bin/activate
 python -m pip install -r requirements-day1.txt
 python -m pytest -q
 python -m src.day1_agent
+python -m src.langchain_lab --provider fixture
+python -m src.langgraph_lab --decision all
+python -m src.workflow_service --decision approve --out output/day1-workflow
+python scripts/run_day1_preflight.py
 ```
+
+정상 기준은 `19 passed`, LangGraph `READY_FOR_EXPORT`, 평가 `READY`, `automatic_email=false`다. 거절 경로는 `REJECTED/HOLD`여야 한다.
+전체 점검 결과는 `output/day1-preflight/preflight_report.json`에서 차시별 명령·종료 코드·결과 파일과 함께 확인한다.
+
+배포된 읽기·검토용 결과 UI: https://web-demo-five-sigma.vercel.app
 
 STT를 로컬에서 실행하려면 선택 의존성을 추가합니다.
 

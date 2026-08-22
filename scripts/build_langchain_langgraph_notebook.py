@@ -65,10 +65,17 @@ python -m pytest -q
         code(
             """
 from pathlib import Path
-import json, platform
+import json, os, platform, sys
 
-ROOT = Path.cwd()
-assert (ROOT / "src").exists(), "저장소 최상위 폴더에서 실행하세요."
+START = Path.cwd().resolve()
+ROOT = next(
+    (candidate for candidate in (START, *START.parents) if (candidate / "src").exists()),
+    None,
+)
+assert ROOT is not None, "현재 폴더의 상위 경로에서 src를 찾지 못했습니다."
+os.chdir(ROOT)
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 print({"python": platform.python_version(), "root": str(ROOT)})
 """
         ),
@@ -304,4 +311,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

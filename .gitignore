@@ -16,6 +16,7 @@ tmp/
 **/.DS_Store
 *.inspect.ndjson
 output/day1-demo/
+output/day1-preflight/
 slides/*/
 design-system/ppt/cha-sungjae-musinsa-lecture/rendered/
 design-system/ppt/cha-sungjae-musinsa-lecture/rendered-final/
