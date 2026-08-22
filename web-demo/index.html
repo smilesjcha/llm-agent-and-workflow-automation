@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="LangChain LCEL 결과를 LangGraph 사람 승인 단계에서 검토하는 교육용 Demo"
+    />
+    <title>Meeting Agent Review Lab</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top">WORKFLOW LAB</a>
+      <nav aria-label="페이지 이동">
+        <a href="#pipeline">Pipeline</a>
+        <a href="#review">Review</a>
+        <a href="#result">Result</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <p class="eyebrow">1일차 7차시 · 실행 결과 UI</p>
+        <h1>멈추고, 사람이 보고,<br />같은 상태에서 다시 시작합니다.</h1>
+        <p class="hero-copy">
+          Python에서 실행한 LangChain·LangGraph 결과를 불러옵니다. 이 화면에서는 승인·수정·거절을 바꾸어 보고 결과 JSON을 저장합니다.
+        </p>
+        <div class="hero-facts" aria-label="Demo 안전 정책">
+          <span>합성 회의 데이터</span>
+          <span>자동 메일 없음</span>
+          <span>외부 시스템 쓰기 없음</span>
+        </div>
+      </section>
+
+      <section id="pipeline" class="section">
+        <div class="section-heading">
+          <p class="section-number">01</p>
+          <div>
+            <p class="eyebrow">LANGCHAIN LCEL</p>
+            <h2>자연어를 업무 데이터로 바꾸는 네 단계</h2>
+          </div>
+        </div>
+        <div id="pipeline-steps" class="pipeline" aria-live="polite"></div>
+        <div class="two-column">
+          <article class="panel">
+            <p class="panel-label">INPUT</p>
+            <h3>한국어 합성 회의</h3>
+            <p id="transcript-source" class="muted"></p>
+            <p class="small-copy">원문 전체 대신 결과 생성에 사용한 비식별 파일 경로만 표시합니다.</p>
+          </article>
+          <article class="panel panel-dark">
+            <p class="panel-label">POLICY CHECK</p>
+            <h3 id="policy-status">불러오는 중</h3>
+            <ul id="policy-checks" class="plain-list"></ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="review" class="section review-section">
+        <div class="section-heading">
+          <p class="section-number">02</p>
+          <div>
+            <p class="eyebrow">LANGGRAPH INTERRUPT</p>
+            <h2>결과를 내보내기 전에 사람이 결정합니다.</h2>
+          </div>
+        </div>
+
+        <div class="review-layout">
+          <article class="panel review-card">
+            <div class="status-row">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span>REVIEW_REQUIRED</span>
+            </div>
+            <h3 id="meeting-title">회의 결과를 불러오는 중입니다.</h3>
+            <p id="meeting-summary" class="summary"></p>
+
+            <div class="detail-block">
+              <p class="panel-label">ACTION ITEMS</p>
+              <div id="action-items"></div>
+            </div>
+
+            <div class="decision-control" role="group" aria-label="사람 검토 결정">
+              <button class="decision-button active" data-decision="approve">승인</button>
+              <button class="decision-button" data-decision="edit">수정</button>
+              <button class="decision-button" data-decision="reject">거절</button>
+            </div>
+
+            <label id="edit-box" class="edit-box hidden">
+              수정할 요약
+              <textarea id="edited-summary" rows="4"></textarea>
+            </label>
+
+            <button id="apply-decision" class="primary-button">이 결정으로 재개</button>
+          </article>
+
+          <aside class="code-panel" aria-label="현재 interrupt payload">
+            <div class="code-header">
+              <span>interrupt_payload.json</span>
+              <span>read only</span>
+            </div>
+            <pre id="interrupt-json"></pre>
+          </aside>
+        </div>
+      </section>
+
+      <section id="result" class="section result-section">
+        <div class="section-heading">
+          <p class="section-number">03</p>
+          <div>
+            <p class="eyebrow">COMMAND RESUME</p>
+            <h2>같은 thread의 최종 상태를 확인합니다.</h2>
+          </div>
+        </div>
+
+        <div class="result-grid">
+          <article class="metric-card">
+            <p class="panel-label">TERMINAL STATUS</p>
+            <strong id="terminal-status">READY_FOR_EXPORT</strong>
+            <p id="terminal-note" class="muted"></p>
+          </article>
+          <article class="metric-card">
+            <p class="panel-label">RELEASE GATE</p>
+            <strong id="release-gate">READY</strong>
+            <p class="muted">Schema·근거·사람 결정·외부 쓰기 금지를 검사합니다.</p>
+          </article>
+          <article class="metric-card">
+            <p class="panel-label">SIDE EFFECT</p>
+            <strong>LOCAL JSON ONLY</strong>
+            <p class="muted">메일·결제·고객 데이터 변경을 수행하지 않습니다.</p>
+          </article>
+        </div>
+
+        <div class="two-column result-panels">
+          <article class="panel">
+            <p class="panel-label">AUDIT EVENTS</p>
+            <ol id="audit-events" class="timeline"></ol>
+          </article>
+          <article class="panel download-panel">
+            <p class="panel-label">OUTPUT</p>
+            <h3>내 결정이 담긴 JSON</h3>
+            <p class="muted">브라우저 Demo 결과를 파일로 저장해 Git commit 또는 포트폴리오 증거로 사용할 수 있습니다.</p>
+            <button id="download-result" class="secondary-button">결과 JSON 다운로드</button>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>IPA LLM Agent & 업무자동화 · Day 1</p>
+      <p>Python 실행 결과를 검토하는 교육용 UI</p>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

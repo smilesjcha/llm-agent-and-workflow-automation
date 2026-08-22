@@ -1,0 +1,307 @@
+"""Generate and execute the Day 1 LangChain/LangGraph software lab notebook."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import nbformat as nbf
+from nbconvert.preprocessors import ExecutePreprocessor
+
+
+ROOT = Path(__file__).resolve().parents[1]
+NOTEBOOK = ROOT / "materials/day1/07_langchain_langgraph_workflow.ipynb"
+EXECUTED = ROOT / "materials/day1/07_langchain_langgraph_workflow.executed.ipynb"
+
+
+def markdown(text: str):
+    return nbf.v4.new_markdown_cell(text.strip())
+
+
+def code(text: str):
+    return nbf.v4.new_code_cell(text.strip())
+
+
+def build_notebook():
+    notebook = nbf.v4.new_notebook()
+    notebook["metadata"] = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python", "version": "3.12"},
+    }
+    notebook["cells"] = [
+        markdown(
+            """
+# 1일차 7차시 · LangChain + LangGraph 소프트웨어 실습
+
+홈페이지를 둘러보는 시간이 아니라 아래 프로그램을 직접 만듭니다.
+
+1. LangChain LCEL로 `Prompt → Model Adapter → Parser → Validator`를 실행합니다.
+2. LangGraph로 `검증 → 사람 승인에서 중단 → 같은 thread에서 재개`를 실행합니다.
+3. 승인·수정·거절 결과와 trace를 JSON 파일로 저장합니다.
+4. 결과를 브라우저 Demo에서 열고 JSON으로 내려받습니다.
+
+`Ideation`은 문제·정책을 정하는 구간, `소프트웨어 실습`은 설치·코드·실행·테스트·저장을 직접 하는 구간입니다.
+"""
+        ),
+        markdown(
+            """
+## 0. 환경 체크 · 소프트웨어 실습
+
+터미널에서 먼저 실행합니다.
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-day1.txt
+python -m pytest -q
+```
+
+이 노트북은 저장소 최상위 폴더를 작업 경로로 사용합니다.
+"""
+        ),
+        code(
+            """
+from pathlib import Path
+import json, platform
+
+ROOT = Path.cwd()
+assert (ROOT / "src").exists(), "저장소 최상위 폴더에서 실행하세요."
+print({"python": platform.python_version(), "root": str(ROOT)})
+"""
+        ),
+        markdown(
+            """
+## 1. Tool Calling 안전 경계 · 소프트웨어 실습
+
+모델이 도구 호출을 제안해도 애플리케이션이 allowlist·입력 schema·경로를 검사해야 합니다. 정상 호출과 차단 호출을 같은 결과 형식으로 확인합니다.
+"""
+        ),
+        code(
+            """
+from src.day1_agent import SafeToolExecutor
+
+executor = SafeToolExecutor(workspace=ROOT)
+safe = executor.execute("read_public_text", {"path": "data/meeting_sample_ko.txt"})
+blocked = executor.execute("read_public_text", {"path": "../../etc/passwd"})
+print(json.dumps({"safe": safe.to_dict(), "blocked": blocked.to_dict()}, ensure_ascii=False, indent=2))
+"""
+        ),
+        markdown(
+            """
+## 2. LangChain LCEL 개념
+
+- `ChatPromptTemplate`: 역할·입력·출력 규칙을 메시지 구조로 고정합니다.
+- `Model Adapter`: fixture, Ollama, 외부 API처럼 모델 제공자가 달라도 같은 계약을 사용합니다.
+- `PydanticOutputParser`: 자연어 응답을 타입이 있는 업무 데이터로 바꿉니다.
+- `Policy Validator`: 자동 메일 금지·사람 승인 필수 같은 제품 정책을 마지막에 검사합니다.
+
+연결 연산자 `|`로 네 단계를 실제 Runnable 파이프라인으로 조합합니다.
+"""
+        ),
+        code(
+            """
+from src.langchain_lab import build_chain, run_langchain_lab
+
+transcript = (ROOT / "data/meeting_sample_ko_12min.txt").read_text(encoding="utf-8")
+chain = build_chain(provider="fixture")
+typed_result = chain.invoke({"transcript": transcript})
+print(type(typed_result).__name__)
+print(typed_result.model_dump_json(indent=2))
+"""
+        ),
+        code(
+            """
+chain_result = run_langchain_lab(transcript)
+print(json.dumps({
+    "pipeline": chain_result["pipeline"],
+    "provider_used": chain_result["provider_used"],
+    "checks": chain_result["checks"],
+}, ensure_ascii=False, indent=2))
+"""
+        ),
+        markdown(
+            """
+### 선택: 로컬 LLM Adapter
+
+Ollama가 준비된 경우에만 `provider="ollama"`로 바꿉니다. 연결에 실패하면 fixture로 복구되며, parser·validator·다음 graph는 그대로 유지됩니다.
+
+```bash
+python -m pip install -r requirements-local-llm-optional.txt
+ollama pull qwen3:4b
+```
+"""
+        ),
+        code(
+            """
+# 수업 기본 경로는 네트워크가 필요 없는 fixture입니다.
+# Ollama를 설치했다면 provider 값을 "ollama"로 바꾸어 비교하세요.
+adapter_result = run_langchain_lab(transcript, provider="fixture", allow_fallback=True)
+print({
+    "requested": adapter_result["provider_requested"],
+    "used": adapter_result["provider_used"],
+    "fallback_reason": adapter_result["fallback_reason"],
+})
+"""
+        ),
+        markdown(
+            """
+## 3. LangGraph 개념
+
+- `State`: 단계 사이에서 이어지는 작업 데이터
+- `Node`: 검증·승인·저장처럼 한 책임을 가진 함수
+- `Edge`: 상태에 따라 이동하는 다음 단계
+- `Checkpointer`: 중단 지점의 상태를 저장하는 장치
+- `interrupt()`: 사람 결정이 필요할 때 실행을 멈추고 검토 정보를 돌려주는 함수
+- `Command(resume=...)`: 같은 `thread_id`의 저장 상태에서 실행을 재개하는 명령
+
+중요한 부작용은 interrupt 뒤에 두고, 같은 요청이 재실행되어도 중복되지 않게 설계합니다.
+"""
+        ),
+        code(
+            """
+from langgraph.types import Command
+from src.langgraph_lab import build_graph
+
+graph = build_graph()
+thread_id = "notebook-review-001"
+config = {"configurable": {"thread_id": thread_id}}
+initial_state = {
+    "request_id": thread_id,
+    "draft": chain_result["result"],
+    "validation_errors": [],
+    "status": "CREATED",
+    "review": {},
+    "audit_events": [],
+    "export_ready": False,
+    "automatic_email": False,
+}
+paused = graph.invoke(initial_state, config=config)
+interrupt_payload = paused["__interrupt__"][0].value
+print(json.dumps(interrupt_payload, ensure_ascii=False, indent=2))
+"""
+        ),
+        code(
+            """
+approved = graph.invoke(
+    Command(resume={
+        "decision": "approve",
+        "reviewer": "day1-learner",
+        "reason": "근거와 Action Item을 확인함",
+    }),
+    config=config,
+)
+print(json.dumps({
+    "status": approved["status"],
+    "review": approved["review"],
+    "export_ready": approved["export_ready"],
+    "automatic_email": approved["automatic_email"],
+}, ensure_ascii=False, indent=2))
+"""
+        ),
+        code(
+            """
+from src.langgraph_lab import run_langgraph_lab
+
+scenarios = {
+    "approve": run_langgraph_lab(chain_result["result"], decision="approve", request_id="nb-approve"),
+    "edit": run_langgraph_lab(
+        chain_result["result"],
+        decision="edit",
+        request_id="nb-edit",
+        edited_summary="배송 지연 안내만 자동화하고 반품 문의는 상담원이 검토한다.",
+    ),
+    "reject": run_langgraph_lab(chain_result["result"], decision="reject", request_id="nb-reject"),
+}
+for name, result in scenarios.items():
+    print(name, "→", result["final_state"]["status"], "/ export_ready:", result["final_state"]["export_ready"])
+"""
+        ),
+        markdown(
+            """
+## 4. Trace와 Release Gate · 소프트웨어 실습
+
+LangSmith 연결 전에도 같은 관측 필드를 로컬 JSON으로 남깁니다. 공개·합성 데이터만 대상으로 `LangChain → LangGraph → 평가`의 지연시간·상태·결정을 기록합니다. 환경 변수가 있을 때만 LangSmith 업로드가 활성화됩니다.
+"""
+        ),
+        code(
+            """
+from src.workflow_service import run_workflow
+
+workflow = run_workflow(
+    transcript_path=ROOT / "data/meeting_sample_ko_12min.txt",
+    decision="approve",
+    output_dir=ROOT / "output/notebook-workflow",
+)
+print(json.dumps({
+    "graph_status": workflow["langgraph"]["final_state"]["status"],
+    "release_gate": workflow["evaluation"]["decision"],
+    "langsmith": workflow["langsmith"],
+    "outputs": workflow["outputs"],
+}, ensure_ascii=False, indent=2))
+"""
+        ),
+        code(
+            """
+trace = json.loads((ROOT / "output/notebook-workflow/trace.json").read_text(encoding="utf-8"))
+[(span["name"], span["status"], span["latency_ms"]) for span in trace["spans"]]
+"""
+        ),
+        markdown(
+            """
+## 5. 브라우저 Demo 데이터 만들기 · 소프트웨어 실습
+
+터미널에서 아래 명령을 실행하면 승인·수정·거절 결과가 `web-demo/public/demo-data.json`에 모입니다.
+
+```bash
+python scripts/build_langchain_langgraph_demo.py
+cd web-demo
+python -m http.server 4173
+```
+
+브라우저에서 `http://localhost:4173`을 열고 세 결정을 바꿔본 뒤 결과 JSON을 내려받습니다. 이 Demo는 이메일·외부 시스템에 쓰지 않고 로컬 결과만 다룹니다.
+"""
+        ),
+        code(
+            """
+from scripts.build_langchain_langgraph_demo import main as build_demo_data
+
+build_demo_data()
+demo_data = json.loads((ROOT / "web-demo/public/demo-data.json").read_text(encoding="utf-8"))
+print({"scenarios": list(demo_data["scenarios"]), "generated_from": demo_data["generated_from"]})
+"""
+        ),
+        markdown(
+            """
+## 완료 체크
+
+- [ ] `pytest`가 통과했다.
+- [ ] LCEL의 네 단계와 typed output을 확인했다.
+- [ ] graph가 interrupt payload를 반환한 뒤 같은 thread에서 재개됐다.
+- [ ] 승인·수정·거절의 terminal status가 서로 달랐다.
+- [ ] `trace.json`과 `workflow_result.json`을 열어봤다.
+- [ ] 브라우저 Demo에서 결과 JSON을 내려받았다.
+"""
+        ),
+    ]
+    return notebook
+
+
+def main() -> None:
+    NOTEBOOK.parent.mkdir(parents=True, exist_ok=True)
+    notebook = build_notebook()
+    nbf.write(notebook, NOTEBOOK)
+
+    executed = nbf.from_dict(notebook)
+    processor = ExecutePreprocessor(timeout=180, kernel_name="python3")
+    processor.preprocess(executed, {"metadata": {"path": str(ROOT)}})
+    nbf.write(executed, EXECUTED)
+    print(f"wrote {NOTEBOOK.relative_to(ROOT)}")
+    print(f"wrote {EXECUTED.relative_to(ROOT)}")
+
+
+if __name__ == "__main__":
+    main()
+

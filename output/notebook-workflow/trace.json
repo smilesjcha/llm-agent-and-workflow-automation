@@ -1,0 +1,47 @@
+{
+  "run_name": "meeting-agent-workflow",
+  "started_at": "2026-08-22T23:27:04.168487+00:00",
+  "finished_at": "2026-08-22T23:27:04.172837+00:00",
+  "metadata": {
+    "request_id": "meeting_sample_ko_12min-approve",
+    "dataset": "meeting_sample_ko_12min.txt",
+    "contains_pii": false,
+    "external_write": false
+  },
+  "spans": [
+    {
+      "name": "langchain_lcel",
+      "status": "SUCCESS",
+      "input_keys": [
+        "transcript_path"
+      ],
+      "provider": "fixture",
+      "pipeline": [
+        "ChatPromptTemplate",
+        "Model Adapter",
+        "PydanticOutputParser",
+        "Policy Validator"
+      ],
+      "latency_ms": 1.1
+    },
+    {
+      "name": "langgraph_interrupt_resume",
+      "status": "SUCCESS",
+      "input_keys": [
+        "decision"
+      ],
+      "interrupted": true,
+      "final_status": "READY_FOR_EXPORT",
+      "latency_ms": 3.12
+    },
+    {
+      "name": "release_gate",
+      "status": "SUCCESS",
+      "input_keys": [
+        "request_id"
+      ],
+      "decision": "READY",
+      "latency_ms": 0.01
+    }
+  ]
+}
