@@ -92,6 +92,32 @@ def build_checks(output_dir: Path) -> list[tuple[str, list[str], list[Path]]]:
             [],
         ),
         (
+            "ollama_tool_call_fixture",
+            [
+                python,
+                "-m",
+                "src.ollama_tool_agent",
+                "--provider",
+                "fixture",
+                "--out",
+                str(output_dir / "ollama-tool-fixture.json"),
+            ],
+            [output_dir / "ollama-tool-fixture.json"],
+        ),
+        (
+            "ollama_expected_fallback",
+            [
+                python,
+                "-m",
+                "src.ollama_tool_agent",
+                "--provider",
+                "ollama",
+                "--out",
+                str(output_dir / "ollama-tool-request.json"),
+            ],
+            [output_dir / "ollama-tool-request.json"],
+        ),
+        (
             "langchain_lcel_fixture",
             [
                 python,
