@@ -209,10 +209,19 @@
 
 ## 2026-08-23 · 4~8차시 연속 Ollama 소프트웨어 실습 보강
 
-- 현재 강사 PC에서 Ollama CLI와 `localhost:11434`를 직접 확인한 결과 `OLLAMA_NOT_INSTALLED`였다. 설치 완료로 가정한 표현을 제거했다.
+- 현재 강사 PC에는 Ollama 0.32.15, `localhost:11434`, `qwen3:4b` 2.5GB가 준비됐다. 실제 Tool Call은 `provider_used=ollama`로 성공했고, LangChain structured output은 Qwen schema 파싱 실패를 기록한 뒤 fixture로 복구됐다.
 - 4차시는 `04_ollama_agent_workflow.ipynb`에서 Python·Jupyter·Ollama CLI·서버·모델 상태를 진단하고 좁은 test 4개를 실행한다.
 - 5차시는 같은 notebook에서 fixture/Ollama Tool Call을 실행한 뒤 `SafeToolExecutor`로 정상 파일 읽기와 workspace 밖 경로 `POLICY_BLOCKED`를 확인한다.
 - 6차시는 같은 입력·schema를 LangChain LCEL의 fixture/Ollama provider로 실행하고 `provider_requested`, `provider_used`, `fallback_reason`, policy checks를 비교한다.
 - 7차시는 결과를 LangGraph interrupt/resume·approve/edit/reject로 넘기고, 8차시는 STT·trace·READY/HOLD 판단으로 닫는다.
 - GitHub PR·Codex 리뷰는 공통 notebook 경로를 마친 빠른 수강생의 선택 확장으로 이동했다.
-- Python unit tests는 신규 Ollama 정상·차단·fallback test를 포함해 `23 passed`다.
+- Python unit tests는 신규 Ollama 정상·차단·fallback과 학생 배포 ZIP test를 포함해 `25 passed`다.
+
+## 2026-08-23 · Qwen 설치 완료와 수강생 배포본 검증
+
+- 강사 PC의 Ollama 0.32.15·local server·`qwen3:4b` 2.5GB 준비를 확인했다.
+- 실제 Qwen Tool Call은 `provider_requested=ollama`, `provider_used=ollama`, `fallback_reason=null`로 성공했다.
+- LangChain LCEL은 Qwen이 `MeetingBrief` schema를 지키지 못하면 `SCHEMA_PARSE_FAILED`로 짧게 정규화하고 fixture typed output으로 복구한다.
+- 04·07 notebook 상단에 필수·선택 library 설치 셀과 Kernel 재시작 안내를 넣었다.
+- 별도 수강생 ZIP은 40개 파일을 포함하고, 비밀정보와 43MB 상세 WAV를 기본 제외한다. ZIP 무결성 검사를 통과했다.
+- PPT·PDF는 270장·270쪽이며, 4~6차시 실제 notebook 화면을 반영했다. overflow 0, exact/near headline duplicate 0, repeated narrative line 0이다.
