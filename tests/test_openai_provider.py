@@ -51,6 +51,7 @@ def test_structured_text_client_rejects_missing_parsed_output() -> None:
 
 
 def test_probe_separates_direct_call_from_notebook_run_all(monkeypatch) -> None:
+    monkeypatch.setattr("src.openai_provider.find_spec", lambda name: object())
     monkeypatch.setenv("OPENAI_API_KEY", "test-only")
     monkeypatch.setenv("RUN_OPENAI_LIVE", "0")
 
