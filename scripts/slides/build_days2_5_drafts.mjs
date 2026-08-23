@@ -62,7 +62,17 @@ function partTime(index) {
 }
 
 function accumulatedBreak(index) {
-  return index < 3 ? "쉬는 시간 11:30-12:00" : "쉬는 시간 17:10-17:40";
+  if (index < 3) return "쉬는 시간 11:30-12:00";
+  if (index < 5) return "쉬는 시간 13:40-14:00";
+  return "쉬는 시간 17:30-18:00";
+}
+
+function assertAudienceTitle(title) {
+  const normalized = String(title).trim();
+  const sentenceEnding = /(합니다|됩니다|있습니다|없습니다|입니다|봅니다|만듭니다|확인합니다|실행합니다|시작합니다|필요합니다|가깝습니다|읽습니다|바꿉니다|남깁니다)[.!?]?$/u;
+  if (/[.!?]$/.test(normalized) || sentenceEnding.test(normalized)) {
+    throw new Error(`Audience-facing title must be a noun phrase: ${normalized}`);
+  }
 }
 
 function addFooter(slide, periodIndex, page) {
@@ -73,6 +83,7 @@ function addFooter(slide, periodIndex, page) {
 }
 
 function addHeader(slide, title, periodIndex, label = "") {
+  assertAudienceTitle(title);
   const page = deck.slides.items.length;
   slide.background.fill = C.paper;
   if (label) addText(slide, label, { left: 64, top: 38, width: 560, height: 18 }, { size: 11, bold: true, color: C.muted });
@@ -91,13 +102,14 @@ function addBullets(slide, bullets, position, options = {}) {
 }
 
 function addCover(period, periodIndex) {
+  assertAudienceTitle(period.title);
   const slide = deck.slides.add();
   slide.background.fill = C.black;
   addShape(slide, "rect", { left: 0, top: 0, width: 18, height: 720 }, C.blue);
   addText(slide, periodIndex === 0 ? "IPA · LLM AGENT & 업무자동화 40H" : `DAY ${day} · ${partNumber(periodIndex)}차시`, { left: 84, top: 62, width: 720, height: 26 }, { size: 14, bold: true, color: C.white });
   addText(slide, `${partTime(periodIndex)}  (${accumulatedBreak(periodIndex)})`, { left: 84, top: 108, width: 840, height: 34 }, { size: 20, bold: true, color: C.blue });
   addText(slide, period.title, { left: 84, top: 176, width: 1080, height: 142 }, { size: 54, bold: true, color: C.white, lineSpacing: 0.98, valign: "middle" });
-  addText(slide, period.outcome, { left: 88, top: 340, width: 1040, height: 70 }, { size: 25, bold: true, color: C.faint });
+  addText(slide, `${period.terms[0][0]} · ${period.terms[1][0]} · ${period.artifact}`, { left: 88, top: 340, width: 1040, height: 70 }, { size: 25, bold: true, color: C.faint });
   addShape(slide, "line", { left: 84, top: 448, width: 1092, height: 0 }, "none", C.blue, 3);
   const columns = [
     ["진행", period.mode],
@@ -115,8 +127,8 @@ function addCover(period, periodIndex) {
 
 function addTimetable(periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, `${day}일차는 여덟 개 차시로 하나의 서비스를 완성합니다`, periodIndex, "하루 전체 시간표");
-  addText(slide, "오전 3개 차시 뒤 30분 휴식, 12:00-13:00 점심, 오후 5개 차시 뒤 휴식과 Q&A로 마무리합니다.", { left: 64, top: 136, width: 1152, height: 30 }, { size: 17, bold: true, color: C.muted });
+  addHeader(slide, `${day}일차 전체 시간표`, periodIndex, "하루 운영");
+  addText(slide, "3시간 블록(30분 휴식) · 2시간 블록(20분 휴식) · 점심 14:00-15:00 · 3시간 블록(30분 휴식)", { left: 64, top: 136, width: 1152, height: 30 }, { size: 17, bold: true, color: C.muted });
   const widths = [170, 92, 426, 264, 200];
   const labels = ["시간", "차시", "배우는 내용", "진행", "확인할 결과"];
   let x = 64;
@@ -128,27 +140,27 @@ function addTimetable(periodIndex) {
   config.periods.forEach((period, index) => {
     let xx = 64;
     const y = 218 + index * 50;
-    const cells = [DAY_TIMES[index][0], `${index + 1}차시`, period.title, "강의 12\n시연 10\n소프트웨어 실습 23\n확인 5분", period.artifact];
+    const cells = [DAY_TIMES[index][0], `${index + 1}차시`, period.title, "강의 12\n시연 10\nCodex 제작 23\n확인 5분", period.artifact];
     cells.forEach((value, cellIndex) => {
       addShape(slide, "rect", { left: xx, top: y, width: widths[cellIndex], height: 50 }, index % 2 ? C.gray025 : C.white, C.faint, 1);
       addText(slide, value, { left: xx + 10, top: y + 7, width: widths[cellIndex] - 20, height: 36 }, { size: cellIndex === 2 ? 13 : 11, bold: cellIndex === 0 || cellIndex === 1, color: C.ink, valign: "middle" });
       xx += widths[cellIndex];
     });
   });
-  addText(slide, "11:30-12:00 쉬는 시간 · 12:00-13:00 점심시간 · 17:10-17:40 쉬는 시간 · 17:40-18:00 Q&A·실행 복구", { left: 64, top: 630, width: 1152, height: 24 }, { size: 13, bold: true, color: C.ink, align: "center" });
+  addText(slide, "11:30-12:00 쉬는 시간 · 13:40-14:00 쉬는 시간 · 14:00-15:00 점심시간 · 17:30-18:00 쉬는 시간", { left: 64, top: 630, width: 1152, height: 24 }, { size: 13, bold: true, color: C.ink, align: "center" });
   addNotes(slide, "수강생이 현재 차시와 강의·시연·소프트웨어 실습 비중을 한 번에 확인한다.", ["local:IPA_40H_상세_커리큘럼_및_무료실습_설계.md"]);
 }
 
 function addPositionMap(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, `${partNumber(periodIndex)}차시는 앞의 결과를 이어받아 다음 상태를 만듭니다`, periodIndex, "현재 위치");
+  addHeader(slide, `${partNumber(periodIndex)}차시 입력과 결과`, periodIndex, "현재 위치");
   const prev = config.periods[periodIndex - 1];
   const next = config.periods[periodIndex + 1];
   const items = [
     ["입력", prev ? prev.artifact : "Day 1 검증 결과"],
     ["이번 차시", period.title],
     ["결과", period.artifact],
-    ["다음 연결", next ? next.title : "Q&A·실행 복구·release 판단"],
+    ["다음 연결", next ? next.title : "17:30-18:00 쉬는 시간"],
   ];
   items.forEach(([label, value], index) => {
     const y = 164 + index * 112;
@@ -161,8 +173,9 @@ function addPositionMap(period, periodIndex) {
 
 function addClaim(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, period.why, periodIndex);
-  addText(slide, period.outcome, { left: 80, top: 210, width: 1040, height: 116 }, { size: 38, bold: true, color: C.ink, valign: "middle", align: "center" });
+  addHeader(slide, "문제와 필요성", periodIndex);
+  addText(slide, period.why, { left: 80, top: 182, width: 1040, height: 92 }, { size: 31, bold: true, color: C.ink, valign: "middle", align: "center" });
+  addText(slide, period.outcome, { left: 120, top: 300, width: 960, height: 70 }, { size: 22, bold: false, color: C.muted, valign: "middle", align: "center" });
   addShape(slide, "line", { left: 384, top: 376, width: 512, height: 0 }, "none", C.blue, 4);
   addText(slide, `이번 차시의 확인 결과: ${period.artifact}`, { left: 180, top: 418, width: 920, height: 46 }, { size: 19, bold: true, color: C.muted, align: "center" });
   addNotes(slide, "이번 차시가 필요한 이유를 한 문장으로 먼저 이해시킨다.");
@@ -170,7 +183,7 @@ function addClaim(period, periodIndex) {
 
 function addOutcome(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "이 차시가 끝나면 세 가지를 설명하고 실행할 수 있습니다", periodIndex);
+  addHeader(slide, "차시 목표", periodIndex);
   addBullets(slide, [
     period.outcome,
     `${period.failure} 왜 위험한지 설명한다.`,
@@ -181,7 +194,7 @@ function addOutcome(period, periodIndex) {
 
 function addTermTable(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "처음 보는 용어는 이 네 가지 역할만 구분합니다", periodIndex, "용어 풀이");
+  addHeader(slide, "핵심 용어 4가지", periodIndex, "용어 풀이");
   const left = 80;
   const widths = [260, 820];
   [["용어", "이 수업에서 쓰는 뜻"], ...period.terms].forEach((row, rowIndex) => {
@@ -198,7 +211,7 @@ function addTermTable(period, periodIndex) {
 
 function addInputOutput(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "입력·처리·결과·검증을 분리하면 문제가 빨리 보입니다", periodIndex);
+  addHeader(slide, "입력·처리·결과·검증", periodIndex);
   const items = [
     ["INPUT", period.files[0]],
     ["PROCESS", period.pipeline.slice(0, 3).join(" → ")],
@@ -217,7 +230,7 @@ function addInputOutput(period, periodIndex) {
 
 function addProcess(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "실행 흐름은 다섯 단계로 고정합니다", periodIndex, "업무 흐름");
+  addHeader(slide, "5단계 실행 흐름", periodIndex, "업무 흐름");
   period.pipeline.forEach((value, index) => {
     const x = 72 + index * 226;
     addText(slide, String(index + 1).padStart(2, "0"), { left: x, top: 190, width: 72, height: 52 }, { size: 35, bold: true, color: index === 0 ? C.blue : C.ink });
@@ -230,7 +243,7 @@ function addProcess(period, periodIndex) {
 
 function addContract(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "코드보다 먼저 성공·실패 계약을 정합니다", periodIndex);
+  addHeader(slide, "성공·실패 계약", periodIndex);
   const rows = [
     ["정상", period.normalTest],
     ["경계", period.boundaryTest],
@@ -248,7 +261,7 @@ function addContract(period, periodIndex) {
 
 function addFiles(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "어떤 파일을 열고 어디에서 결과를 확인하는지 먼저 봅니다", periodIndex, "저장소 지도");
+  addHeader(slide, "저장소 파일 지도", periodIndex, "저장소 구조");
   const roles = ["입력·fixture", "구현 코드", "검증·test", "따라하기 notebook"];
   period.files.forEach((file, index) => {
     const y = 158 + index * 112;
@@ -261,7 +274,7 @@ function addFiles(period, periodIndex) {
 
 function addConcept(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, period.title, periodIndex, "개념을 코드로 연결하기");
+  addHeader(slide, "개념과 코드 연결", periodIndex, period.title);
   addText(slide, period.why, { left: 72, top: 164, width: 760, height: 128 }, { size: 30, bold: true, color: C.ink });
   addShape(slide, "rect", { left: 870, top: 158, width: 290, height: 350 }, C.black);
   addText(slide, "이 차시에서\n버릴 오해", { left: 902, top: 194, width: 226, height: 74 }, { size: 18, bold: true, color: C.gray300, align: "center" });
@@ -272,7 +285,7 @@ function addConcept(period, periodIndex) {
 
 function addComparison(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "비슷해 보이는 선택도 책임과 검증 범위가 다릅니다", periodIndex, "선택 기준");
+  addHeader(slide, "역할과 선택 기준", periodIndex, "비교");
   const rows = [
     [period.terms[0][0], period.terms[0][1], "결정론 test로 먼저 확인"],
     [period.terms[1][0], period.terms[1][1], "adapter 경계를 확인"],
@@ -294,7 +307,7 @@ function addComparison(period, periodIndex) {
 
 function addFailure(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "가장 먼저 재현할 실패는 이것입니다", periodIndex, "실패 사례");
+  addHeader(slide, "대표 실패", periodIndex, "실패 사례");
   addShape(slide, "rect", { left: 72, top: 170, width: 496, height: 348 }, C.black);
   addText(slide, "실패", { left: 104, top: 202, width: 160, height: 30 }, { size: 14, bold: true, color: C.gray300 });
   addText(slide, period.failure, { left: 104, top: 260, width: 432, height: 184 }, { size: 26, bold: true, color: C.white, valign: "middle" });
@@ -306,7 +319,7 @@ function addFailure(period, periodIndex) {
 
 function addRecovery(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "복구는 재시도보다 먼저 중단 조건을 정합니다", periodIndex, "복구 경로");
+  addHeader(slide, "복구 경로", periodIndex, "오류 처리");
   addBullets(slide, [
     `탐지: ${period.boundaryTest}`,
     `중단: ${period.failure}`,
@@ -318,7 +331,7 @@ function addRecovery(period, periodIndex) {
 
 async function addCodexReference(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "Codex는 코드를 대신 쓰는 도구보다 검증 루프에 가깝습니다", periodIndex, "Codex 활용");
+  addHeader(slide, "Codex 검증 루프", periodIndex, "공식·로컬 참고 화면");
   const [file, source] = period.screenshot;
   const imagePath = path.join(ROOT, "assets/screenshots", file);
   try {
@@ -343,7 +356,7 @@ async function addCodexReference(period, periodIndex) {
 
 function addCodexTask(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "Codex에게는 목표보다 완료 조건을 더 구체적으로 줍니다", periodIndex, "작업 요청 예시");
+  addHeader(slide, "Codex 작업 명세", periodIndex, "작업 요청 예시");
   const task = [
     ["목표", period.codex],
     ["허용 경로", period.files.slice(1, 3).join("\n")],
@@ -361,7 +374,7 @@ function addCodexTask(period, periodIndex) {
 
 function addCodexReview(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "생성된 patch는 diff와 test 증거를 보고 사람이 결정합니다", periodIndex, "Codex 검증 루프");
+  addHeader(slide, "Patch 검증과 사람 Merge", periodIndex, "Codex 검증 루프");
   const checks = [
     ["01", "Scope", "허용 경로 밖 파일이 바뀌지 않았는가"],
     ["02", "Focused test", period.normalTest],
@@ -380,7 +393,7 @@ function addCodexReview(period, periodIndex) {
 
 function addDemoSetup(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "강사가 먼저 정상 경로를 끝까지 실행합니다", periodIndex, "강사 시연");
+  addHeader(slide, "강사 정상 경로 시연", periodIndex, "강사 시연");
   addBullets(slide, [
     `열기: ${period.files[0]}`,
     `구현 확인: ${period.files[1]}`,
@@ -392,7 +405,7 @@ function addDemoSetup(period, periodIndex) {
 
 function addCommand(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "같은 저장소에서 이 명령을 실행합니다", periodIndex, "실행 명령");
+  addHeader(slide, "실행 명령", periodIndex, "Terminal");
   addShape(slide, "rect", { left: 72, top: 190, width: 1136, height: 242 }, C.black);
   addText(slide, "$", { left: 112, top: 250, width: 36, height: 40 }, { size: 27, bold: true, color: C.blue });
   addText(slide, period.command, { left: 166, top: 236, width: 980, height: 92 }, { size: 23, bold: true, color: C.white, valign: "middle" });
@@ -403,7 +416,7 @@ function addCommand(period, periodIndex) {
 
 function addExpected(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "완료 여부는 화면이 아니라 결과 계약으로 확인합니다", periodIndex, "예상 결과");
+  addHeader(slide, "완료 기준", periodIndex, "예상 결과");
   addText(slide, "STATUS", { left: 80, top: 176, width: 220, height: 26 }, { size: 13, bold: true, color: C.muted });
   addText(slide, "SUCCESS 또는 EXPECTED_FAILURE", { left: 80, top: 220, width: 520, height: 64 }, { size: 30, bold: true, color: C.ink });
   addText(slide, "ARTIFACT", { left: 80, top: 336, width: 220, height: 26 }, { size: 13, bold: true, color: C.muted });
@@ -416,7 +429,7 @@ function addExpected(period, periodIndex) {
 
 function addDemoFailure(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "강사는 실패 한 건도 바로 재현하고 복구합니다", periodIndex, "실패 시연");
+  addHeader(slide, "강사 실패·복구 시연", periodIndex, "실패 시연");
   addText(slide, "재현", { left: 80, top: 170, width: 180, height: 30 }, { size: 14, bold: true, color: C.muted });
   addText(slide, period.failure, { left: 80, top: 224, width: 500, height: 152 }, { size: 28, bold: true, color: C.ink });
   addShape(slide, "line", { left: 630, top: 174, width: 0, height: 360 }, "none", C.faint, 1);
@@ -428,22 +441,22 @@ function addDemoFailure(period, periodIndex) {
 
 function addLabSetup(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "이제 같은 코드를 각자 실행하고 한 줄만 바꿉니다", periodIndex, "소프트웨어 실습");
+  addHeader(slide, "Codex 기반 소프트웨어 제작", periodIndex, "소프트웨어 실습");
   addText(slide, "열 파일", { left: 80, top: 174, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
-  addText(slide, period.files[3], { left: 260, top: 164, width: 860, height: 50 }, { size: 25, bold: true, color: C.ink });
-  addText(slide, "수정 범위", { left: 80, top: 280, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
-  addText(slide, "notebook의 실습 변수 또는 fixture 한 줄 · src 전체를 복사해 바꾸지 않음", { left: 260, top: 270, width: 860, height: 74 }, { size: 23, bold: true, color: C.ink });
+  addText(slide, `${period.files[1]}\n${period.files[2]}`, { left: 260, top: 154, width: 860, height: 76 }, { size: 22, bold: true, color: C.ink });
+  addText(slide, "작업 범위", { left: 80, top: 280, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
+  addText(slide, "Codex 작업 명세 → 최소 Patch → Focused Test → Diff 검토", { left: 260, top: 270, width: 860, height: 74 }, { size: 23, bold: true, color: C.ink });
   addText(slide, "완료 기준", { left: 80, top: 410, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
   addText(slide, `${period.normalTest}\n${period.artifact} 저장`, { left: 260, top: 400, width: 860, height: 84 }, { size: 23, bold: true, color: C.ink });
-  addNotes(slide, "생각 활동이 아니라 직접 IDE·notebook·terminal에서 실행하는 구간임을 분명히 한다.", [`local:${period.files[3]}`]);
+  addNotes(slide, "IDE·terminal·Codex에서 코드를 수정하고 test와 결과 파일을 남기는 실제 제작 구간이다.", period.files.map((file) => `local:${file}`));
 }
 
 function addLabStep(period, periodIndex, stepIndex) {
   const slide = deck.slides.add();
   const steps = [
-    ["입력과 설정을 확인합니다", `파일: ${period.files[0]}\n변수: 실행 경로·provider·dry-run 여부`],
-    ["정상 경로를 실행합니다", `${period.command}\n성공 신호: ${period.normalTest}`],
-    ["경계값을 바꿔 실패를 확인합니다", `${period.boundaryTest}\n복구: ${period.recovery}`],
+    ["작업 명세 입력", `${period.codex}\n허용 파일: ${period.files.slice(1, 3).join(" · ")}`],
+    ["Patch 생성과 Focused Test", `${period.command}\n정상 Case: ${period.normalTest}`],
+    ["Diff 리뷰와 경계 Case", `${period.boundaryTest}\n복구: ${period.recovery}`],
   ];
   const [title, body] = steps[stepIndex];
   addHeader(slide, `STEP ${stepIndex + 1} · ${title}`, periodIndex, "소프트웨어 실습");
@@ -455,7 +468,7 @@ function addLabStep(period, periodIndex, stepIndex) {
 
 function addTest(period, periodIndex, isBoundary) {
   const slide = deck.slides.add();
-  const title = isBoundary ? "가장 중요한 실패 조건을 test로 고정합니다" : "정상 case를 focused test로 확인합니다";
+  const title = isBoundary ? "경계 Case Test" : "정상 Case Test";
   addHeader(slide, title, periodIndex, "실행 확인");
   addShape(slide, "rect", { left: 72, top: 164, width: 1136, height: 126 }, C.black);
   addText(slide, isBoundary ? "BOUNDARY" : "NORMAL", { left: 104, top: 194, width: 160, height: 24 }, { size: 13, bold: true, color: C.gray300 });
@@ -475,7 +488,7 @@ function addTest(period, periodIndex, isBoundary) {
 function addCareer(period, periodIndex, kind) {
   const slide = deck.slides.add();
   const incumbent = kind === "incumbent";
-  addHeader(slide, incumbent ? "재직자는 작은 운영 문제 한 곳에 먼저 적용합니다" : "구직자는 제품 판단과 검증 증거를 함께 보여줍니다", periodIndex, incumbent ? "재직자 적용" : "구직자 포트폴리오");
+  addHeader(slide, incumbent ? "현업 적용" : "포트폴리오 적용", periodIndex, incumbent ? "재직자" : "구직자");
   addText(slide, period.serviceCase, { left: 90, top: 170, width: 1100, height: 116 }, { size: 31, bold: true, color: C.ink, valign: "middle", align: "center" });
   const bullets = incumbent ? [
     "실제 업무 데이터 대신 합성·비식별 sample로 먼저 실행",
@@ -494,7 +507,7 @@ function addCareer(period, periodIndex, kind) {
 
 function addOperations(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "서비스로 운영하려면 이 네 가지 질문에 답해야 합니다", periodIndex, "운영 점검");
+  addHeader(slide, "서비스 운영 점검", periodIndex, "운영 기준");
   const questions = [
     ["품질", `무엇을 ${period.normalTest}로 정의하는가`],
     ["안전", "어디에서 사람 승인과 external_write=false를 확인하는가"],
@@ -513,14 +526,14 @@ function addOperations(period, periodIndex) {
 
 function addCheckpoint(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, `${partNumber(periodIndex)}차시를 마치기 전에 세 가지를 확인합니다`, periodIndex, "차시 마무리");
+  addHeader(slide, `${partNumber(periodIndex)}차시 완료 확인`, periodIndex, "차시 마무리");
   addBullets(slide, [
     `설명: ${period.title}이 필요한 이유를 한 문장으로 말할 수 있다.`,
     `실행: ${period.command}`,
     `증거: ${period.artifact}과 정상·실패 test 결과가 남아 있다.`,
   ], { left: 96, top: 178, width: 1060 }, { rowHeight: 122, size: 23 });
   const next = config.periods[periodIndex + 1];
-  addText(slide, next ? `다음 차시: ${next.title}` : "17:10-17:40 쉬는 시간 · 17:40-18:00 Q&A·실행 복구", { left: 160, top: 566, width: 960, height: 38 }, { size: 18, bold: true, color: C.ink, align: "center" });
+  addText(slide, next ? `다음 차시: ${next.title}` : "17:30-18:00 쉬는 시간", { left: 160, top: 566, width: 960, height: 38 }, { size: 18, bold: true, color: C.ink, align: "center" });
   addNotes(slide, "차시의 설명·실행·증거를 확인하고 다음 입력으로 넘긴다.");
 }
 

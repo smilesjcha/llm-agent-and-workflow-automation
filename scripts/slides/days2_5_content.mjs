@@ -1,19 +1,41 @@
 const T = (term, meaning) => [term, meaning];
 
+const PERIOD_TITLES = {
+  25: "PR Target과 Fixture",
+  26: "GitHub 인증과 최소 권한",
+  27: "REST 상태 코드와 복구",
+  28: "LangGraph State와 분기",
+  29: "Checkpoint와 Idempotency",
+  30: "Human Approval과 Interrupt",
+  31: "Dry-run Comment Payload",
+  32: "Sandbox GitHub 게시",
+  33: "Meeting·Review Service Router",
+  34: "LangSmith Trace 구조",
+  35: "운영 Metadata와 Monitoring",
+  36: "Dataset Experiment와 Release Gate",
+  37: "Human Feedback과 Annotation",
+  38: "PII·Retention·Incident 운영",
+  39: "Release Candidate와 Vercel Demo",
+  40: "최종 Demo와 Scorecard",
+};
+
 const P = (hour, title, config) => ({
   hour,
-  title,
-  mode: "강의 12분 · 강사 시연 10분 · 소프트웨어 실습 23분 · 실행 확인 5분",
+  title: PERIOD_TITLES[hour] ?? title,
+  mode: "강의 12분 · 강사 시연 10분 · Codex 소프트웨어 제작 23분 · 실행 확인 5분",
   ...config,
+  screenshot: hour === 22
+    ? ["vscode-pytest-19-passed-local.png", config.screenshot[1]]
+    : config.screenshot,
 });
 
 export const COURSE_DAYS = {
   2: {
     deckTitle: "Day 2 · 한국어 회의 Agent",
-    subtitle: "음성 파일을 근거가 남는 회의 결과로 바꿉니다",
+    subtitle: "한국어 STT · 회의 구조화 · 근거 검증",
     service: "Meeting Intelligence Service",
     periods: [
-      P(9, "오디오는 먼저 파일 계약부터 확인합니다", {
+      P(9, "오디오 파일 계약과 메타데이터", {
         outcome: "길이·채널·샘플링레이트를 읽고 전사 가능 여부를 판단한다.",
         why: "깨진 입력을 모델 문제로 오해하면 복구 순서가 뒤집힌다.",
         artifact: "audio_metadata.json",
@@ -29,7 +51,7 @@ export const COURSE_DAYS = {
         serviceCase: "고객 상담 녹음이 들어오기 전에 포맷과 보존 정책을 검사하는 업로드 단계",
         screenshot: ["faster-whisper-official.png", "https://github.com/SYSTRAN/faster-whisper"],
       }),
-      P(10, "faster-whisper는 로컬 STT의 교체 가능한 adapter입니다", {
+      P(10, "faster-whisper 로컬 STT Adapter", {
         outcome: "CPU int8 환경에서 한국어 음성을 segment와 timestamp로 전사한다.",
         why: "모델 호출과 나머지 업무 로직을 분리해야 GPU·모델·provider를 바꿀 수 있다.",
         artifact: "transcript.json",
@@ -45,7 +67,7 @@ export const COURSE_DAYS = {
         serviceCase: "사내망에서 원본 음성을 외부로 보내지 않는 상담 품질 분석",
         screenshot: ["whisper-cpp-official.png", "https://github.com/ggerganov/whisper.cpp"],
       }),
-      P(11, "전사 성공과 전사 품질 통과는 다른 상태입니다", {
+      P(11, "STT 품질 Gate", {
         outcome: "무음·반복·낮은 확률·언어 불일치를 품질 flag로 분리한다.",
         why: "문자가 생성됐다는 사실만으로 회의 결과를 만들면 이름과 숫자 오류가 그대로 번진다.",
         artifact: "quality_gate.json",
@@ -61,7 +83,7 @@ export const COURSE_DAYS = {
         serviceCase: "회의록 생성 전에 고유명사와 금액 구간만 운영자가 spot check",
         screenshot: ["google-meet-transcript-official.png", "https://support.google.com/meet/answer/12849897"],
       }),
-      P(12, "회의록 schema는 요약보다 먼저 합의합니다", {
+      P(12, "회의록 Schema와 Pydantic 계약", {
         outcome: "summary·decision·action item·evidence를 Pydantic 계약으로 만든다.",
         why: "자유로운 문장은 읽기 좋지만 downstream 자동화가 실패해도 원인을 찾기 어렵다.",
         artifact: "meeting_schema.json",
@@ -77,7 +99,7 @@ export const COURSE_DAYS = {
         serviceCase: "회의 요약을 Jira·Notion·메일로 보내기 전 공통 계약",
         screenshot: ["langchain-lcel-demo-local.png", "https://docs.langchain.com/oss/python/langchain/overview"],
       }),
-      P(13, "긴 회의는 문장이 아니라 발화 단위로 나눕니다", {
+      P(13, "발화 단위 Chunking", {
         outcome: "timestamp와 evidence ID를 잃지 않는 chunk를 만든다.",
         why: "글자 수만 자르면 담당자·결정·근거가 서로 다른 chunk로 갈라진다.",
         artifact: "meeting_chunks.json",
@@ -93,7 +115,7 @@ export const COURSE_DAYS = {
         serviceCase: "10분 이상 상품 운영 회의를 결정·담당자·기한으로 축약",
         screenshot: ["jupyter-lab-official.png", "https://jupyter.org/"],
       }),
-      P(14, "LangChain은 prompt·model·parser를 하나의 실행 계약으로 묶습니다", {
+      P(14, "LangChain MeetingBrief Pipeline", {
         outcome: "fixture·Ollama·OpenAI가 같은 MeetingBrief를 반환하게 한다.",
         why: "provider별 코드를 업무 로직에 섞으면 모델 변경이 곧 전체 재개발이 된다.",
         artifact: "meeting_brief.json",
@@ -109,7 +131,7 @@ export const COURSE_DAYS = {
         serviceCase: "비용·보안·지연에 따라 로컬과 API 모델을 교체하는 회의 서비스",
         screenshot: ["ollama-langchain-provider-local.png", "https://ollama.com/library/qwen3"],
       }),
-      P(15, "근거가 없는 Action Item은 좋은 문장이 아니라 위험한 업무입니다", {
+      P(15, "Action Item 근거 검증", {
         outcome: "모든 결정과 할 일을 원문 segment ID에 연결한다.",
         why: "담당자와 기한을 잘못 붙이면 회의 자동화가 오히려 조정 비용을 만든다.",
         artifact: "validated_meeting_brief.json",
@@ -125,7 +147,7 @@ export const COURSE_DAYS = {
         serviceCase: "회의 후 담당 업무를 자동 제안하되 게시 전 원문 근거를 확인",
         screenshot: ["langgraph-interrupt-demo-local.png", "https://docs.langchain.com/oss/python/langgraph/interrupts"],
       }),
-      P(16, "같은 회의 Agent도 도메인별 품질 기준은 달라집니다", {
+      P(16, "도메인별 Golden Set", {
         outcome: "이커머스·교육·금융 사례에 맞는 평가 case를 만든다.",
         why: "범용 요약 점수만으로는 금액·날짜·상품명 같은 도메인 오류를 잡지 못한다.",
         artifact: "day2_eval_cases.json",
@@ -145,47 +167,47 @@ export const COURSE_DAYS = {
   },
   3: {
     deckTitle: "Day 3 · 코드 리뷰 Agent",
-    subtitle: "그럴듯한 의견이 아니라 변경 라인과 test에 근거를 남깁니다",
+    subtitle: "변경 라인 · Test 근거 · 리뷰 평가",
     service: "Review Intelligence Service",
     periods: [
-      P(17, "좋은 리뷰는 취향보다 사용자 위험을 먼저 말합니다", {
+      P(17, "코드 리뷰 기준과 Severity", {
         outcome: "P0~P3 severity와 actionable finding 기준을 합의한다.", why: "스타일 지적이 많아질수록 중요한 correctness 오류가 묻힌다.", artifact: "review_rubric.md",
         terms: [T("Finding", "한 가지 문제와 교정 제안"), T("Severity", "사용자 영향과 긴급도"), T("False positive", "문제가 아닌데 문제라고 한 결과"), T("Confidence", "근거에 대한 확신 정도")],
         pipeline: ["변경 확인", "사용자 영향", "재현 조건", "근거 라인", "가장 작은 교정"], files: ["AGENTS.md", "src/course_services/contracts.py", "data/day3_review_cases/unsafe_pr.diff", "materials/day3/day3_service_lab.ipynb"],
         command: "python -m pytest -q tests/test_course_services.py -k maps_findings", failure: "모든 의견을 P1으로 부풀려 개발자가 경고를 무시한다.", recovery: "correctness·security·data loss·contract break에 집중하고 style은 linter에 맡긴다.", codex: "AGENTS.md 리뷰 기준을 읽고 바뀐 라인에만 finding을 작성하게 한다.", normalTest: "한 finding에는 path·line·severity·근거·제안이 모두 있다.", boundaryTest: "변경과 무관한 파일 의견은 게시 후보에서 제외한다.", serviceCase: "작은 팀의 PR 대기 시간을 줄이는 첫 번째 자동 검토",
         screenshot: ["codex-cli-official.png", "https://developers.openai.com/codex/cli"],
       }),
-      P(18, "unified diff를 읽어야 리뷰가 정확한 줄에 붙습니다", {
+      P(18, "Unified Diff와 Line Mapping", {
         outcome: "hunk header로 새 파일 line number를 복원한다.", why: "내용이 맞아도 line mapping이 틀리면 GitHub comment는 422 또는 엉뚱한 위치에 붙는다.", artifact: "parsed_hunks.json",
         terms: [T("Diff", "변경 전후 차이"), T("Hunk", "연속된 변경 구간"), T("Old line", "변경 전 파일의 줄"), T("New line", "변경 후 파일의 줄")], pipeline: ["+++ target 확인", "@@ header parse", "context는 양쪽 증가", "삭제는 old만 증가", "추가는 new에 기록"], files: ["src/course_services/review_service.py", "tests/test_course_services.py", "data/day3_review_cases/unsafe_pr.diff", "materials/day3/day3_service_lab.ipynb"], command: "python -m pytest -q tests/test_course_services.py -k unified_diff", failure: "파일 header와 코드의 + 기호를 같은 것으로 처리한다.", recovery: "+++ header를 먼저 분리하고 hunk 안의 추가 라인만 수집한다.", codex: "rename·new file·삭제 only diff를 포함한 parser boundary test를 제안받는다.", normalTest: "추가된 9·11·12번 줄에 finding이 매핑된다.", boundaryTest: "absolute path와 hunk 없는 입력은 구조화 실패다.", serviceCase: "GitHub·GitLab에서 공통으로 쓰는 diff 분석 core",
         screenshot: ["github-repository-quickstart-official.png", "https://docs.github.com/repositories/creating-and-managing-repositories/quickstart-for-repositories"],
       }),
-      P(19, "큰 저장소도 리뷰 문맥은 작고 명확해야 합니다", {
+      P(19, "리뷰 Context Pack", {
         outcome: "변경 파일·직접 호출부·관련 test만 context pack으로 고른다.", why: "파일을 많이 넣으면 정확도가 자동으로 오르는 대신 비용과 상충 정보가 늘어난다.", artifact: "context_pack.json",
         terms: [T("Repo context", "변경을 이해하는 데 필요한 저장소 정보"), T("Dependency", "변경 코드가 의존하는 대상"), T("Call site", "함수를 실제 호출하는 위치"), T("Context budget", "한 번에 전달할 문맥 한도")], pipeline: ["changed path", "관련 symbol", "가까운 test", "정책 문서", "불필요 문맥 제외"], files: ["AGENTS.md", "src/course_services/review_service.py", "tests/test_course_services.py", "README.md"], command: "rg -n \"run_review_service|ReviewFinding\" src tests", failure: "비밀키·대용량 로그·무관한 output까지 context에 넣는다.", recovery: "rg로 후보를 좁히고 secret·generated output을 명시적으로 제외한다.", codex: "저장소를 이해하되 수정 전 관련 파일과 test를 먼저 나열하게 한다.", normalTest: "context pack에 changed_paths와 test_candidates가 남는다.", boundaryTest: "workspace 밖·.env·실행 cache는 context에서 제외한다.", serviceCase: "수천 파일 monorepo에서 리뷰 latency와 비용을 줄이는 selection",
         screenshot: ["vscode-repo-workspace-local.png", "https://code.visualstudio.com/docs/editor/workspaces"],
       }),
-      P(20, "리뷰 결과도 API처럼 고정된 계약이 필요합니다", {
+      P(20, "ReviewFinding 결과 계약", {
         outcome: "ReviewFinding과 ReviewReport를 Pydantic으로 검증한다.", why: "자유 문장은 deduplication·line comment·평가에 다시 쓰기 어렵다.", artifact: "review_report.json",
         terms: [T("Contract", "호출자와 구현 사이의 약속"), T("extra=forbid", "모르는 필드를 거부"), T("Error code", "복구 판단에 쓰는 이름"), T("Automatic publish", "사람 없이 게시되는 동작")], pipeline: ["finding validate", "line mapping", "report aggregate", "automatic_publish false", "expected failure code"], files: ["src/course_services/contracts.py", "src/course_services/review_service.py", "tests/test_course_services.py", "data/day5_eval/golden_review_findings.json"], command: "python -m pytest -q tests/test_course_services.py", failure: "schema 오류가 raw traceback으로 notebook을 끝낸다.", recovery: "EXPECTED_FAILURE와 error_code로 바꾸고 원인은 trace에 남긴다.", codex: "contract 변경 시 정상·누락 field·extra field test를 함께 갱신한다.", normalTest: "confidence 0~1과 line>=1이 검증된다.", boundaryTest: "automatic_publish=true는 model validation에서 차단된다.", serviceCase: "리뷰 결과를 IDE·PR·대시보드에서 같은 형식으로 재사용",
         screenshot: ["pytest-getting-started-official.png", "https://docs.pytest.org/en/stable/getting-started.html"],
       }),
-      P(21, "Prompt baseline은 작은 고정 입력에서 출발합니다", {
+      P(21, "Prompt Baseline과 의도적 Bug", {
         outcome: "의도적 bug diff에서 baseline finding을 만든다.", why: "실제 PR만으로 튜닝하면 무엇이 개선됐는지 비교할 정답이 없다.", artifact: "baseline_review.json",
         terms: [T("Baseline", "개선 전 비교 기준"), T("Few-shot", "입출력 예시를 prompt에 제공"), T("Rule ID", "같은 오류 유형을 묶는 식별자"), T("Deterministic", "같은 입력에 재현 가능한 결과")], pipeline: ["synthetic diff", "rule baseline", "LLM candidate", "schema validate", "사람 비교"], files: ["data/day3_review_cases/unsafe_pr.diff", "src/course_services/review_service.py", "materials/day3/day3_service_lab.ipynb", "output/day3-review/baseline.json"], command: "python -m pytest -q tests/test_course_services.py -k maps_findings", failure: "LLM이 존재하지 않는 runtime 결과를 근거로 finding을 만든다.", recovery: "diff·static check·실제 test output만 evidence로 허용한다.", codex: "baseline rule 하나를 구현하고 test가 먼저 실패하는지 확인한 뒤 수정한다.", normalTest: "eval·외부 쓰기·broad except 세 finding이 나온다.", boundaryTest: "빈 diff는 그럴듯한 빈 성공이 아니라 EMPTY_DIFF다.", serviceCase: "교육용 bug repo에서 reviewer의 품질 변화 설명",
         screenshot: ["vscode-pytest-19-passed-local.png", "https://code.visualstudio.com/docs/python/testing"],
       }),
-      P(22, "정적 분석과 LLM은 서로 다른 일을 맡아야 합니다", {
+      P(22, "정적 분석·LLM Hybrid Review", {
         outcome: "ruff·pytest 결과와 의미 리뷰를 한 context로 합친다.", why: "문법·unused import까지 LLM에 맡기면 느리고 일관성도 낮다.", artifact: "hybrid_review.json",
         terms: [T("Static analysis", "코드를 실행하지 않고 규칙으로 검사"), T("Unit test", "작은 기능의 동작을 검증"), T("Hybrid review", "결정론 검사와 의미 검토 결합"), T("Evidence", "실제 명령과 변경 라인")], pipeline: ["ruff", "focused pytest", "diff parse", "LLM review", "deduplicate"], files: ["AGENTS.md", "tests/test_course_services.py", "src/course_services/review_service.py", ".github/workflows/test.yml"], command: "python -m pytest -q tests/test_course_services.py", failure: "실행하지 않은 test를 passed라고 prompt에 써 둔다.", recovery: "command·exit code·stdout 요약을 실행 후 evidence bundle에 넣는다.", codex: "코드를 만든 뒤 focused test와 full suite를 실제로 실행하고 결과를 보고하게 한다.", normalTest: "결정론 finding과 test evidence가 같은 report에 존재한다.", boundaryTest: "test 미실행은 READY_FOR_HUMAN_MERGE가 아니다.", serviceCase: "PR이 열리면 자동 검사 후 개발자가 고위험 finding만 검토",
         screenshot: ["vscode-pytest-25-passed-local.png", "https://code.visualstudio.com/docs/python/testing"],
       }),
-      P(23, "리뷰 Agent는 finding 수가 아니라 precision과 recall로 봅니다", {
+      P(23, "Precision·Recall 기반 평가", {
         outcome: "golden finding과 predicted finding을 exact key로 비교한다.", why: "많이 지적하는 reviewer가 실제로 더 좋은 reviewer라는 보장은 없다.", artifact: "review_eval.json",
         terms: [T("Precision", "제기한 문제 중 맞은 비율"), T("Recall", "잡아야 할 문제 중 찾은 비율"), T("F1", "precision과 recall의 조화 평균"), T("Golden set", "합의된 기대 finding 모음")], pipeline: ["key 정규화", "교집합", "false positive", "false negative", "release gate"], files: ["src/course_services/eval_service.py", "data/day5_eval/golden_review_findings.json", "tests/test_course_services.py", "materials/day3/day3_service_lab.ipynb"], command: "python -m pytest -q tests/test_course_services.py -k offline_eval", failure: "제목 문구가 조금 달라졌다고 같은 finding을 다른 것으로 센다.", recovery: "path·line·rule_id 같은 안정 key를 평가에 사용한다.", codex: "평가 함수를 구현할 때 empty prediction·empty expected 경계를 test한다.", normalTest: "fixture case precision·recall·F1이 1.0이다.", boundaryTest: "recall 또는 precision 0.8 미만이면 HOLD다.", serviceCase: "모델 교체 전 기존 reviewer보다 나아졌는지 정량 비교",
         screenshot: ["langsmith-evaluation-official.png", "https://docs.langchain.com/langsmith/evaluation"],
       }),
-      P(24, "리뷰 개선은 prompt 감각이 아니라 오류 분석으로 끝냅니다", {
+      P(24, "오류 분석과 회귀 방지", {
         outcome: "false positive·false negative 원인을 분류하고 Day 3 report를 만든다.", why: "평균 점수만 보면 특정 언어·파일·위험 유형의 반복 실패가 보이지 않는다.", artifact: "day3_review_report.md",
         terms: [T("Error analysis", "틀린 결과의 패턴을 분류"), T("Regression", "이전보다 나빠진 동작"), T("Ablation", "구성요소를 빼 영향 확인"), T("Human merge", "최종 반영은 사람이 결정")], pipeline: ["실패 목록", "원인 label", "최소 수정", "회귀 test", "commit·tag"], files: ["src/course_services/codex_harness.py", "tests/test_course_services.py", "AGENTS.md", "materials/day3/day3_service_lab.ipynb"], command: "git diff -- src/course_services tests/test_course_services.py", failure: "점수를 올리려고 기존 assertion이나 policy를 약화한다.", recovery: "실패를 대표 test로 추가하고 최소 변경만 허용한다.", codex: "diff를 검토하고 actionable finding만 보고한 뒤 test 증거를 다시 확인한다.", normalTest: "허용된 path·focused test·diff review가 모두 충족된다.", boundaryTest: ".env 변경·secret 탐지·미실행 test 중 하나라도 있으면 HOLD다.", serviceCase: "현업은 merge 보조, 구직자는 리뷰 품질 리포트와 회귀 test를 포트폴리오로 제출",
         screenshot: ["codex-cli-docs-official.png", "https://developers.openai.com/codex/cli"],
@@ -194,7 +216,7 @@ export const COURSE_DAYS = {
   },
   4: {
     deckTitle: "Day 4 · GitHub PR 자동화",
-    subtitle: "읽기와 쓰기를 분리하고 사람 승인 뒤 한 번만 실행합니다",
+    subtitle: "PR 수집 · LangGraph 승인 · 안전한 게시",
     service: "PR Review Automation Service",
     periods: [
       P(25, "PR 자동화는 target을 정확히 읽는 것부터 시작합니다", { outcome: "repository·PR number·head SHA·diff를 fixture에서 읽는다.", why: "대상 commit이 바뀌면 이전 line mapping과 review comment가 stale해진다.", artifact: "pr_target.json", terms: [T("PR", "변경을 검토·병합하는 요청"), T("Commit", "특정 시점의 변경 묶음"), T("Head SHA", "PR 최신 commit 식별자"), T("Review comment", "diff line에 붙는 의견")], pipeline: ["fixture load", "target validate", "head SHA 고정", "diff load", "read-only result"], files: ["data/day4_github/pr_fixture.json", "src/course_services/github_service.py", "data/day3_review_cases/unsafe_pr.diff", "materials/day4/day4_service_lab.ipynb"], command: "python -m pytest -q tests/test_course_services.py -k github", failure: "화면에 보이는 PR 제목만 믿고 repo·number·SHA를 확인하지 않는다.", recovery: "쓰기 전 target 세 필드를 payload와 승인 화면에 다시 표시한다.", codex: "fixture loader에 필수 field·workspace path test를 추가한다.", normalTest: "synthetic fixture가 PullRequestTarget으로 validate된다.", boundaryTest: "필드 누락이나 workspace 밖 fixture는 구조화 오류다.", serviceCase: "사내 repo PR을 읽어 검토 대기열을 만드는 read-only bot", screenshot: ["github-repository-quickstart-official.png", "https://docs.github.com/repositories/creating-and-managing-repositories/quickstart-for-repositories"] }),
@@ -209,7 +231,7 @@ export const COURSE_DAYS = {
   },
   5: {
     deckTitle: "Day 5 · 통합·관측·평가·배포",
-    subtitle: "두 서비스를 운영 가능한 하나의 제품 흐름으로 묶습니다",
+    subtitle: "서비스 통합 · LangSmith 관측 · 평가 · 배포",
     service: "Agent Operations Console",
     periods: [
       P(33, "Router는 파일 확장자가 아니라 명시된 업무 의도로 분기합니다", { outcome: "meeting_transcript와 code_diff를 같은 entry point에서 실행한다.", why: "모델 추측으로 업무 종류를 고르면 잘못된 tool과 권한이 연결될 수 있다.", artifact: "unified_service_result.json", terms: [T("Router", "입력을 알맞은 workflow로 전달"), T("Input kind", "호출자가 명시한 업무 종류"), T("Adapter", "서로 다른 service 결과를 연결"), T("Boundary", "읽기·쓰기·승인 경계")], pipeline: ["path validate", "input kind 확인", "meeting 또는 review", "공통 result", "사람 승인"], files: ["src/course_services/service_router.py", "src/course_services/meeting_service.py", "src/course_services/review_service.py", "materials/day5/day5_service_lab.ipynb"], command: "python -m pytest -q tests/test_course_services.py -k router", failure: "내용을 LLM에게 보여주고 업무 종류와 권한을 함께 추측시킨다.", recovery: "input_kind를 API contract로 받고 unsupported type은 거부한다.", codex: "새 service route를 추가할 때 workspace 경계와 external_write=false를 test한다.", normalTest: "회의와 diff가 각각 올바른 service 이름으로 반환된다.", boundaryTest: "unknown kind와 workspace escape는 EXPECTED_FAILURE다.", serviceCase: "한 화면에서 회의·PR 리뷰를 선택 실행하는 내부 도구", screenshot: ["langchain-langgraph-workflow-demo-local.png", "https://docs.langchain.com/oss/python/langgraph/overview"] }),
@@ -228,11 +250,11 @@ export const DAY_TIMES = [
   ["09:00-09:50", "1차시"],
   ["09:50-10:40", "2차시"],
   ["10:40-11:30", "3차시"],
-  ["13:00-13:50", "4차시"],
-  ["13:50-14:40", "5차시"],
-  ["14:40-15:30", "6차시"],
-  ["15:30-16:20", "7차시"],
-  ["16:20-17:10", "8차시"],
+  ["12:00-12:50", "4차시"],
+  ["12:50-13:40", "5차시"],
+  ["15:00-15:50", "6차시"],
+  ["15:50-16:40", "7차시"],
+  ["16:40-17:30", "8차시"],
 ];
 
 export const CODEX_OFFICIAL_SOURCE = "https://learn.chatgpt.com/use-cases";
