@@ -9,9 +9,10 @@
 - `materials/day1/2026-08-23_Day1_강사용_핵심교안.md`: 시간대별 강의·시연·실습 운영안
 - `materials/day1/04_codex_github_pr_lab.md`: GitHub·Codex·PR 리뷰 실습 런북
 - `materials/day1/04_ollama_agent_workflow.ipynb`: 12시부터 이어지는 환경·Ollama Tool Calling·LCEL 실습
-- `materials/day1/04_ollama_agent_workflow.executed.ipynb`: Ollama 미설치 fallback까지 포함한 실행 완료본
+- `materials/day1/04_ollama_agent_workflow.executed.ipynb`: Qwen Tool Call 성공·LangChain schema fallback을 포함한 실행 완료본
 - `materials/day1/07_langchain_langgraph_workflow.ipynb`: LCEL·StateGraph·interrupt/resume 실행 notebook
 - `materials/day1/07_langchain_langgraph_workflow.executed.ipynb`: 설치 실패 시에도 흐름을 확인할 실행 완료본
+- `materials/day1/수강생용_4-8차시_실습패키지_가이드.md`: 설치 셀·차시별 실행·복구·제출 안내
 - `materials/day1/실행파일_차시별_맵.md`: 1~8차시별 파일·명령·완료 증거
 - `materials/day1/강사_회의음성_라이브데모_런북.md`: STT 라이브 데모 및 실패 복구 절차
 - `src/langchain_lab.py`: Prompt·Provider·Pydantic parser·policy validator LCEL
@@ -25,9 +26,12 @@
 ## 빠른 시작
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3.12 --version
+python3.12 -m venv .venv312
+source .venv312/bin/activate
+python -m pip install --upgrade pip setuptools wheel
 python -m pip install -r requirements-day1.txt
+python -m pip check
 python -m pytest -q
 python -m src.day1_agent
 python -m src.ollama_tool_agent --probe
@@ -36,10 +40,21 @@ python -m src.langchain_lab --provider fixture
 python -m src.langgraph_lab --decision all
 python -m src.workflow_service --decision approve --out output/day1-workflow
 python scripts/run_day1_preflight.py
+python scripts/build_day1_student_bundle.py
 ```
 
-정상 기준은 `23 passed`, 안전한 파일 Tool 실행, LangGraph `READY_FOR_EXPORT`, 평가 `READY`, `automatic_email=false`다. Ollama가 없으면 `provider_used=fixture`와 `fallback_reason`이 함께 남아야 하며, 거절 경로는 `REJECTED/HOLD`여야 한다.
+기존 `.venv`가 Python 3.9로 만들어졌다면 내부 Python을 업그레이드할 수 없으므로 재사용하지 않는다. 위처럼 새 `.venv312`를 만들고, VS Code와 Notebook Kernel도 그 환경의 Python으로 다시 선택한다. `pip3 install -r requirements*.txt`처럼 wildcard로 세 파일을 한꺼번에 설치하지 말고, 기본·로컬 LLM·STT를 필요한 순서대로 분리한다.
+
+Ollama용 LangChain adapter가 필요할 때만 기본 설치 뒤에 다음 명령을 추가한다.
+
+```bash
+python -m pip install -r requirements-local-llm-optional.txt
+python -m pytest -q tests/test_langchain_langgraph_lab.py tests/test_ollama_tool_agent.py
+```
+
+정상 기준은 `25 passed`, 안전한 파일 Tool 실행, LangGraph `READY_FOR_EXPORT`, 평가 `READY`, `automatic_email=false`다. Ollama 모델이 없으면 `provider_used=fixture`와 `fallback_reason`이 함께 남아야 하며, 거절 경로는 `REJECTED/HOLD`여야 한다.
 전체 점검 결과는 `output/day1-preflight/preflight_report.json`에서 차시별 명령·종료 코드·결과 파일과 함께 확인한다.
+별도 배포용 ZIP은 `dist/day1-student-lab-bundle.zip`에 생성되며, 기본값은 43MB 상세 음성과 비밀정보를 제외한다.
 
 배포된 읽기·검토용 결과 UI: https://web-demo-five-sigma.vercel.app
 

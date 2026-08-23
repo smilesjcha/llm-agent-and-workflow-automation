@@ -292,7 +292,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 | 10:40-11:30 | 1일차 3차시 | 한국어 데이터와 Prompt 기본기 | 자료 수집·typed JSON 실행 | 근거가 있는 결과 JSON |
 | 11:30-12:00 | 쉬는 시간 | 빠른 점심 또는 간식 권장 | - | - |
 | 12:00-12:50 | 1일차 4차시 | Python·VS Code·Jupyter·Ollama 환경 | 개발환경 세팅 실습 | 상태 JSON·4 passed |
-| 12:50-13:40 | 1일차 5차시 | Ollama Tool Calling·안전 실행 루프 | 실제/fixture Tool Call·실패 test | 정상·차단·fallback·23 passed |
+| 12:50-13:40 | 1일차 5차시 | Ollama Tool Calling·안전 실행 루프 | 실제/fixture Tool Call·실패 test | 정상·차단·fallback·25 passed |
 | 13:40-14:00 | 쉬는 시간 | 점심 전 실행 상태 저장 | - | checkpoint |
 | 14:00-15:00 | 점심시간 | 14:55까지 복귀 | - | - |
 | 15:00-15:40 | 1일차 6차시 | LangChain LCEL·무료 로컬 LLM Adapter | 같은 notebook에서 provider 교체 | typed output·provider 비교 |
@@ -331,7 +331,7 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - VS Code Python/Jupyter extension과 kernel 선택 화면을 캡처 기준으로 안내한다.
 - `materials/day1/04_ollama_agent_workflow.ipynb`를 열고 `probe_ollama()`로 CLI·서버·모델을 따로 확인한다.
 - notebook cell의 실행 순서가 상태를 만든다는 점을 설명하고 `Run All`이 되는 상태를 기준으로 삼는다.
-- 현재 강사 PC의 확인 결과는 `OLLAMA_NOT_INSTALLED`다. 설치된 것으로 가정하지 않고, 실제 시연 전 앱과 `qwen3:4b`를 준비한다.
+- 현재 강사 PC에는 Ollama 0.32.15, local server, `qwen3:4b` 2.5GB model이 준비되어 있다. 실제 Tool Call은 Qwen으로 성공했고, LangChain structured output은 schema 파싱 실패 시 fixture로 복구되는 것을 확인했다.
 - 설치 실패 시 같은 notebook이 `recommended_lane=fixture`를 선택하고 `4 passed`까지 계속되어야 한다.
 - Codex·GitHub PR은 필수 notebook 경로를 끝낸 수강생의 선택 확장으로 둔다.
 
@@ -340,9 +340,9 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 - 4차시에서 연 같은 notebook을 계속 사용한다.
 - fixture와 Ollama Planner가 같은 `tool_name/arguments` 계약으로 도구 사용을 제안하게 한다.
 - 실제 실행 전 `SafeToolExecutor`가 allowlist·argument·workspace 경계를 다시 검사한다.
-- 정상 파일 읽기, `../../private.txt` 경로 차단, Ollama 미설치 fallback을 직접 실행한다.
+- 정상 파일 읽기, `../../private.txt` 경로 차단, Ollama 모델 없음 fallback을 직접 실행한다.
 - 결과에 `provider_requested`, `provider_used`, `fallback_reason`, `error_code`, `automatic_email=false`를 남긴다.
-- 점심 전 전체 test를 실행해 `23 passed`를 확인한다.
+- 점심 전 전체 test를 실행해 `25 passed`를 확인한다.
 
 #### 1일차 6차시 — LangChain은 provider가 바뀌어도 결과 계약을 유지한다
 

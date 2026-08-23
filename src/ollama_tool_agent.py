@@ -40,7 +40,8 @@ class OllamaGenerateClient:
                 "prompt": prompt,
                 "stream": False,
                 "format": "json",
-                "options": {"temperature": 0},
+                "think": False,
+                "options": {"temperature": 0, "num_predict": 512},
             },
             ensure_ascii=False,
         ).encode("utf-8")

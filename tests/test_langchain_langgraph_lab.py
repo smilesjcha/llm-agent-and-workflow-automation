@@ -1,4 +1,4 @@
-from src.langchain_lab import run_langchain_lab
+from src.langchain_lab import normalize_provider_failure, run_langchain_lab
 from src.langgraph_lab import run_langgraph_lab
 
 
@@ -16,6 +16,7 @@ def test_langchain_lcel_returns_typed_policy_safe_result() -> None:
     assert result["checks"]["evidence_present"] is True
     assert result["result"]["automatic_email"] is False
     assert result["result"]["requires_human_approval"] is True
+    assert len(normalize_provider_failure(ValueError("x" * 500))) <= 200
 
 
 def test_langgraph_approve_interrupts_then_exports_locally() -> None:

@@ -48,7 +48,7 @@
       "claim": "Ollama가 도구를 제안해도 실행 권한은 validation과 workspace 정책을 가진 Python 코드에 남는다.",
       "question": "언제 재시도하고, 언제 사람에게 넘기고, 언제 완전히 멈추는가?",
       "owns": ["Fixture/Ollama Planner", "Validator", "SafeToolExecutor", "ToolResult", "workspace boundary", "fallback reason", "stop"],
-      "evidence": ["정상 Tool Call", "POLICY_BLOCKED", "provider requested/used", "pytest 23개"]
+      "evidence": ["정상 Tool Call", "POLICY_BLOCKED", "provider requested/used", "pytest 25개"]
     },
     {
       "id": "B6_REPLACEABLE_LLM",

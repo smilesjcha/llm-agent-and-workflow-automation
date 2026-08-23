@@ -77,6 +77,51 @@ os.chdir(ROOT)
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 print({"python": platform.python_version(), "root": str(ROOT)})
+if sys.version_info < (3, 12):
+    raise RuntimeError(
+        "UNSUPPORTED_PYTHON: 이 실습은 Python 3.12 이상이 필요합니다. "
+        "Python 3.12로 새 가상환경을 만들고 Notebook Kernel을 다시 선택하세요."
+    )
+"""
+        ),
+        markdown(
+            """
+### 최초 1회 · notebook kernel에 library 설치
+
+Python 3.12 Kernel을 선택합니다. 4차시 notebook에서 이미 설치했다면 `ALREADY_READY`가 표시됩니다. 이 노트북부터 시작하는 수강생은 아래 셀을 먼저 실행합니다. Ollama 선택 library 설치가 실패해도 fixture로 LangChain·LangGraph 실습을 계속합니다.
+"""
+        ),
+        code(
+            """
+from importlib.util import find_spec
+import subprocess
+
+def ensure_requirements(requirements_file, modules, *, required):
+    missing = [name for name in modules if find_spec(name) is None]
+    command = [sys.executable, "-m", "pip", "install", "-q", "-r", str(ROOT / requirements_file)]
+    print("install command:", " ".join(command))
+    if not missing:
+        print({"requirements": requirements_file, "status": "ALREADY_READY"})
+        return True
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    status = "INSTALLED" if completed.returncode == 0 else "INSTALL_FAILED"
+    print({"requirements": requirements_file, "missing": missing, "status": status})
+    if completed.returncode != 0 and required:
+        raise RuntimeError(completed.stderr.strip().splitlines()[-1])
+    if completed.returncode != 0:
+        print("선택 library 설치 실패: fixture 경로로 계속합니다.")
+    return completed.returncode == 0
+
+ensure_requirements(
+    "requirements-day1.txt",
+    ["jupyter", "pytest", "langchain_core", "langgraph", "pydantic"],
+    required=True,
+)
+ensure_requirements(
+    "requirements-local-llm-optional.txt",
+    ["langchain_ollama"],
+    required=False,
+)
 """
         ),
         markdown(

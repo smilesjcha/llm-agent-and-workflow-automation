@@ -60,6 +60,55 @@ os.chdir(ROOT)
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 print({"python": platform.python_version(), "repo_ready": (ROOT / "tests").exists()})
+if sys.version_info < (3, 12):
+    raise RuntimeError(
+        "UNSUPPORTED_PYTHON: 이 실습은 Python 3.12 이상이 필요합니다. "
+        "Python 3.12로 새 가상환경을 만들고 Notebook Kernel을 다시 선택하세요."
+    )
+"""
+        ),
+        markdown(
+            """
+## 최초 1회 · 필요한 library 설치
+
+아래 셀은 Python 3.12 notebook kernel에 필요한 패키지가 있는지 먼저 확인합니다. 없는 경우에만 `requirements-day1.txt`와 Ollama 선택 패키지를 설치합니다.
+
+- 필수 설치 실패: 뒤의 LangChain·LangGraph 실습을 진행할 수 없으므로 첫 오류를 해결합니다.
+- Ollama 선택 패키지 실패: fixture 경로로 4~8차시를 계속할 수 있습니다.
+- 설치 후 import 오류가 계속되면 VS Code에서 **Restart Kernel**을 한 번 실행합니다.
+"""
+        ),
+        code(
+            """
+from importlib.util import find_spec
+import subprocess
+
+def ensure_requirements(requirements_file, modules, *, required):
+    missing = [name for name in modules if find_spec(name) is None]
+    command = [sys.executable, "-m", "pip", "install", "-q", "-r", str(ROOT / requirements_file)]
+    print("install command:", " ".join(command))
+    if not missing:
+        print({"requirements": requirements_file, "status": "ALREADY_READY"})
+        return True
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    status = "INSTALLED" if completed.returncode == 0 else "INSTALL_FAILED"
+    print({"requirements": requirements_file, "missing": missing, "status": status})
+    if completed.returncode != 0 and required:
+        raise RuntimeError(completed.stderr.strip().splitlines()[-1])
+    if completed.returncode != 0:
+        print("선택 library 설치 실패: fixture 경로로 계속합니다.")
+    return completed.returncode == 0
+
+ensure_requirements(
+    "requirements-day1.txt",
+    ["jupyter", "pytest", "langchain_core", "langgraph", "pydantic"],
+    required=True,
+)
+ensure_requirements(
+    "requirements-local-llm-optional.txt",
+    ["langchain_ollama"],
+    required=False,
+)
 """
         ),
         markdown(
@@ -161,7 +210,7 @@ assert blocked["tool_result"]["error_code"] == "POLICY_BLOCKED"
             """
 ## 5차시 · Ollama 실제 Tool Call 제안
 
-아래 셀은 항상 `provider="ollama"`를 요청합니다. 준비된 컴퓨터에서는 실제 `qwen3:4b` 응답을 사용하고, 현재 컴퓨터처럼 미설치 상태이면 fixture로 복구한 이유가 결과에 남습니다.
+아래 셀은 항상 `provider="ollama"`를 요청합니다. 강사 컴퓨터처럼 `qwen3:4b`가 준비되어 있으면 실제 응답을 사용하고, 수강생 컴퓨터의 모델이 준비되지 않았다면 fixture로 복구한 이유가 결과에 남습니다.
 """
         ),
         code(
@@ -267,7 +316,7 @@ print(json.dumps({
 - [ ] `tests/test_ollama_tool_agent.py` 4개가 통과했다.
 - [ ] 정상 파일은 읽고 workspace 밖 경로는 `POLICY_BLOCKED`로 멈췄다.
 - [ ] Ollama 요청과 실제 사용 provider가 결과에 따로 남았다.
-- [ ] 전체 Day 1 test가 `23 passed`로 끝났다.
+- [ ] 전체 Day 1 test가 `25 passed`로 끝났다.
 - [ ] LCEL은 fixture/Ollama 어느 경로에서도 같은 typed schema와 정책 검사를 유지했다.
 
 다음에는 `07_langchain_langgraph_workflow.ipynb`를 열어 이 결과를 LangGraph 사람 승인 State로 넘깁니다.

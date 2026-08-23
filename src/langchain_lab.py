@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.exceptions import OutputParserException
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel, Field
@@ -73,6 +74,17 @@ def _fixture_model(prompt_value: Any) -> str:
     return json.dumps(fixture_payload(), ensure_ascii=False)
 
 
+def normalize_provider_failure(exc: Exception) -> str:
+    """Return a short, stable classroom error instead of the raw model output."""
+
+    if isinstance(exc, OutputParserException):
+        return "SCHEMA_PARSE_FAILED: model output did not match MeetingBrief"
+    detail = str(exc).replace("\n", " ").strip()
+    if len(detail) > 180:
+        detail = f"{detail[:177]}..."
+    return f"{type(exc).__name__}: {detail}"
+
+
 def build_chain(*, provider: Literal["fixture", "ollama"] = "fixture", model: str = "qwen3:4b"):
     """Compose prompt, provider, typed parser, and policy validator with LCEL."""
 
@@ -90,7 +102,12 @@ def build_chain(*, provider: Literal["fixture", "ollama"] = "fixture", model: st
     if provider == "ollama":
         from langchain_ollama import ChatOllama  # type: ignore[import-not-found]
 
-        model_runnable = ChatOllama(model=model, temperature=0)
+        model_runnable = ChatOllama(
+            model=model,
+            temperature=0,
+            reasoning=False,
+            num_predict=2048,
+        )
     else:
         model_runnable = RunnableLambda(_fixture_model).with_config(
             run_name="fixture_meeting_model"
@@ -127,7 +144,7 @@ def run_langchain_lab(
     except Exception as exc:
         if provider != "ollama" or not allow_fallback:
             raise
-        fallback_reason = f"{type(exc).__name__}: {exc}"
+        fallback_reason = normalize_provider_failure(exc)
         selected_provider = "fixture"
         result = build_chain(provider="fixture").invoke({"transcript": transcript})
 

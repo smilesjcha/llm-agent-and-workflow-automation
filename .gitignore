@@ -1,4 +1,4 @@
-.venv/
+.venv*/
 node_modules
 **/node_modules
 **/dist/
@@ -10,6 +10,7 @@ __pycache__/
 *.pyo
 *.log
 artifacts/
+dist/
 .build/
 tmp/
 .DS_Store
@@ -19,6 +20,7 @@ output/day1-demo/
 output/day1-demo-*/
 output/day1-preflight/
 output/day1-ollama-tool/
+output/day1-langchain/
 output/notebook-ollama/
 slides/*/
 design-system/ppt/cha-sungjae-musinsa-lecture/rendered/
