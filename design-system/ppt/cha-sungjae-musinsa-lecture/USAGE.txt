@@ -13,7 +13,7 @@ PALETTE
 
 TYPOGRAPHY
 - Authoring preference: Pretendard / Helvetica Neue.
-- Current Mac runtime fallback: Apple SD Gothic Neo / Helvetica Neue.
+- Current Mac runtime: AppleGothic. PDF export should not mix NanumGothic and NanumBrush family substitutions.
 - Slide title 32pt by default; section and cover titles are larger. Body is 19pt by default and never below 16pt; caption is 11-12pt.
 - Use weight 600-800. Avoid light body copy.
 - Titles are audience-facing conclusions, not production labels.
