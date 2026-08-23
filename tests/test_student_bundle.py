@@ -13,6 +13,8 @@ def test_student_manifest_contains_notebooks_without_private_or_large_audio() ->
     relative = {path.relative_to(ROOT).as_posix() for path in student_files(ROOT)}
     assert "materials/day1/04_ollama_agent_workflow.ipynb" in relative
     assert "materials/day1/07_langchain_langgraph_workflow.ipynb" in relative
+    assert "materials/day1/08_audio_meeting_agent_workflow.ipynb" in relative
+    assert "materials/day1/08_audio_meeting_agent_workflow.executed.ipynb" in relative
     assert ".env.sample" in relative
     assert "requirements-openai-optional.txt" in relative
     assert "data/meeting_sample_ko_12min.wav" not in relative

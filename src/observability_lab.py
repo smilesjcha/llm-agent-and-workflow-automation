@@ -9,11 +9,24 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import UTC, datetime
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
 from time import perf_counter
 from typing import Any, Iterator
+from uuid import uuid4
+
+
+LANGSMITH_SAFE_CLASSIFICATIONS = frozenset({"synthetic", "deidentified"})
+
+
+def disable_automatic_langsmith_tracing() -> bool:
+    """Prevent raw LangChain inputs from bypassing the redacted upload boundary."""
+
+    was_enabled = os.getenv("LANGSMITH_TRACING", "").lower() == "true"
+    os.environ["LANGSMITH_TRACING"] = "false"
+    return was_enabled
 
 
 class LocalTraceRecorder:
@@ -95,15 +108,17 @@ def evaluate_workflow(chain_result: dict[str, Any], graph_result: dict[str, Any]
 
 
 def langsmith_status() -> dict[str, Any]:
-    """Report whether online tracing is explicitly configured; never print the key."""
+    """Report LangSmith configuration without printing the API key."""
 
-    enabled = os.getenv("LANGSMITH_TRACING", "").lower() == "true"
-    has_key = bool(os.getenv("LANGSMITH_API_KEY"))
+    auto_tracing_enabled = os.getenv("LANGSMITH_TRACING", "").lower() == "true"
+    has_key = bool(os.getenv("LANGSMITH_API_KEY", "").strip())
     return {
-        "enabled": enabled and has_key,
+        "enabled": auto_tracing_enabled and has_key,
+        "auto_tracing_enabled": auto_tracing_enabled,
+        "manual_upload_ready": has_key,
         "project": os.getenv("LANGSMITH_PROJECT", "ipa-day1-software-lab"),
         "api_key_present": has_key,
-        "fallback": "local_json_trace" if not (enabled and has_key) else None,
+        "fallback": "local_json_trace" if not (auto_tracing_enabled and has_key) else None,
     }
 
 
@@ -111,26 +126,117 @@ def upload_summary_to_langsmith(
     *,
     trace: dict[str, Any],
     evaluation: dict[str, Any],
+    client: Any | None = None,
 ) -> dict[str, Any]:
-    """Upload a redacted run summary only when the instructor opts in.
+    """Upload one redacted run summary after an explicit caller opt-in.
 
-    Transcript text and secret values are intentionally excluded. This function
-    is never called by the default classroom command.
+    Transcript text, model output, file paths, and secrets are intentionally
+    excluded. The default classroom command never calls this function.
     """
 
     status = langsmith_status()
-    if not status["enabled"]:
-        return {"uploaded": False, **status}
+    if not status["api_key_present"]:
+        return {
+            "requested": True,
+            "uploaded": False,
+            "error_code": "LANGSMITH_API_KEY_MISSING",
+            **status,
+        }
 
-    from langsmith import Client
+    metadata = trace.get("metadata", {})
+    classification = metadata.get("data_classification", "local_only")
+    if classification not in LANGSMITH_SAFE_CLASSIFICATIONS:
+        return {
+            "requested": True,
+            "uploaded": False,
+            "error_code": "LANGSMITH_DATA_CLASSIFICATION_BLOCKED",
+            "allowed_classifications": sorted(LANGSMITH_SAFE_CLASSIFICATIONS),
+            **status,
+        }
 
-    client = Client()
-    run_id = client.create_run(
-        name=trace["run_name"],
-        run_type="chain",
-        inputs={"metadata": trace["metadata"]},
-        outputs={"evaluation": evaluation, "span_count": len(trace["spans"])},
-        project_name=status["project"],
-    )
-    return {"uploaded": True, "project": status["project"], "run_id": str(run_id)}
+    run_id = uuid4()
+    request_id_hash = sha256(
+        str(metadata.get("request_id", "missing-request-id")).encode("utf-8")
+    ).hexdigest()[:16]
+    safe_spans = [
+        {
+            "name": span.get("name"),
+            "status": span.get("status"),
+            "latency_ms": span.get("latency_ms"),
+        }
+        for span in trace.get("spans", [])
+    ]
+    try:
+        if client is None:
+            from langsmith import Client
 
+            client = Client(
+                api_key=os.environ["LANGSMITH_API_KEY"],
+                api_url=os.getenv("LANGSMITH_ENDPOINT") or None,
+                workspace_id=os.getenv("LANGSMITH_WORKSPACE_ID") or None,
+            )
+
+        client.create_run(
+            name=trace.get("run_name", "meeting-agent-workflow"),
+            run_type="chain",
+            inputs={
+                "request_id_hash": request_id_hash,
+                "data_classification": classification,
+                "contains_pii": False,
+            },
+            outputs={
+                "release_decision": evaluation.get("decision"),
+                "checks": evaluation.get("checks", {}),
+                "metrics": evaluation.get("metrics", {}),
+                "spans": safe_spans,
+            },
+            project_name=status["project"],
+            id=run_id,
+            start_time=datetime.fromisoformat(trace["started_at"]),
+            end_time=datetime.fromisoformat(trace["finished_at"]),
+            tags=["day1", "redacted-summary", classification],
+            extra={
+                "metadata": {
+                    "human_upload_approval": True,
+                    "transcript_uploaded": False,
+                    "external_action_executed": False,
+                }
+            },
+        )
+        for span in safe_spans:
+            child_timestamp = datetime.now(UTC)
+            client.create_run(
+                name=span["name"] or "unnamed-workflow-step",
+                run_type="chain",
+                inputs={"redacted": True},
+                outputs={
+                    "status": span["status"],
+                    "latency_ms": span["latency_ms"],
+                },
+                project_name=status["project"],
+                id=uuid4(),
+                parent_run_id=run_id,
+                trace_id=run_id,
+                start_time=child_timestamp,
+                end_time=child_timestamp,
+                tags=["redacted-step", classification],
+            )
+        client.flush()
+    except Exception as exc:
+        return {
+            "requested": True,
+            "uploaded": False,
+            "error_code": "LANGSMITH_UPLOAD_FAILED",
+            "error_type": type(exc).__name__,
+            "project": status["project"],
+        }
+
+    return {
+        "requested": True,
+        "uploaded": True,
+        "error_code": None,
+        "project": status["project"],
+        "run_id": str(run_id),
+        "web_url": "https://smith.langchain.com",
+        "transcript_uploaded": False,
+    }

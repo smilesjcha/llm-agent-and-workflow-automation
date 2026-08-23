@@ -6,7 +6,7 @@ from src.day1_agent import (
     count_action_markers,
     run_agent_once,
 )
-from src.meeting_demo import detect_quality_flags, run_demo
+from src.meeting_demo import detect_quality_flags, ensure_workspace_path, run_demo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,3 +89,15 @@ def test_meeting_demo_falls_back_and_writes_outputs(tmp_path: Path) -> None:
     assert detect_quality_flags("깨진 \ufffd 문자") == ["REPLACEMENT_CHARACTER"]
     assert (tmp_path / "demo-output/transcript.json").exists()
     assert (tmp_path / "demo-output/meeting_result.json").exists()
+
+
+def test_meeting_demo_blocks_path_outside_workspace(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside.wav"
+    try:
+        ensure_workspace_path(outside, workspace)
+    except ValueError as exc:
+        assert str(exc).startswith("WORKSPACE_PATH_BLOCKED")
+    else:
+        raise AssertionError("outside path must be blocked")

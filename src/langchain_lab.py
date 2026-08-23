@@ -24,6 +24,44 @@ from src.openai_provider import DEFAULT_OPENAI_MODEL, OpenAIResponsesTextClient
 ProviderName = Literal["fixture", "ollama", "openai"]
 
 
+# Ollama's grammar parser is more reliable with an inline schema that excludes
+# Pydantic-only constraints such as regex patterns and $ref definitions. The
+# generated dict is validated against MeetingBrief immediately afterward.
+OLLAMA_MEETING_JSON_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string"},
+        "summary": {"type": "string"},
+        "decisions": {"type": "array", "items": {"type": "string"}},
+        "action_items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "task": {"type": "string"},
+                    "owner": {"type": "string"},
+                    "due_date": {"type": "string"},
+                    "evidence_ids": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["task", "owner", "due_date", "evidence_ids"],
+            },
+        },
+        "risk_flags": {"type": "array", "items": {"type": "string"}},
+        "requires_human_approval": {"type": "boolean"},
+        "automatic_email": {"type": "boolean"},
+    },
+    "required": [
+        "title",
+        "summary",
+        "decisions",
+        "action_items",
+        "risk_flags",
+        "requires_human_approval",
+        "automatic_email",
+    ],
+}
+
+
 class ActionItem(BaseModel):
     task: str = Field(min_length=1)
     owner: str = Field(min_length=1)
@@ -118,22 +156,35 @@ def build_chain(
         [
             (
                 "system",
-                "당신은 한국어 회의 기록 Agent다. 근거 ID가 없는 할 일은 만들지 말고 자동 메일을 발송하지 않는다.\n{format_instructions}",
+                "당신은 한국어 회의 기록 Agent다. 지정된 모든 필드를 채운다. "
+                "근거 ID가 없는 할 일은 만들지 말고 automatic_email은 false, "
+                "requires_human_approval은 true로 둔다. due_date는 YYYY-MM-DD이며, "
+                "연도가 생략된 8월 날짜는 강의 기준 연도인 2026년을 사용한다. "
+                "evidence_ids에는 입력에 표시된 s01 같은 segment ID를 넣는다.\n"
+                "{format_instructions}",
             ),
             ("human", "다음 회의를 구조화하라.\n\n{transcript}"),
         ]
     ).partial(format_instructions=parser.get_format_instructions())
 
     selected_model = model or _default_model(provider)
+    native_typed_output = False
     if provider == "ollama":
         from langchain_ollama import ChatOllama  # type: ignore[import-not-found]
 
-        model_runnable = ChatOllama(
+        chat_model = ChatOllama(
             model=selected_model,
             temperature=0,
             reasoning=False,
             num_predict=2048,
         )
+        model_runnable = chat_model.with_structured_output(
+            OLLAMA_MEETING_JSON_SCHEMA,
+            method="json_schema",
+        ).with_config(run_name="ollama_structured_meeting_model") | RunnableLambda(
+            MeetingBrief.model_validate
+        ).with_config(run_name="ollama_pydantic_validation")
+        native_typed_output = True
     elif provider == "openai":
         # Selecting provider="openai" is the explicit live-call boundary.
         # Notebook Run All passes a disabled client unless the learner opts in.
@@ -165,12 +216,10 @@ def build_chain(
             raise ValueError("POLICY_BLOCKED: human approval is required")
         return result
 
-    return (
-        prompt.with_config(run_name="meeting_prompt")
-        | model_runnable
-        | parser.with_config(run_name="meeting_schema_parser")
-        | RunnableLambda(policy_validator).with_config(run_name="policy_validator")
-    )
+    chain = prompt.with_config(run_name="meeting_prompt") | model_runnable
+    if not native_typed_output:
+        chain = chain | parser.with_config(run_name="meeting_schema_parser")
+    return chain | RunnableLambda(policy_validator).with_config(run_name="policy_validator")
 
 
 def run_langchain_lab(
@@ -198,13 +247,18 @@ def run_langchain_lab(
         selected_provider = "fixture"
         result = build_chain(provider="fixture").invoke({"transcript": transcript})
 
+    pipeline = (
+        ["ChatPromptTemplate", "ChatOllama JSON Schema", "Policy Validator"]
+        if selected_provider == "ollama"
+        else ["ChatPromptTemplate", "Model Adapter", "PydanticOutputParser", "Policy Validator"]
+    )
     return {
         "status": "SUCCESS",
         "framework": "LangChain LCEL",
         "provider_requested": provider,
         "provider_used": selected_provider,
         "fallback_reason": fallback_reason,
-        "pipeline": ["ChatPromptTemplate", "Model Adapter", "PydanticOutputParser", "Policy Validator"],
+        "pipeline": pipeline,
         "result": result.model_dump(),
         "checks": {
             "schema_valid": True,

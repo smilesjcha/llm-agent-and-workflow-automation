@@ -1236,8 +1236,8 @@ const MODULES = [
     ],
     labs: [
       l('Ideation 1 · Managed vs Local 선택', '05 MIN', ['현재 조직의 회의 도구를 적는다.', '전사·요약 제공 여부를 적는다.', '계정·보존·권한 제약을 적는다.', '직접 STT가 필요한 이유를 한 줄로 정한다.'], 'Managed/Local 선택 한 줄'),
-      l('소프트웨어 실습 1 · STT quality gate 실행', '08 MIN', ['meeting_demo.py를 fixture mode로 실행한다.', 'segment의 quality_flags를 확인한다.', 'READY/HOLD와 fallback_reason을 확인한다.', 'transcript.json을 저장한다.'], 'quality gate JSON'),
-      l('소프트웨어 실습 2 · 로컬 trace 생성', '08 MIN', ['workflow_service를 approve로 실행한다.', 'trace.json의 세 span을 연다.', 'latency·status·metadata를 확인한다.', 'reject로 다시 실행해 차이를 본다.'], 'approve/reject trace 2개'),
+      l('소프트웨어 실습 1 · 실제 WAV와 STT quality gate', '08 MIN', ['08_audio_meeting_agent_workflow.ipynb를 연다.', 'small 모델로 66초 합성 WAV를 전사한다.', '언어 확률·word timestamp·quality_flags를 확인한다.', 'READY/HOLD와 fallback_reason을 확인한다.'], 'transcript + quality gate'),
+      l('소프트웨어 실습 2 · 회의 Agent 통합 실행', '08 MIN', ['meeting_agent_workflow를 qwen3:4b로 실행한다.', 'STT HOLD면 transcript_review에서 멈춘다.', 'summary_review를 승인해 같은 thread를 재개한다.', 'trace.json의 STT·Graph·release span을 비교한다.'], '이중 승인 + READY/HOLD'),
       l('소프트웨어 실습 3 · Release Gate 테스트', '09 MIN', ['pytest에서 READY test를 실행한다.', 'reject가 HOLD인지 확인한다.', 'evidence_rate와 자동 메일 금지를 확인한다.', 'LangSmith 연결 전 local fallback 상태를 저장한다.'], 'READY/HOLD test + trace'),
       l('설계 워크숍 1 · 전체 흐름 연결', '08 MIN', ['STT부터 최종 저장까지 순서를 그립니다.', 'LangChain·LangGraph·LangSmith 위치를 표시합니다.', '사람 승인과 fallback 위치를 표시합니다.', '그림 아래에 전체 흐름을 세 문장으로 적습니다.'], '전체 흐름 1장 + 설명 3문장'),
     ],

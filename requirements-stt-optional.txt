@@ -1,4 +1,4 @@
-# Python 3.12 optional instructor-only path for the live local STT demo.
-# Day 1 learners can use the checked-in transcript fixture without this file.
+# Python 3.12 optional local STT path for the instructor demo and 8th-period lab.
+# Learners without this package use the checked-in transcript fixture and HITL recovery path.
 numpy>=1.26,<2
 faster-whisper>=1.1,<2

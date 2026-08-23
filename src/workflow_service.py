@@ -9,7 +9,14 @@ from typing import Any
 
 from src.langchain_lab import run_langchain_lab
 from src.langgraph_lab import Decision, run_langgraph_lab
-from src.observability_lab import LocalTraceRecorder, evaluate_workflow, langsmith_status
+from src.openai_provider import load_project_env
+from src.observability_lab import (
+    LocalTraceRecorder,
+    disable_automatic_langsmith_tracing,
+    evaluate_workflow,
+    langsmith_status,
+    upload_summary_to_langsmith,
+)
 
 
 def run_workflow(
@@ -18,17 +25,21 @@ def run_workflow(
     decision: Decision,
     output_dir: Path,
     edited_summary: str | None = None,
+    upload_langsmith: bool = False,
+    data_classification: str = "local_only",
+    langsmith_client: Any | None = None,
 ) -> dict[str, Any]:
     """Run LCEL, pause/resume LangGraph, evaluate, and persist an audit bundle."""
 
+    disable_automatic_langsmith_tracing()
     transcript = transcript_path.read_text(encoding="utf-8")
     request_id = f"{transcript_path.stem}-{decision}"
     trace = LocalTraceRecorder(
         run_name="meeting-agent-workflow",
         metadata={
             "request_id": request_id,
-            "dataset": transcript_path.name,
-            "contains_pii": False,
+            "data_classification": data_classification,
+            "contains_pii": False if data_classification in {"synthetic", "deidentified"} else None,
             "external_write": False,
         },
     )
@@ -54,13 +65,25 @@ def run_workflow(
 
     output_dir.mkdir(parents=True, exist_ok=True)
     trace_path = trace.write_json(output_dir / "trace.json")
+    if upload_langsmith:
+        langsmith_result = upload_summary_to_langsmith(
+            trace=trace.to_dict(),
+            evaluation=evaluation,
+            client=langsmith_client,
+        )
+    else:
+        langsmith_result = {
+            "uploaded": False,
+            "requested": False,
+            **langsmith_status(),
+        }
     result = {
         "status": "SUCCESS",
         "request_id": request_id,
         "langchain": chain_result,
         "langgraph": graph_result,
         "evaluation": evaluation,
-        "langsmith": langsmith_status(),
+        "langsmith": langsmith_result,
         "outputs": {
             "trace": str(trace_path),
             "bundle": str(output_dir / "workflow_result.json"),
@@ -74,6 +97,7 @@ def run_workflow(
 
 
 def main() -> None:
+    load_project_env()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--transcript",
@@ -83,12 +107,25 @@ def main() -> None:
     parser.add_argument("--decision", choices=["approve", "edit", "reject"], default="approve")
     parser.add_argument("--edited-summary")
     parser.add_argument("--out", type=Path, default=Path("output/day1-workflow"))
+    parser.add_argument(
+        "--upload-langsmith",
+        action="store_true",
+        help="Upload a redacted summary to LangSmith after local execution.",
+    )
+    parser.add_argument(
+        "--data-classification",
+        choices=["local_only", "synthetic", "deidentified"],
+        default="local_only",
+        help="Only synthetic or deidentified data can be uploaded.",
+    )
     args = parser.parse_args()
     result = run_workflow(
         transcript_path=args.transcript,
         decision=args.decision,
         output_dir=args.out,
         edited_summary=args.edited_summary,
+        upload_langsmith=args.upload_langsmith,
+        data_classification=args.data_classification,
     )
     print(
         json.dumps(
@@ -104,8 +141,9 @@ def main() -> None:
             indent=2,
         )
     )
+    if args.upload_langsmith and not result["langsmith"].get("uploaded"):
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
     main()
-

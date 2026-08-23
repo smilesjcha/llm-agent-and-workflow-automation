@@ -25,6 +25,8 @@ EXPLICIT_FILES = (
     "materials/day1/04_ollama_agent_workflow.executed.ipynb",
     "materials/day1/07_langchain_langgraph_workflow.ipynb",
     "materials/day1/07_langchain_langgraph_workflow.executed.ipynb",
+    "materials/day1/08_audio_meeting_agent_workflow.ipynb",
+    "materials/day1/08_audio_meeting_agent_workflow.executed.ipynb",
     "materials/day1/수강생용_4-8차시_실습패키지_가이드.md",
     "materials/day1/실행파일_차시별_맵.md",
     "data/demo_meeting.wav",
