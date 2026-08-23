@@ -1,9 +1,8 @@
 """Executable Day 1 LangChain lab: prompt -> model adapter -> parser -> validator.
 
 The default provider is deterministic and network-free so every learner can
-execute the same LCEL pipeline. An Ollama provider can be selected after the
-contract and tests pass; provider failure falls back to the same fixture
-contract instead of stopping class.
+execute the same LCEL pipeline. Ollama or OpenAI can be selected after the
+contract and tests pass; provider failure falls back to the same fixture.
 """
 
 from __future__ import annotations
@@ -18,6 +17,11 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel, Field
+
+from src.openai_provider import DEFAULT_OPENAI_MODEL, OpenAIResponsesTextClient
+
+
+ProviderName = Literal["fixture", "ollama", "openai"]
 
 
 class ActionItem(BaseModel):
@@ -80,12 +84,31 @@ def normalize_provider_failure(exc: Exception) -> str:
     if isinstance(exc, OutputParserException):
         return "SCHEMA_PARSE_FAILED: model output did not match MeetingBrief"
     detail = str(exc).replace("\n", " ").strip()
+    if detail in {
+        "OPENAI_API_KEY_MISSING",
+        "OPENAI_EMPTY_RESPONSE",
+        "OPENAI_LIVE_OPT_IN_REQUIRED",
+    }:
+        return detail
     if len(detail) > 180:
         detail = f"{detail[:177]}..."
     return f"{type(exc).__name__}: {detail}"
 
 
-def build_chain(*, provider: Literal["fixture", "ollama"] = "fixture", model: str = "qwen3:4b"):
+def _default_model(provider: ProviderName) -> str | None:
+    if provider == "ollama":
+        return "qwen3:4b"
+    if provider == "openai":
+        return DEFAULT_OPENAI_MODEL
+    return None
+
+
+def build_chain(
+    *,
+    provider: ProviderName = "fixture",
+    model: str | None = None,
+    openai_client: Any | None = None,
+):
     """Compose prompt, provider, typed parser, and policy validator with LCEL."""
 
     parser = PydanticOutputParser(pydantic_object=MeetingBrief)
@@ -99,14 +122,29 @@ def build_chain(*, provider: Literal["fixture", "ollama"] = "fixture", model: st
         ]
     ).partial(format_instructions=parser.get_format_instructions())
 
+    selected_model = model or _default_model(provider)
     if provider == "ollama":
         from langchain_ollama import ChatOllama  # type: ignore[import-not-found]
 
         model_runnable = ChatOllama(
-            model=model,
+            model=selected_model,
             temperature=0,
             reasoning=False,
             num_predict=2048,
+        )
+    elif provider == "openai":
+        client = openai_client or OpenAIResponsesTextClient()
+
+        def _openai_model(prompt_value: Any) -> str:
+            prompt_text = (
+                prompt_value.to_string()
+                if hasattr(prompt_value, "to_string")
+                else str(prompt_value)
+            )
+            return client.generate(prompt_text, model=selected_model, timeout=60)
+
+        model_runnable = RunnableLambda(_openai_model).with_config(
+            run_name="openai_responses_meeting_model"
         )
     else:
         model_runnable = RunnableLambda(_fixture_model).with_config(
@@ -131,18 +169,23 @@ def build_chain(*, provider: Literal["fixture", "ollama"] = "fixture", model: st
 def run_langchain_lab(
     transcript: str,
     *,
-    provider: Literal["fixture", "ollama"] = "fixture",
-    model: str = "qwen3:4b",
+    provider: ProviderName = "fixture",
+    model: str | None = None,
     allow_fallback: bool = True,
+    openai_client: Any | None = None,
 ) -> dict[str, Any]:
     """Execute the chain and normalize optional provider failure."""
 
     selected_provider = provider
     fallback_reason: str | None = None
     try:
-        result = build_chain(provider=provider, model=model).invoke({"transcript": transcript})
+        result = build_chain(
+            provider=provider,
+            model=model,
+            openai_client=openai_client,
+        ).invoke({"transcript": transcript})
     except Exception as exc:
-        if provider != "ollama" or not allow_fallback:
+        if provider == "fixture" or not allow_fallback:
             raise
         fallback_reason = normalize_provider_failure(exc)
         selected_provider = "fixture"
@@ -169,8 +212,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--transcript", type=Path, default=Path("data/meeting_sample_ko_12min.txt"))
     parser.add_argument("--out", type=Path, default=Path("output/day1-langchain/langchain_result.json"))
-    parser.add_argument("--provider", choices=["fixture", "ollama"], default="fixture")
-    parser.add_argument("--model", default="qwen3:4b")
+    parser.add_argument("--provider", choices=["fixture", "ollama", "openai"], default="fixture")
+    parser.add_argument("--model")
     args = parser.parse_args()
 
     payload = run_langchain_lab(

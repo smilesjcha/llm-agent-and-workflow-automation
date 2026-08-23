@@ -1,5 +1,5 @@
 # Validated with Python 3.12. Do not reuse a virtual environment created with Python 3.9.
-# Install the optional LLM and STT requirement files separately; do not use a wildcard.
+# Install local LLM, OpenAI, and STT optional files separately; do not use a wildcard.
 # Day 1 core exercises intentionally use the Python standard library only.
 # Install these for notebook execution and tests if they are not already present.
 jupyter>=1.0,<2

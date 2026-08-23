@@ -6,6 +6,8 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 .env
+.env.*
+!.env.sample
 *.pyc
 *.pyo
 *.log
@@ -20,6 +22,7 @@ output/day1-demo/
 output/day1-demo-*/
 output/day1-preflight/
 output/day1-ollama-tool/
+output/day1-openai-tool/
 output/day1-langchain/
 output/notebook-ollama/
 slides/*/

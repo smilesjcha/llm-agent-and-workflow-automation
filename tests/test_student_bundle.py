@@ -13,8 +13,10 @@ def test_student_manifest_contains_notebooks_without_private_or_large_audio() ->
     relative = {path.relative_to(ROOT).as_posix() for path in student_files(ROOT)}
     assert "materials/day1/04_ollama_agent_workflow.ipynb" in relative
     assert "materials/day1/07_langchain_langgraph_workflow.ipynb" in relative
+    assert ".env.sample" in relative
+    assert "requirements-openai-optional.txt" in relative
     assert "data/meeting_sample_ko_12min.wav" not in relative
-    assert not any(".env" in item.split("/") for item in relative)
+    assert ".env" not in relative
 
 
 def test_bundle_builds_inside_workspace_and_blocks_outside_destination(tmp_path: Path) -> None:
@@ -31,3 +33,8 @@ def test_bundle_builds_inside_workspace_and_blocks_outside_destination(tmp_path:
 
     with pytest.raises(ValueError, match="BUNDLE_DESTINATION_OUTSIDE_WORKSPACE"):
         build_bundle(root, tmp_path / "outside.zip", files=[sample])
+
+    local_secret = root / ".env.local"
+    local_secret.write_text("must-not-ship", encoding="utf-8")
+    with pytest.raises(ValueError, match="BUNDLE_PATH_BLOCKED"):
+        build_bundle(root, destination, files=[local_secret])

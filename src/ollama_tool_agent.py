@@ -1,9 +1,9 @@
-"""Local-first Ollama Tool Calling lab used from Day 1 period 4 onward.
+"""Fixture, Ollama, and OpenAI Tool Calling lab used from Day 1 period 4.
 
 The model only proposes a tool call. ``SafeToolExecutor`` remains the only
 execution boundary, so a local model can never widen file or write access.
-When Ollama is missing, stopped, or returns unusable JSON, the same lesson
-continues with a deterministic fixture planner and records why it fell back.
+When an optional provider is unavailable or returns unusable output, the same
+lesson continues with a deterministic fixture planner and records why.
 """
 
 from __future__ import annotations
@@ -18,9 +18,10 @@ from typing import Any, Literal, Protocol
 from urllib import error, request
 
 from src.day1_agent import SafeToolExecutor, TOOL_SCHEMAS
+from src.openai_provider import DEFAULT_OPENAI_MODEL, OpenAIResponsesToolClient
 
 
-ProviderName = Literal["fixture", "ollama"]
+ProviderName = Literal["fixture", "ollama", "openai"]
 
 
 class GenerateClient(Protocol):
@@ -142,17 +143,45 @@ def parse_tool_call(raw_text: str) -> dict[str, Any]:
     return {"name": payload["name"], "arguments": payload["arguments"]}
 
 
+def normalize_provider_failure(exc: Exception) -> str:
+    """Keep fallback evidence short and avoid leaking request internals."""
+
+    stable_codes = {
+        "OPENAI_API_KEY_MISSING",
+        "OPENAI_EMPTY_RESPONSE",
+        "OPENAI_LIVE_OPT_IN_REQUIRED",
+        "OPENAI_SINGLE_TOOL_CALL_REQUIRED",
+        "OPENAI_TOOL_ARGUMENTS_OBJECT_REQUIRED",
+        "OLLAMA_EMPTY_RESPONSE",
+    }
+    detail = str(exc).replace("\n", " ").strip()
+    if detail in stable_codes:
+        return detail
+    if len(detail) > 160:
+        detail = f"{detail[:157]}..."
+    return f"{type(exc).__name__}: {detail}"
+
+
+def default_model(provider: ProviderName) -> str | None:
+    if provider == "ollama":
+        return os.getenv("OLLAMA_MODEL", "qwen3:4b")
+    if provider == "openai":
+        return os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)
+    return None
+
+
 def plan_tool_call(
     user_message: str,
     *,
     provider: ProviderName = "fixture",
-    model: str = "qwen3:4b",
+    model: str | None = None,
     allow_fallback: bool = True,
     client: GenerateClient | None = None,
     timeout: int = 60,
 ) -> dict[str, Any]:
     """Create a tool proposal and make provider fallback explicit."""
 
+    selected_model = model or default_model(provider)
     provider_used: ProviderName = provider
     fallback_reason: str | None = None
     raw_response: str | None = None
@@ -160,9 +189,17 @@ def plan_tool_call(
         tool_call = fixture_tool_call(user_message)
     else:
         try:
-            raw_response = (client or OllamaGenerateClient()).generate(
+            selected_client = client
+            if selected_client is None:
+                selected_client = (
+                    OllamaGenerateClient()
+                    if provider == "ollama"
+                    else OpenAIResponsesToolClient()
+                )
+            assert selected_model is not None
+            raw_response = selected_client.generate(
                 build_tool_prompt(user_message),
-                model=model,
+                model=selected_model,
                 timeout=timeout,
             )
             tool_call = parse_tool_call(raw_response)
@@ -170,13 +207,13 @@ def plan_tool_call(
             if not allow_fallback:
                 raise
             provider_used = "fixture"
-            fallback_reason = f"{type(exc).__name__}: {exc}"
+            fallback_reason = normalize_provider_failure(exc)
             tool_call = fixture_tool_call(user_message)
 
     return {
         "provider_requested": provider,
         "provider_used": provider_used,
-        "model": model if provider == "ollama" else None,
+        "model": selected_model,
         "fallback_reason": fallback_reason,
         "raw_response": raw_response,
         "tool_call": tool_call,
@@ -188,12 +225,12 @@ def run_tool_agent(
     *,
     workspace: Path | None = None,
     provider: ProviderName = "fixture",
-    model: str = "qwen3:4b",
+    model: str | None = None,
     allow_fallback: bool = True,
     client: GenerateClient | None = None,
     timeout: int = 60,
 ) -> dict[str, Any]:
-    """Plan with fixture/Ollama, validate in code, and execute one safe tool."""
+    """Plan with a selected provider, then execute through one safe boundary."""
 
     plan = plan_tool_call(
         user_message,
@@ -219,8 +256,8 @@ def run_tool_agent(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("message", nargs="?", default="data/meeting_sample_ko.txt를 읽어줘")
-    parser.add_argument("--provider", choices=["fixture", "ollama"], default="fixture")
-    parser.add_argument("--model", default=os.getenv("OLLAMA_MODEL", "qwen3:4b"))
+    parser.add_argument("--provider", choices=["fixture", "ollama", "openai"], default="fixture")
+    parser.add_argument("--model")
     parser.add_argument("--out", type=Path)
     parser.add_argument("--probe", action="store_true")
     args = parser.parse_args()

@@ -14,8 +14,10 @@ FORBIDDEN_NAMES = {".env", ".git", "__pycache__", "node_modules"}
 EXPLICIT_FILES = (
     "README.md",
     "AGENTS.md",
+    ".env.sample",
     "requirements-day1.txt",
     "requirements-local-llm-optional.txt",
+    "requirements-openai-optional.txt",
     "requirements-stt-optional.txt",
     "materials/day1/01_agent_foundation.ipynb",
     "materials/day1/01_agent_foundation.executed.ipynb",
@@ -43,8 +45,14 @@ def _inside(root: Path, candidate: Path) -> bool:
     return candidate == root or root in candidate.parents
 
 
+def _forbidden_part(part: str) -> bool:
+    if part in FORBIDDEN_NAMES:
+        return True
+    return part.startswith(".env.") and part != ".env.sample"
+
+
 def _validate_relative_path(root: Path, relative: Path) -> Path:
-    if relative.is_absolute() or any(part in FORBIDDEN_NAMES for part in relative.parts):
+    if relative.is_absolute() or any(_forbidden_part(part) for part in relative.parts):
         raise ValueError(f"BUNDLE_PATH_BLOCKED: {relative}")
     resolved = (root / relative).resolve()
     if not _inside(root, resolved):

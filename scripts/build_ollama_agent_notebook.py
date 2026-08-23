@@ -1,4 +1,4 @@
-"""Build and execute the period 4-6 Ollama and Agent software lab notebook."""
+"""Build the period 4-6 Ollama/OpenAI provider comparison notebook."""
 
 from __future__ import annotations
 
@@ -30,15 +30,15 @@ def build_notebook():
     notebook["cells"] = [
         markdown(
             """
-# 1일차 4-6차시 · Ollama로 이어지는 Agent 소프트웨어 실습
+# 1일차 4-6차시 · Ollama와 GPT API Agent 소프트웨어 실습
 
 12시부터 한 notebook을 계속 사용합니다.
 
-- **4차시**: Python·Git·Ollama 설치와 서버·모델 상태를 코드로 진단합니다.
-- **5차시**: fixture와 Ollama가 제안한 Tool Call을 같은 안전 실행기로 검증합니다.
-- **6차시**: 같은 회의 입력을 LangChain LCEL의 fixture/Ollama provider로 실행합니다.
+- **4차시**: Python·Git·Ollama·OpenAI 선택 환경을 코드로 진단합니다.
+- **5차시**: fixture·Ollama·GPT가 제안한 Tool Call을 같은 안전 실행기로 검증합니다.
+- **6차시**: 같은 회의 입력을 LangChain LCEL의 세 provider로 실행합니다.
 
-Ollama가 없어도 notebook은 중단되지 않습니다. 설치된 사람은 실제 모델을 호출하고, 미설치·서버 중단·모델 없음은 `fallback_reason`을 남긴 뒤 같은 계약을 fixture로 실행합니다.
+Ollama가 없거나 GPT API를 선택하지 않아도 notebook은 중단되지 않습니다. 실제 provider 실패는 `fallback_reason`을 남기고 같은 계약을 fixture로 실행합니다. GPT API는 `.env`에 새 키를 넣고 `RUN_OPENAI_LIVE=1`로 명시한 경우에만 호출합니다.
 """
         ),
         markdown(
@@ -71,10 +71,10 @@ if sys.version_info < (3, 12):
             """
 ## 최초 1회 · 필요한 library 설치
 
-아래 셀은 Python 3.12 notebook kernel에 필요한 패키지가 있는지 먼저 확인합니다. 없는 경우에만 `requirements-day1.txt`와 Ollama 선택 패키지를 설치합니다.
+아래 셀은 Python 3.12 notebook kernel에 필요한 패키지가 있는지 먼저 확인합니다. 없는 경우에만 기본·Ollama·OpenAI 선택 패키지를 각각 설치합니다.
 
 - 필수 설치 실패: 뒤의 LangChain·LangGraph 실습을 진행할 수 없으므로 첫 오류를 해결합니다.
-- Ollama 선택 패키지 실패: fixture 경로로 4~8차시를 계속할 수 있습니다.
+- 선택 패키지 실패: fixture 경로로 4~8차시를 계속할 수 있습니다.
 - 설치 후 import 오류가 계속되면 VS Code에서 **Restart Kernel**을 한 번 실행합니다.
 """
         ),
@@ -107,6 +107,11 @@ ensure_requirements(
 ensure_requirements(
     "requirements-local-llm-optional.txt",
     ["langchain_ollama"],
+    required=False,
+)
+ensure_requirements(
+    "requirements-openai-optional.txt",
+    ["openai", "dotenv"],
     required=False,
 )
 """
@@ -142,14 +147,37 @@ print(json.dumps(ollama_status, ensure_ascii=False, indent=2))
         ),
         markdown(
             """
+## 4차시 · GPT API는 새 키로만 선택 실행
+
+1. 이미 공개된 키는 폐기하고 OpenAI Platform에서 새 키를 발급합니다.
+2. 터미널에서 `cp .env.sample .env`를 실행합니다.
+3. `.env`의 placeholder만 새 키로 교체합니다. 키는 notebook 셀·출력·캡처에 넣지 않습니다.
+4. 실제 API 비교를 할 때만 `.env`의 `RUN_OPENAI_LIVE=1`로 바꿉니다.
+
+`.env`는 Git에서 제외되고 `.env.sample`만 배포됩니다. 아래 진단 셀은 키의 존재 여부만 보여주며 값은 출력하지 않습니다.
+"""
+        ),
+        code(
+            """
+from src.openai_provider import load_project_env, probe_openai
+
+load_project_env(ROOT / ".env")
+openai_status = probe_openai(load_env=False)
+print(json.dumps(openai_status, ensure_ascii=False, indent=2))
+"""
+        ),
+        markdown(
+            """
 ### 환경 상태에 따른 진행 경로
 
 | 상태 | 이번 수업에서 할 일 |
 |---|---|
 | CLI·서버·모델 준비 | `provider="ollama"`로 실제 모델 호출 |
+| OpenAI SDK·새 키·live opt-in 준비 | `provider="openai"`로 GPT-5.6 Luna 호출 |
+| OpenAI 키 없음 또는 opt-in 꺼짐 | API 호출 없이 fixture로 계약 검증 |
 | CLI만 설치·서버 중단 | Ollama 앱/서버를 시작한 뒤 다시 진단 |
 | 서버 준비·모델 없음 | 강의 후 모델 설치, 수업은 fixture로 계속 |
-| Ollama 미설치 | fixture로 모든 정책·Tool·Graph 실습 완료 |
+| 선택 provider 미설치 | fixture로 모든 정책·Tool·Graph 실습 완료 |
 """
         ),
         code(
@@ -171,7 +199,7 @@ assert narrow_test.returncode == 0, narrow_test.stderr
             """
 ## 5차시 · 모델의 제안과 코드의 실행 권한 분리
 
-Ollama는 `read_public_text` 사용을 **제안**합니다. 실제 실행은 `SafeToolExecutor`가 tool name, arguments, workspace 경계를 다시 검사합니다.
+Ollama와 GPT는 `read_public_text` 사용을 **제안**합니다. 실제 실행은 `SafeToolExecutor`가 tool name, arguments, workspace 경계를 다시 검사합니다.
 """
         ),
         code(
@@ -233,6 +261,40 @@ print(json.dumps({
 }, ensure_ascii=False, indent=2))
 """
         ),
+        markdown(
+            """
+## 5차시 · GPT-5.6 Luna Tool Calling 비교
+
+같은 사용자 문장과 같은 `SafeToolExecutor`를 유지하고 provider만 `openai`로 바꿉니다. `RUN_OPENAI_LIVE=0`이면 의도적인 `OPENAI_LIVE_OPT_IN_REQUIRED`를 남긴 뒤 fixture로 복구합니다.
+"""
+        ),
+        code(
+            """
+class LiveOptInRequiredClient:
+    def generate(self, prompt, *, model, timeout):
+        raise RuntimeError("OPENAI_LIVE_OPT_IN_REQUIRED")
+
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-luna")
+openai_client = None if openai_status["live_opt_in"] else LiveOptInRequiredClient()
+openai_tool_result = run_tool_agent(
+    "data/meeting_sample_ko.txt를 읽어줘",
+    workspace=ROOT,
+    provider="openai",
+    model=OPENAI_MODEL,
+    allow_fallback=True,
+    client=openai_client,
+)
+print(json.dumps({
+    "provider_requested": openai_tool_result["provider_requested"],
+    "provider_used": openai_tool_result["provider_used"],
+    "model": openai_tool_result["model"],
+    "fallback_reason": openai_tool_result["fallback_reason"],
+    "tool_call": openai_tool_result["tool_call"],
+    "tool_status": openai_tool_result["status"],
+    "automatic_email": openai_tool_result["automatic_email"],
+}, ensure_ascii=False, indent=2))
+"""
+        ),
         code(
             """
 OUTPUT = ROOT / "output/notebook-ollama"
@@ -241,14 +303,18 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
     json.dumps(ollama_tool_result, ensure_ascii=False, indent=2),
     encoding="utf-8",
 )
-print("saved:", OUTPUT / "ollama_tool_result.json")
+(OUTPUT / "openai_tool_result.json").write_text(
+    json.dumps(openai_tool_result, ensure_ascii=False, indent=2),
+    encoding="utf-8",
+)
+print("saved:", OUTPUT / "ollama_tool_result.json", OUTPUT / "openai_tool_result.json")
 """
         ),
         markdown(
             """
 ### 5차시 · 점심 전 전체 회귀 test
 
-새로 만든 Ollama 경로뿐 아니라 기존 Agent·LangChain·LangGraph·STT 계약이 함께 유지되는지 전체 Day 1 test를 실행합니다. 실패하면 마지막 줄보다 **첫 번째 오류**부터 복구합니다.
+새로 만든 Ollama·OpenAI 경로뿐 아니라 기존 Agent·LangChain·LangGraph·STT 계약이 함께 유지되는지 전체 Day 1 test를 실행합니다. 실패하면 마지막 줄보다 **첫 번째 오류**부터 복구합니다.
 """
         ),
         code(
@@ -270,12 +336,13 @@ assert full_test.returncode == 0, full_test.stderr
 
 같은 transcript와 Pydantic schema를 유지하고 provider만 바꿉니다.
 
-`Prompt → fixture/Ollama → Pydantic Parser → Policy Validator`
+`Prompt → fixture/Ollama/OpenAI → Pydantic Parser → Policy Validator`
 
 Ollama용 선택 패키지는 다음과 같이 설치합니다.
 
 ```bash
 python -m pip install -r requirements-local-llm-optional.txt
+python -m pip install -r requirements-openai-optional.txt
 ```
 """
         ),
@@ -308,16 +375,33 @@ print(json.dumps({
 }, ensure_ascii=False, indent=2))
 """
         ),
+        code(
+            """
+openai_chain = run_langchain_lab(
+    transcript,
+    provider="openai",
+    model=OPENAI_MODEL,
+    allow_fallback=True,
+    openai_client=openai_client,
+)
+print(json.dumps({
+    "provider_requested": openai_chain["provider_requested"],
+    "provider_used": openai_chain["provider_used"],
+    "fallback_reason": openai_chain["fallback_reason"],
+    "checks": openai_chain["checks"],
+}, ensure_ascii=False, indent=2))
+"""
+        ),
         markdown(
             """
 ## 6차시 완료 확인
 
-- [ ] Ollama 설치·서버·모델 상태가 JSON으로 출력됐다.
-- [ ] `tests/test_ollama_tool_agent.py` 4개가 통과했다.
+- [ ] Ollama와 OpenAI 상태가 비밀값 없이 JSON으로 출력됐다.
+- [ ] `tests/test_ollama_tool_agent.py` 8개가 통과했다.
 - [ ] 정상 파일은 읽고 workspace 밖 경로는 `POLICY_BLOCKED`로 멈췄다.
-- [ ] Ollama 요청과 실제 사용 provider가 결과에 따로 남았다.
-- [ ] 전체 Day 1 test가 `25 passed`로 끝났다.
-- [ ] LCEL은 fixture/Ollama 어느 경로에서도 같은 typed schema와 정책 검사를 유지했다.
+- [ ] Ollama·OpenAI 요청과 실제 사용 provider가 결과에 따로 남았다.
+- [ ] 전체 Day 1 test가 모두 통과했다.
+- [ ] LCEL은 세 provider에서 같은 typed schema와 정책 검사를 유지했다.
 
 다음에는 `07_langchain_langgraph_workflow.ipynb`를 열어 이 결과를 LangGraph 사람 승인 State로 넘깁니다.
 """
