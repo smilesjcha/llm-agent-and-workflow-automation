@@ -1,0 +1,20 @@
+[
+  {
+    "path": "src/payment_job.py",
+    "line": 9,
+    "rule_id": "unsafe-dynamic-execution",
+    "title": "검증되지 않은 문자열이 코드로 실행될 수 있음"
+  },
+  {
+    "path": "src/payment_job.py",
+    "line": 11,
+    "rule_id": "external-write-without-approval",
+    "title": "외부 쓰기 전에 사람 승인 경계가 보이지 않음"
+  },
+  {
+    "path": "src/payment_job.py",
+    "line": 12,
+    "rule_id": "broad-exception-boundary",
+    "title": "넓은 예외 처리가 실패 계약을 지움"
+  }
+]

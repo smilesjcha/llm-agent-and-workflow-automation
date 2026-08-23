@@ -1,0 +1,10 @@
+{
+  "repository": "classroom-owner/agent-sandbox",
+  "number": 17,
+  "head_sha": "7c83e8fce9a24d90b6d4a6c9123aa90817b65b1a",
+  "title": "회의 Action Item 게시 경로 추가",
+  "author": "student-fixture",
+  "diff": "data/day3_review_cases/unsafe_pr.diff",
+  "synthetic": true,
+  "external_write": false
+}

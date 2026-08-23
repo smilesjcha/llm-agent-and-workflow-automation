@@ -12,6 +12,8 @@
 - `materials/day1/04_ollama_agent_workflow.executed.ipynb`: Qwen 성공·GPT opt-in fallback을 포함한 실행 완료본
 - `materials/day1/07_langchain_langgraph_workflow.ipynb`: LCEL·StateGraph·interrupt/resume 실행 notebook
 - `materials/day1/07_langchain_langgraph_workflow.executed.ipynb`: 설치 실패 시에도 흐름을 확인할 실행 완료본
+- `materials/day1/08_audio_meeting_agent_workflow.ipynb`: WAV→STT→Ollama→LangGraph HITL 통합 실행 실습
+- `materials/day1/08_audio_meeting_agent_workflow.executed.ipynb`: 실제 `small`·`qwen3:4b` 성공 출력을 포함한 실행 완료본
 - `materials/day1/수강생용_4-8차시_실습패키지_가이드.md`: 설치 셀·차시별 실행·복구·제출 안내
 - `materials/day1/실행파일_차시별_맵.md`: 1~8차시별 파일·명령·완료 증거
 - `materials/day1/강사_회의음성_라이브데모_런북.md`: STT 라이브 데모 및 실패 복구 절차
@@ -20,9 +22,24 @@
 - `src/openai_provider.py`: GPT-5.6 Luna Responses API function/text adapter
 - `src/langgraph_lab.py`: StateGraph·checkpoint·사람 승인·재개
 - `src/workflow_service.py`: LCEL→Graph→local trace→READY/HOLD 전체 흐름
+- `src/meeting_agent_workflow.py`: 음성 인식부터 STT/요약 이중 사람 검증까지 연결한 전체 회의 Agent
 - `web-demo/`: Python 결과를 승인·수정·거절하고 JSON으로 저장하는 결과 UI
 - `data/meeting_sample_ko_12min.wav`: 4인 합성 한국어 회의 음성
 - `data/meeting_sample_ko_12min.txt`: 회의 원문과 타임라인
+
+## 2-5일차 초안 산출물
+
+- `slides/IPA_LLM_Agent_업무자동화_Day2_MUSINSA_DRAFT_240p.pptx`: STT·품질 gate·회의 schema·chunk·LangChain·근거 검증
+- `slides/IPA_LLM_Agent_업무자동화_Day3_MUSINSA_DRAFT_240p.pptx`: diff parser·review contract·Codex harness·hybrid review·평가
+- `slides/IPA_LLM_Agent_업무자동화_Day4_MUSINSA_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
+- `slides/IPA_LLM_Agent_업무자동화_Day5_MUSINSA_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
+- `output/pdf/IPA_LLM_Agent_업무자동화_Day2_MUSINSA_DRAFT_240p.pdf` 등: AppleGothic 기반 240쪽 PDF 검수본
+- `materials/day2/day2_service_lab.ipynb`: audio metadata·segment chunk·선택 STT
+- `materials/day3/day3_service_lab.ipynb`: unified diff·finding·Codex task spec
+- `materials/day4/day4_service_lab.ipynb`: GitHub dry-run·사람 승인·중복 실행 방지
+- `materials/day5/day5_service_lab.ipynb`: 서비스 router·golden evaluation·release gate
+- `materials/days2_5/32시간_Codex_서비스_운영_블루프린트.md`: 강사 시연·수강생 실행·파일·명령·운영 기준
+- `src/course_services/`: Day 2-5 서비스 contract·meeting·review·GitHub·Codex harness·evaluation·router
 
 ## 빠른 시작
 
@@ -41,6 +58,13 @@ python -m src.ollama_tool_agent --provider openai
 python -m src.langchain_lab --provider fixture
 python -m src.langgraph_lab --decision all
 python -m src.workflow_service --decision approve --out output/day1-workflow
+python -m src.meeting_agent_workflow \
+  --audio data/demo_meeting.wav \
+  --transcript-fixture data/demo_meeting_transcript.txt \
+  --out output/day1-meeting-agent \
+  --stt-model small --device cpu --compute-type int8 --local-files-only \
+  --provider ollama --llm-model qwen3:4b \
+  --transcript-decision accept --summary-decision approve
 python scripts/run_day1_preflight.py
 python scripts/build_day1_student_bundle.py
 ```
@@ -65,6 +89,18 @@ python -m src.langchain_lab --provider openai
 ```
 
 모델 ID는 `gpt-5.6-luna`다. Tool Calling은 Responses API function calling, 회의 구조화는 `responses.parse`와 `MeetingBrief` Structured Outputs를 사용한다. 직접 `provider="openai"`를 지정하면 API 실행을 명시적으로 선택한 것으로 처리한다. Notebook Run All은 기본 `RUN_OPENAI_LIVE=0`에서 OpenAI 셀을 fixture로 복구한다. `.env`는 Git에서 제외되고 `.env.sample`만 배포된다. [OpenAI 모델 문서](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [Structured Outputs 문서](https://developers.openai.com/api/docs/guides/structured-outputs)
+
+LangSmith 웹에는 합성 또는 비식별 데이터의 실행 요약만 명시적으로 업로드한다. `.env`에 `LANGSMITH_API_KEY`와 `LANGSMITH_PROJECT`를 설정하고, 자동 추적으로 원문이 전송되지 않도록 `LANGSMITH_TRACING=false`를 유지한다.
+
+```bash
+python -m src.workflow_service \
+  --decision approve \
+  --out output/day1-workflow \
+  --upload-langsmith \
+  --data-classification synthetic
+```
+
+CLI는 Git에서 제외된 `.env`를 자동으로 읽는다. 성공 결과는 `langsmith.uploaded=true`, 프로젝트명, `run_id`를 출력한다. `local_only`, API key 누락, API 오류는 전송하지 않고 `LANGSMITH_*` 오류 코드와 종료 코드 `2`를 반환한다. 업로드 payload에는 transcript·모델 원문·파일 경로를 넣지 않고, 단계별 상태·지연시간과 `READY/HOLD`만 기록한다.
 
 정상 기준은 전체 test 통과, 안전한 파일 Tool 실행, LangGraph `READY_FOR_EXPORT`, 평가 `READY`, `automatic_email=false`다. 선택 provider가 없으면 `provider_used=fixture`와 `fallback_reason`이 함께 남아야 하며, 거절 경로는 `REJECTED/HOLD`여야 한다.
 전체 점검 결과는 `output/day1-preflight/preflight_report.json`에서 차시별 명령·종료 코드·결과 파일과 함께 확인한다.
@@ -98,6 +134,10 @@ Codex 데스크톱의 프레젠테이션 런타임이 연결된 환경에서는 
 
 ```bash
 node scripts/slides/build_day1_detail.mjs
+node scripts/slides/build_days2_5_drafts.mjs --day 2
+node scripts/slides/build_days2_5_drafts.mjs --day 3
+node scripts/slides/build_days2_5_drafts.mjs --day 4
+node scripts/slides/build_days2_5_drafts.mjs --day 5
 ```
 
 생성 후에는 오버플로 검사, PDF 변환, 전체 페이지 렌더 검수를 다시 수행합니다.

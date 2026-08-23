@@ -1,0 +1,219 @@
+# Day 2-5 · Codex 기반 서비스 운영 블루프린트
+
+## 1. 남은 32시간의 한 줄 구조
+
+Day 2에서 한국어 회의 음성을 구조화하고, Day 3에서 코드 변경을 검토하며, Day 4에서 GitHub 외부 쓰기를 사람 승인으로 보호하고, Day 5에서 두 서비스를 라우팅·관측·평가·배포한다.
+
+```text
+Day 2 Meeting Intelligence
+  audio → STT → quality gate → chunk → MeetingBrief → evidence → human review
+
+Day 3 Review Intelligence
+  unified diff → line mapping → context pack → finding → static/test evidence → evaluation
+
+Day 4 PR Review Automation
+  PR fixture/read API → LangGraph → interrupt → dry-run → approval → idempotent publish
+
+Day 5 Agent Operations Console
+  explicit router → local/LangSmith trace → dataset eval → feedback → release gate → demo
+```
+
+## 2. Codex를 쓰는 위치
+
+Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. 한 번의 요청은 한 가지 책임과 검증 가능한 완료 조건만 가진다.
+
+| 단계 | Codex에게 맡길 일 | 사람이 확인할 일 |
+|---|---|---|
+| 저장소 이해 | 관련 파일·test·정책 문서 찾기 | context에 secret·무관한 output이 없는지 |
+| 구현 | 허용 path 안에서 최소 diff 생성 | 기능 경계와 naming이 과정 의도와 맞는지 |
+| test | 정상 case와 가장 중요한 실패 case 작성·실행 | 기존 policy나 assertion을 약화하지 않았는지 |
+| 리뷰 | 변경 라인·사용자 영향·재현 조건 중심 finding | merge 여부와 product trade-off |
+| 문서 | 실행 명령·결과 contract·복구 경로 갱신 | 처음 보는 수강생이 재현할 수 있는지 |
+| 운영 | 반복되는 점검을 skill·script로 고정 | 외부 쓰기·데이터 보존·배포 승인 |
+
+공식 Codex use case에서 이 과정과 직접 연결되는 항목은 큰 저장소 이해, bug triage, 앱 QA, 반복 workflow의 skill화, 보안 변경 검토, 평가 추가, GitHub PR 리뷰, 배포, 문서 갱신이다. 수업에서는 이를 하나의 큰 demo가 아니라 매 차시의 `spec → diff → test → review → human decision` 루프로 분해한다.
+
+## 3. 표준 하루 운영 시간
+
+| 시간 | 구분 | 운영 |
+|---|---|---|
+| 09:00-09:50 | 1차시 | 강의 12분 · 강사 시연 10분 · 소프트웨어 실습 23분 · 확인 5분 |
+| 09:50-10:40 | 2차시 | 같은 구성으로 앞 차시 결과를 이어서 실행 |
+| 10:40-11:30 | 3차시 | 오전 통합 결과 저장 |
+| 11:30-12:00 | 쉬는 시간 | 오전 3개 차시의 휴식을 블록 끝에 합산 |
+| 12:00-13:00 | 점심시간 | 12:55까지 복귀 |
+| 13:00-13:50 | 4차시 | schema·state·평가 등 오후 구현 시작 |
+| 13:50-14:40 | 5차시 | software contract 확장 |
+| 14:40-15:30 | 6차시 | 실제 provider·Graph·관측 연결 |
+| 15:30-16:20 | 7차시 | 사람 승인·평가·운영 gate 구현 |
+| 16:20-17:10 | 8차시 | 차시 통합, focused/full test, 결과 저장 |
+| 17:10-17:40 | 쉬는 시간 | 오후 5개 차시의 휴식 일부를 블록 끝에 합산 |
+| 17:40-18:00 | Q&A·실행 복구 | 첫 오류 복구, 결과 확인, 다음 날 준비 |
+
+자료 탐색·문제 정의·사례 비교는 `자료 수집`, `Ideation`, `설계`로 표현한다. IDE·Notebook·Terminal에서 코드를 직접 실행하고 결과 파일 또는 test 증거를 남길 때만 `소프트웨어 실습`으로 표현한다.
+
+## 4. Day 2 · Meeting Intelligence Service
+
+### 강사가 먼저 보여줄 전체 흐름
+
+1. `data/demo_meeting.wav`의 길이·sample rate·channel을 확인한다.
+2. `faster-whisper`의 `small`, CPU, int8 경로로 STT를 실행한다.
+3. `transcript.json`에서 timestamp·segment·quality flag를 확인한다.
+4. 낮은 품질이면 LangGraph의 transcript review에서 accept·edit·reject를 보여준다.
+5. Qwen `qwen3:4b` 또는 fixture로 MeetingBrief를 만든다.
+6. Action Item의 `evidence_ids`가 실제 segment에 존재하는지 검증한다.
+7. summary review에서 approve·edit·reject 후 local JSON만 저장한다.
+
+### 수강생 실행 파일
+
+- Notebook: `materials/day2/day2_service_lab.ipynb`
+- 핵심 코드: `src/meeting_demo.py`, `src/course_services/meeting_service.py`, `src/meeting_agent_workflow.py`
+- 입력: `data/demo_meeting.wav`, `data/demo_meeting_transcript.txt`
+- test: `tests/test_meeting_agent_workflow.py`, `tests/test_course_services.py`
+
+```bash
+.venv312/bin/python -m pytest -q tests/test_meeting_agent_workflow.py
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k meeting_chunks
+```
+
+### 운영 가능한 서비스로 가기 위해 남기는 증거
+
+- `provider_requested`, `provider_used`, `fallback_reason`
+- segment별 `start`, `end`, `quality_flags`
+- `READY/HOLD`, 사람 decision, reviewer, reason
+- evidence가 없는 담당자·기한은 추측하지 않고 `null`
+- `automatic_email=false`, `external_write=false`
+
+## 5. Day 3 · Review Intelligence Service
+
+### 강사가 먼저 보여줄 전체 흐름
+
+1. `unsafe_pr.diff`에서 `+++` target과 `@@` hunk를 읽는다.
+2. 삭제·context·추가 라인에 따라 new line number가 어떻게 변하는지 보여준다.
+3. `eval`, 외부 쓰기, broad exception의 deterministic finding을 만든다.
+4. path·line·severity·evidence·suggestion·confidence·rule ID를 검증한다.
+5. Codex에게 `AGENTS.md`, 허용 path, focused test를 포함한 작은 구현 요청을 준다.
+6. Codex가 만든 diff와 실제 test 결과를 분리해 사람이 검토한다.
+7. golden finding과 precision·recall·F1을 비교한다.
+
+### 수강생 실행 파일
+
+- Notebook: `materials/day3/day3_service_lab.ipynb`
+- 핵심 코드: `src/course_services/review_service.py`, `contracts.py`, `codex_harness.py`
+- 입력: `data/day3_review_cases/unsafe_pr.diff`
+- 정답: `data/day5_eval/golden_review_findings.json`
+
+```bash
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k unified_diff
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k codex_harness
+```
+
+### 좋은 코드 리뷰의 수업 기준
+
+- 실제 추가 라인에 관한 finding만 만든다.
+- severity는 문체가 아니라 사용자 영향과 재현 조건으로 정한다.
+- linter가 잡을 style은 LLM finding에서 제외한다.
+- 존재하지 않는 함수·test 결과를 근거로 쓰지 않는다.
+- 한 finding에는 한 문제와 가장 작은 안전한 교정만 담는다.
+
+## 6. Day 4 · PR Review Automation Service
+
+### 강사가 먼저 보여줄 전체 흐름
+
+1. synthetic PR fixture에서 repository·PR number·head SHA를 고정한다.
+2. `.env`와 `.gitignore`를 확인하되 token 값은 출력하지 않는다.
+3. 401·403·404·422·429를 서로 다른 복구 결정으로 설명한다.
+4. LangGraph state에서 token·client·raw customer data를 제외한다.
+5. interrupt payload에 target·finding·evidence·선택지를 포함한다.
+6. 실제 API와 동일한 review comment payload를 dry-run으로 만든다.
+7. fake publisher로 approval과 중복 실행 방지를 검증한다.
+8. 선택적으로 본인의 sandbox repository에서 한 건만 게시한다.
+
+### 수강생 실행 파일
+
+- Notebook: `materials/day4/day4_service_lab.ipynb`
+- 핵심 코드: `src/course_services/github_service.py`, `contracts.py`, `src/langgraph_lab.py`
+- 입력: `data/day4_github/pr_fixture.json`
+
+```bash
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k github
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k dry_run
+```
+
+### 외부 쓰기 안전 순서
+
+`fixture → read-only → dry-run → target 확인 → 사람 승인 → 한 건 게시 → remote ID 기록`
+
+실제 GitHub publisher와 PAT는 repository 기본 코드에 포함하지 않는다. 강사와 학습자가 소유한 sandbox 대상이 확인된 경우에만 별도 branch 또는 local adapter로 연결한다.
+
+## 7. Day 5 · Agent Operations Console
+
+### 강사가 먼저 보여줄 전체 흐름
+
+1. `input_kind`를 명시해 meeting과 code review service를 호출한다.
+2. local trace에서 node status·latency·fallback·READY/HOLD를 확인한다.
+3. synthetic 또는 비식별 결과 요약만 LangSmith에 선택 upload한다.
+4. golden dataset으로 baseline과 candidate를 같은 입력에서 비교한다.
+5. approve·edit·reject의 reason을 human feedback으로 남긴다.
+6. PII·secret·retention·incident checklist를 release gate에 포함한다.
+7. Python output JSON과 Vercel demo가 같은 contract인지 확인한다.
+8. 정상 한 건과 대표 HOLD 한 건으로 3분 demo를 구성한다.
+
+### 수강생 실행 파일
+
+- Notebook: `materials/day5/day5_service_lab.ipynb`
+- 핵심 코드: `src/course_services/service_router.py`, `eval_service.py`, `src/observability_lab.py`
+- 입력: `data/meeting_sample_ko.txt`, `data/day3_review_cases/unsafe_pr.diff`
+
+```bash
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k router
+.venv312/bin/python -m pytest -q tests/test_course_services.py -k offline_eval
+```
+
+## 8. 강의 전 준비할 실제 화면
+
+| 화면 | 캡처할 내용 | 실패 시 대체 |
+|---|---|---|
+| VS Code | repository root, `.venv312`, `src/course_services`, `tests` | 제공 PNG와 notebook |
+| Jupyter | install cell, ROOT, 정상 결과 JSON | 실행 완료본 또는 fixture |
+| Terminal | focused test와 full suite의 실제 통과 결과 | 마지막 검증 log |
+| Ollama | `qwen3:4b` model 존재와 provider_used | fixture + fallback_reason |
+| LangGraph | approve·edit·reject state | local JSON 세 개 |
+| GitHub | 본인 sandbox PR target과 dry-run payload | synthetic fixture |
+| LangSmith | synthetic trace의 node·latency·status | local `trace.json` |
+| Vercel | Python output과 같은 결과 schema | `web-demo/` local server |
+
+실제 고객 회의·회사 코드·token·로그는 캡처하지 않는다. 화면 캡처에는 repository와 sample이 교육용 synthetic임을 확인할 수 있어야 한다.
+
+## 9. 현재 서비스 코드 지도
+
+```text
+src/course_services/
+├── contracts.py          # Review·PR payload contract
+├── meeting_service.py    # segment chunk와 evidence 검사
+├── review_service.py     # unified diff parser와 deterministic baseline
+├── github_service.py     # dry-run·approval·idempotency
+├── codex_harness.py      # Codex task spec과 merge gate
+├── eval_service.py       # precision·recall·release gate
+└── service_router.py     # meeting·review 명시 routing
+```
+
+## 10. 최종 merge 전 검증
+
+```bash
+.venv312/bin/python -m pytest -q tests/test_course_services.py
+.venv312/bin/python -m pytest -q tests/test_meeting_agent_workflow.py
+.venv312/bin/python -m pytest -q
+```
+
+Codex review, 다른 LLM review, test 통과는 merge 판단의 증거다. 최종 반영·외부 게시·배포는 사람이 결정한다.
+
+## 참고
+
+- [OpenAI Codex use cases](https://learn.chatgpt.com/use-cases)
+- [OpenAI Codex documentation](https://developers.openai.com/codex/)
+- [LangChain overview](https://docs.langchain.com/oss/python/langchain/overview)
+- [LangGraph overview](https://docs.langchain.com/oss/python/langgraph/overview)
+- [LangSmith observability](https://docs.langchain.com/langsmith/observability)
+- [GitHub REST authentication](https://docs.github.com/rest/authentication/authenticating-to-the-rest-api)
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
