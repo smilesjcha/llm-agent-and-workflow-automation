@@ -111,6 +111,8 @@
 - 생각만 적는 활동에 `실습`이라는 이름을 붙이지 않는다.
 - 공식 홈페이지를 읽는 것만으로 소프트웨어 실습을 대체하지 않는다. 공식 문서는 개념 근거이며, 수업 산출물은 실행 코드·테스트·결과 파일이다.
 - LangChain·LangGraph·LangSmith 차시는 `개념 → 실제 코드 → 정상/실패 실행 → 상태/trace 저장 → 브라우저 결과 확인` 순서를 기본으로 한다.
+- 4~8차시는 서로 떨어진 Demo가 아니라 `04 notebook 환경 진단 → Ollama Tool Call → LCEL provider 교체 → 07 notebook StateGraph 승인 → STT·trace·READY/HOLD`로 입력과 결과 계약이 이어져야 한다.
+- Ollama를 필수 설치 성공으로 표현하지 않는다. `CLI·서버·모델` 상태와 실제 사용 provider, fallback 이유를 각각 화면과 결과에 남긴다.
 
 ## 강의 작성을 위한 Harness Engineering 기준
 

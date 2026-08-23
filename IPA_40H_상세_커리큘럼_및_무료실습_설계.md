@@ -291,11 +291,11 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 | 09:50-10:40 | 1일차 2차시 | Tool Calling과 실행 권한 | Schema 설계·Tool 코드 실행 | 허용·차단 ToolResult |
 | 10:40-11:30 | 1일차 3차시 | 한국어 데이터와 Prompt 기본기 | 자료 수집·typed JSON 실행 | 근거가 있는 결과 JSON |
 | 11:30-12:00 | 쉬는 시간 | 빠른 점심 또는 간식 권장 | - | - |
-| 12:00-12:50 | 1일차 4차시 | Python·VS Code·Git·Codex | 개발환경 세팅 실습 | interpreter·diff·19 passed |
-| 12:50-13:40 | 1일차 5차시 | 안전한 Agent 실행 루프 | Agent 구현·실패 test | 정상·실패 test 결과 |
+| 12:00-12:50 | 1일차 4차시 | Python·VS Code·Jupyter·Ollama 환경 | 개발환경 세팅 실습 | 상태 JSON·4 passed |
+| 12:50-13:40 | 1일차 5차시 | Ollama Tool Calling·안전 실행 루프 | 실제/fixture Tool Call·실패 test | 정상·차단·fallback·23 passed |
 | 13:40-14:00 | 쉬는 시간 | 점심 전 실행 상태 저장 | - | checkpoint |
 | 14:00-15:00 | 점심시간 | 14:55까지 복귀 | - | - |
-| 15:00-15:40 | 1일차 6차시 | 무료·로컬 LLM과 Adapter | fixture/Ollama 실행 | 성공 또는 예상된 fallback |
+| 15:00-15:40 | 1일차 6차시 | LangChain LCEL·무료 로컬 LLM Adapter | 같은 notebook에서 provider 교체 | typed output·provider 비교 |
 | 15:40-16:20 | 1일차 7차시 | LangChain LCEL·LangGraph 승인 | StateGraph 구현 실습 | approve·edit·reject JSON |
 | 16:20-17:00 | 1일차 8차시 | STT·trace·LangSmith·Release Gate | 품질·관측·평가 실행 | trace.json·READY/HOLD |
 | 17:00-17:30 | 쉬는 시간 | 질문 정리 | - | 질문 목록 |
@@ -329,25 +329,29 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 
 - `python --version`, interpreter 경로, virtual environment의 목적을 확인한다.
 - VS Code Python/Jupyter extension과 kernel 선택 화면을 캡처 기준으로 안내한다.
-- notebook cell의 실행 순서가 상태를 만든다는 점을 설명한다.
-- “재시작 후 처음부터 실행”이 되는 notebook만 제출 가능하게 한다.
-- 설치 실패 시 `materials/day1/01_agent_foundation.ipynb`의 표준 라이브러리 cell은 계속 진행한다.
+- `materials/day1/04_ollama_agent_workflow.ipynb`를 열고 `probe_ollama()`로 CLI·서버·모델을 따로 확인한다.
+- notebook cell의 실행 순서가 상태를 만든다는 점을 설명하고 `Run All`이 되는 상태를 기준으로 삼는다.
+- 현재 강사 PC의 확인 결과는 `OLLAMA_NOT_INSTALLED`다. 설치된 것으로 가정하지 않고, 실제 시연 전 앱과 `qwen3:4b`를 준비한다.
+- 설치 실패 시 같은 notebook이 `recommended_lane=fixture`를 선택하고 `4 passed`까지 계속되어야 한다.
+- Codex·GitHub PR은 필수 notebook 경로를 끝낸 수강생의 선택 확장으로 둔다.
 
-#### 1일차 5차시 — 실패를 코드와 test로 통제한다
+#### 1일차 5차시 — Ollama의 제안과 코드의 실행 권한을 분리한다
 
-- `git status`를 가장 먼저 보게 한다.
-- working tree → stage → commit의 차이를 실제 파일 변경으로 확인한다.
-- `.env`, audio 원본, 모델 weight, 개인정보 파일을 `.gitignore`에 추가한다.
-- commit message 예: `feat: add validated tool registry`.
-- 강사 checkpoint tag 예: `day1-period5-ready`.
+- 4차시에서 연 같은 notebook을 계속 사용한다.
+- fixture와 Ollama Planner가 같은 `tool_name/arguments` 계약으로 도구 사용을 제안하게 한다.
+- 실제 실행 전 `SafeToolExecutor`가 allowlist·argument·workspace 경계를 다시 검사한다.
+- 정상 파일 읽기, `../../private.txt` 경로 차단, Ollama 미설치 fallback을 직접 실행한다.
+- 결과에 `provider_requested`, `provider_used`, `fallback_reason`, `error_code`, `automatic_email=false`를 남긴다.
+- 점심 전 전체 test를 실행해 `23 passed`를 확인한다.
 
-#### 1일차 6차시 — 로컬 LLM은 무료 baseline, fixture는 필수 복구 경로다
+#### 1일차 6차시 — LangChain은 provider가 바뀌어도 결과 계약을 유지한다
 
-- Ollama의 model server와 model weight를 구분한다.
-- 한 PC에서 Ollama/LM Studio/Jan을 동시에 띄우지 않는다.
-- `localhost`가 외부 cloud가 아니라 자신의 PC를 가리킨다는 점을 확인한다.
-- health check 실패 시 mock adapter로 즉시 전환하고 프레임워크 학습은 계속한다.
-- 모델 다운로드가 느리면 강사가 준비한 response fixture를 사용한다.
+- 같은 notebook의 회의 transcript와 Pydantic schema를 유지한다.
+- `Prompt → fixture/Ollama → Pydantic Parser → Policy Validator` LCEL을 실행한다.
+- Ollama의 model server와 model weight, `localhost`와 외부 cloud의 차이를 실행 결과와 함께 설명한다.
+- health check 실패 시 fixture adapter로 즉시 전환하고 `fallback_reason`을 숨기지 않는다.
+- fixture와 Ollama 요청의 `provider_used`, typed output, policy checks를 나란히 비교한다.
+- 7차시에는 이 결과를 `07_langchain_langgraph_workflow.ipynb`의 StateGraph 입력으로 넘긴다.
 
 #### 1일차 7차시 — LangChain 결과를 LangGraph의 사람 승인으로 연결한다
 

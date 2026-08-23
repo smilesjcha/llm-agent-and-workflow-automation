@@ -206,3 +206,13 @@
 - `실습`은 개발환경 세팅·코드 작성·명령 실행·test·배포에만 사용하고, 생각·탐색 활동은 Ideation·자료 수집·설계 워크숍으로 구분한다.
 - `scripts/run_day1_preflight.py`에서 전체 필수 경로와 비즈니스 상태를 한 번에 검증하고 JSON 보고서를 남긴다.
 - 검증 기준: Python 3.12, 19 passed, approve=`READY_FOR_EXPORT/READY`, reject=`REJECTED/HOLD`, automatic_email=false.
+
+## 2026-08-23 · 4~8차시 연속 Ollama 소프트웨어 실습 보강
+
+- 현재 강사 PC에서 Ollama CLI와 `localhost:11434`를 직접 확인한 결과 `OLLAMA_NOT_INSTALLED`였다. 설치 완료로 가정한 표현을 제거했다.
+- 4차시는 `04_ollama_agent_workflow.ipynb`에서 Python·Jupyter·Ollama CLI·서버·모델 상태를 진단하고 좁은 test 4개를 실행한다.
+- 5차시는 같은 notebook에서 fixture/Ollama Tool Call을 실행한 뒤 `SafeToolExecutor`로 정상 파일 읽기와 workspace 밖 경로 `POLICY_BLOCKED`를 확인한다.
+- 6차시는 같은 입력·schema를 LangChain LCEL의 fixture/Ollama provider로 실행하고 `provider_requested`, `provider_used`, `fallback_reason`, policy checks를 비교한다.
+- 7차시는 결과를 LangGraph interrupt/resume·approve/edit/reject로 넘기고, 8차시는 STT·trace·READY/HOLD 판단으로 닫는다.
+- GitHub PR·Codex 리뷰는 공통 notebook 경로를 마친 빠른 수강생의 선택 확장으로 이동했다.
+- Python unit tests는 신규 Ollama 정상·차단·fallback test를 포함해 `23 passed`다.

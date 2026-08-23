@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-22.1",
+  "version": "2026-08-23.2",
   "deck": {
     "date": "2026-08-23",
     "slideCount": 270,
@@ -37,26 +37,26 @@
     {
       "id": "B4_REPRODUCIBLE_ENV",
       "range": [100, 134],
-      "claim": "환경 구축의 완료 기준은 설치가 아니라 같은 명령으로 다시 시작할 수 있는 상태다.",
+      "claim": "12시부터는 같은 notebook에서 Python과 Ollama 상태를 진단하고, 설치 실패까지 재현 가능한 실행 환경을 만든다.",
       "question": "설치가 실패해도 수업과 프로젝트를 계속할 두 번째 경로가 있는가?",
-      "owns": ["Python runtime", "virtual environment", "VS Code interpreter", "Git checkpoint", "Harness Engineering 실행"],
-      "evidence": ["버전 캡처", "선택 interpreter", "첫 commit"]
+      "owns": ["Python runtime", "VS Code interpreter", "Jupyter kernel", "Ollama CLI·server·model probe", "fixture lane", "선택 Codex·PR 확장"],
+      "evidence": ["04_ollama_agent_workflow.ipynb", "상태 JSON", "pytest 4개"]
     },
     {
       "id": "B5_SAFE_LOOP",
       "range": [135, 168],
-      "claim": "LLM보다 먼저 validation·timeout·retry·stop이 있는 결정론적 실행 루프를 통과시킨다.",
+      "claim": "Ollama가 도구를 제안해도 실행 권한은 validation과 workspace 정책을 가진 Python 코드에 남는다.",
       "question": "언제 재시도하고, 언제 사람에게 넘기고, 언제 완전히 멈추는가?",
-      "owns": ["Planner", "Validator", "Executor", "ToolResult", "timeout", "retry", "stop", "idempotency fixture"],
-      "evidence": ["Run All", "pytest 19개", "실패 4종"]
+      "owns": ["Fixture/Ollama Planner", "Validator", "SafeToolExecutor", "ToolResult", "workspace boundary", "fallback reason", "stop"],
+      "evidence": ["정상 Tool Call", "POLICY_BLOCKED", "provider requested/used", "pytest 23개"]
     },
     {
       "id": "B6_REPLACEABLE_LLM",
       "range": [169, 202],
-      "claim": "무료 실행 경로는 특정 프로그램 설치가 아니라 provider를 교체해도 contract가 남는 구조다.",
+      "claim": "LangChain LCEL은 fixture와 Ollama provider가 바뀌어도 typed output과 정책 검사를 같은 계약으로 유지한다.",
       "question": "특정 모델과 프로그램이 사라져도 핵심 계약은 그대로 실행되는가?",
-      "owns": ["Ollama", "LM Studio", "Jan", "provider adapter", "fallback", "structured output"],
-      "evidence": ["health check", "공통 protocol", "fixture fallback"]
+      "owns": ["LangChain LCEL", "Ollama", "provider adapter", "fallback", "Pydantic structured output", "policy checks"],
+      "evidence": ["같은 notebook의 provider 비교", "공통 protocol", "fallback_reason"]
     },
     {
       "id": "B7_GRAPH_HITL",
