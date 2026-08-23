@@ -47,10 +47,12 @@ def probe_openai(*, load_env: bool = True) -> dict[str, Any]:
     sdk_installed = find_spec("openai") is not None
     api_key_configured = bool(os.getenv("OPENAI_API_KEY"))
     live_opt_in = os.getenv("RUN_OPENAI_LIVE", "0") == "1"
+    direct_call_ready = sdk_installed and api_key_configured
     return {
         "sdk_installed": sdk_installed,
         "api_key_configured": api_key_configured,
         "live_opt_in": live_opt_in,
+        "direct_call_ready": direct_call_ready,
         "model": selected_openai_model(),
         "reasoning_effort": selected_reasoning_effort(),
         "error_code": None
@@ -58,9 +60,8 @@ def probe_openai(*, load_env: bool = True) -> dict[str, Any]:
         else "OPENAI_SDK_MISSING"
         if not sdk_installed
         else "OPENAI_API_KEY_MISSING",
-        "recommended_lane": "openai"
-        if sdk_installed and api_key_configured and live_opt_in
-        else "fixture",
+        "recommended_lane": "openai" if direct_call_ready else "fixture",
+        "run_all_lane": "openai" if direct_call_ready and live_opt_in else "fixture",
     }
 
 
@@ -147,7 +148,7 @@ class OpenAIResponsesToolClient:
 
 
 class OpenAIResponsesTextClient:
-    """Return Responses API text for the existing LCEL parser and policy steps."""
+    """Return schema-constrained Responses API text for the LCEL parser."""
 
     def __init__(
         self,
@@ -155,10 +156,12 @@ class OpenAIResponsesTextClient:
         api_key: str | None = None,
         sdk_client: Any | None = None,
         live_opt_in: bool | None = None,
+        response_model: type[Any] | None = None,
     ) -> None:
         self._api_key = api_key
         self._sdk_client = sdk_client
         self._live_opt_in = live_opt_in
+        self._response_model = response_model
 
     def _client(self, *, timeout: int) -> Any:
         load_project_env()
@@ -179,7 +182,25 @@ class OpenAIResponsesTextClient:
         return OpenAI(api_key=api_key, timeout=timeout)
 
     def generate(self, prompt: str, *, model: str, timeout: int) -> str:
-        response = self._client(timeout=timeout).responses.create(
+        responses = self._client(timeout=timeout).responses
+        if self._response_model is not None:
+            response = responses.parse(
+                model=model,
+                input=prompt,
+                text_format=self._response_model,
+                reasoning={"effort": selected_reasoning_effort()},
+                store=False,
+            )
+            parsed = getattr(response, "output_parsed", None)
+            if parsed is None:
+                raise ValueError("OPENAI_STRUCTURED_OUTPUT_MISSING")
+            if hasattr(parsed, "model_dump_json"):
+                return parsed.model_dump_json()
+            if isinstance(parsed, dict):
+                return json.dumps(parsed, ensure_ascii=False)
+            raise ValueError("OPENAI_STRUCTURED_OUTPUT_INVALID")
+
+        response = responses.create(
             model=model,
             input=prompt,
             reasoning={"effort": selected_reasoning_effort()},

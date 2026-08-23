@@ -88,7 +88,7 @@ if sys.version_info < (3, 12):
             """
 ### 최초 1회 · notebook kernel에 library 설치
 
-Python 3.12 Kernel을 선택합니다. 4차시 notebook에서 이미 설치했다면 `ALREADY_READY`가 표시됩니다. 이 노트북부터 시작하는 수강생은 아래 셀을 먼저 실행합니다. Ollama 선택 library 설치가 실패해도 fixture로 LangChain·LangGraph 실습을 계속합니다.
+Python 3.12 Kernel을 선택합니다. 4차시 notebook에서 이미 설치했다면 `ALREADY_READY`가 표시됩니다. 이 노트북부터 시작하는 수강생은 아래 셀을 먼저 실행합니다. Ollama·OpenAI 선택 library 설치가 실패해도 fixture로 LangChain·LangGraph 실습을 계속합니다.
 """
         ),
         code(
@@ -122,6 +122,20 @@ ensure_requirements(
     ["langchain_ollama"],
     required=False,
 )
+ensure_requirements(
+    "requirements-openai-optional.txt",
+    ["openai", "dotenv"],
+    required=False,
+)
+"""
+        ),
+        code(
+            """
+from src.openai_provider import load_project_env, probe_openai
+
+load_project_env(ROOT / ".env")
+openai_status = probe_openai(load_env=False)
+print(json.dumps(openai_status, ensure_ascii=False, indent=2))
 """
         ),
         markdown(
@@ -176,26 +190,46 @@ print(json.dumps({
         ),
         markdown(
             """
-### 선택: 로컬 LLM Adapter
+### 선택: Ollama·OpenAI Adapter
 
-Ollama가 준비된 경우에만 `provider="ollama"`로 바꿉니다. 연결에 실패하면 fixture로 복구되며, parser·validator·다음 graph는 그대로 유지됩니다.
+Ollama는 `provider="ollama"`, GPT API는 `provider="openai"`로 직접 선택합니다. `provider="openai"`를 코드에서 명시한 행위 자체가 API 호출 동의입니다. OpenAI 경로는 Responses API Structured Outputs로 `MeetingBrief`를 만든 뒤 동일한 parser·validator·Graph로 넘깁니다.
 
 ```bash
 python -m pip install -r requirements-local-llm-optional.txt
+python -m pip install -r requirements-openai-optional.txt
 ollama pull qwen3:4b
 ```
+
+실제 API 오류를 바로 확인하려면 `allow_fallback=False`, 수업을 계속하려면 `allow_fallback=True`를 사용합니다.
 """
         ),
         code(
             """
 # 수업 기본 경로는 네트워크가 필요 없는 fixture입니다.
-# Ollama를 설치했다면 provider 값을 "ollama"로 바꾸어 비교하세요.
+# 직접 비교할 때 provider를 "ollama" 또는 "openai"로 바꾸세요.
 adapter_result = run_langchain_lab(transcript, provider="fixture", allow_fallback=True)
 print({
     "requested": adapter_result["provider_requested"],
     "used": adapter_result["provider_used"],
     "fallback_reason": adapter_result["fallback_reason"],
 })
+"""
+        ),
+        markdown(
+            """
+#### GPT API 직접 확인 코드
+
+새로 발급한 키가 `.env`에 있다면 아래 호출이 곧 명시적 API 실행 선택입니다.
+
+```python
+adapter_result = run_langchain_lab(
+    transcript,
+    provider="openai",
+    allow_fallback=False,
+)
+```
+
+성공 기준은 `provider_used="openai"`, `fallback_reason=None`입니다. 키·권한·네트워크 오류를 fixture로 숨기고 싶지 않을 때는 먼저 `allow_fallback=False`로 확인합니다.
 """
         ),
         markdown(

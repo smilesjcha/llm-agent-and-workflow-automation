@@ -59,12 +59,12 @@ GPT API 비교는 공개된 키를 폐기·재발급한 뒤 로컬에서만 설�
 ```bash
 python -m pip install -r requirements-openai-optional.txt
 cp .env.sample .env
-# .env의 placeholder를 새 키로 교체하고 실제 비교 시에만 RUN_OPENAI_LIVE=1
+# .env의 placeholder를 새 키로 교체. Notebook Run All 비교 시 RUN_OPENAI_LIVE=1
 python -m src.ollama_tool_agent --provider openai
 python -m src.langchain_lab --provider openai
 ```
 
-모델 ID는 `gpt-5.6-luna`이며 Responses API function calling을 사용한다. `.env`는 Git에서 제외되고 `.env.sample`만 배포된다. 기본 `RUN_OPENAI_LIVE=0`에서는 유료 호출을 만들지 않고 `provider_used=fixture`와 이유를 남긴다. [OpenAI 모델 문서](https://developers.openai.com/api/docs/models/gpt-5.6-luna)
+모델 ID는 `gpt-5.6-luna`다. Tool Calling은 Responses API function calling, 회의 구조화는 `responses.parse`와 `MeetingBrief` Structured Outputs를 사용한다. 직접 `provider="openai"`를 지정하면 API 실행을 명시적으로 선택한 것으로 처리한다. Notebook Run All은 기본 `RUN_OPENAI_LIVE=0`에서 OpenAI 셀을 fixture로 복구한다. `.env`는 Git에서 제외되고 `.env.sample`만 배포된다. [OpenAI 모델 문서](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [Structured Outputs 문서](https://developers.openai.com/api/docs/guides/structured-outputs)
 
 정상 기준은 전체 test 통과, 안전한 파일 Tool 실행, LangGraph `READY_FOR_EXPORT`, 평가 `READY`, `automatic_email=false`다. 선택 provider가 없으면 `provider_used=fixture`와 `fallback_reason`이 함께 남아야 하며, 거절 경로는 `REJECTED/HOLD`여야 한다.
 전체 점검 결과는 `output/day1-preflight/preflight_report.json`에서 차시별 명령·종료 코드·결과 파일과 함께 확인한다.

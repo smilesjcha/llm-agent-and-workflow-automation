@@ -88,6 +88,8 @@ def normalize_provider_failure(exc: Exception) -> str:
         "OPENAI_API_KEY_MISSING",
         "OPENAI_EMPTY_RESPONSE",
         "OPENAI_LIVE_OPT_IN_REQUIRED",
+        "OPENAI_STRUCTURED_OUTPUT_INVALID",
+        "OPENAI_STRUCTURED_OUTPUT_MISSING",
     }:
         return detail
     if len(detail) > 180:
@@ -133,7 +135,12 @@ def build_chain(
             num_predict=2048,
         )
     elif provider == "openai":
-        client = openai_client or OpenAIResponsesTextClient()
+        # Selecting provider="openai" is the explicit live-call boundary.
+        # Notebook Run All passes a disabled client unless the learner opts in.
+        client = openai_client or OpenAIResponsesTextClient(
+            live_opt_in=True,
+            response_model=MeetingBrief,
+        )
 
         def _openai_model(prompt_value: Any) -> str:
             prompt_text = (

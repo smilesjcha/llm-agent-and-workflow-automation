@@ -1,5 +1,6 @@
 import json
 
+import src.langchain_lab as langchain_lab
 from src.langchain_lab import fixture_payload, normalize_provider_failure, run_langchain_lab
 from src.langgraph_lab import run_langgraph_lab
 
@@ -38,6 +39,29 @@ def test_langchain_openai_provider_keeps_typed_policy_contract() -> None:
     assert result["provider_used"] == "openai"
     assert result["checks"]["schema_valid"] is True
     assert result["checks"]["automatic_email_blocked"] is True
+
+
+def test_explicit_openai_provider_enables_live_structured_client(monkeypatch) -> None:
+    captured: dict = {}
+
+    class FixtureStructuredClient:
+        def __init__(self, **kwargs) -> None:
+            captured.update(kwargs)
+
+        def generate(self, prompt: str, *, model: str, timeout: int) -> str:
+            return json.dumps(fixture_payload(), ensure_ascii=False)
+
+    monkeypatch.setattr(
+        langchain_lab,
+        "OpenAIResponsesTextClient",
+        FixtureStructuredClient,
+    )
+    result = run_langchain_lab(TRANSCRIPT, provider="openai")
+
+    assert result["provider_used"] == "openai"
+    assert result["fallback_reason"] is None
+    assert captured["live_opt_in"] is True
+    assert captured["response_model"] is langchain_lab.MeetingBrief
 
 
 def test_langgraph_approve_interrupts_then_exports_locally() -> None:

@@ -151,6 +151,8 @@ def normalize_provider_failure(exc: Exception) -> str:
         "OPENAI_EMPTY_RESPONSE",
         "OPENAI_LIVE_OPT_IN_REQUIRED",
         "OPENAI_SINGLE_TOOL_CALL_REQUIRED",
+        "OPENAI_STRUCTURED_OUTPUT_INVALID",
+        "OPENAI_STRUCTURED_OUTPUT_MISSING",
         "OPENAI_TOOL_ARGUMENTS_OBJECT_REQUIRED",
         "OLLAMA_EMPTY_RESPONSE",
     }
@@ -194,7 +196,7 @@ def plan_tool_call(
                 selected_client = (
                     OllamaGenerateClient()
                     if provider == "ollama"
-                    else OpenAIResponsesToolClient()
+                    else OpenAIResponsesToolClient(live_opt_in=True)
                 )
             assert selected_model is not None
             raw_response = selected_client.generate(

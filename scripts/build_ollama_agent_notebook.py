@@ -38,7 +38,7 @@ def build_notebook():
 - **5차시**: fixture·Ollama·GPT가 제안한 Tool Call을 같은 안전 실행기로 검증합니다.
 - **6차시**: 같은 회의 입력을 LangChain LCEL의 세 provider로 실행합니다.
 
-Ollama가 없거나 GPT API를 선택하지 않아도 notebook은 중단되지 않습니다. 실제 provider 실패는 `fallback_reason`을 남기고 같은 계약을 fixture로 실행합니다. GPT API는 `.env`에 새 키를 넣고 `RUN_OPENAI_LIVE=1`로 명시한 경우에만 호출합니다.
+Ollama가 없거나 GPT API를 선택하지 않아도 notebook은 중단되지 않습니다. 실제 provider 실패는 `fallback_reason`을 남기고 같은 계약을 fixture로 실행합니다. 직접 `provider="openai"`를 호출하면 API 실행을 선택한 것으로 처리하고, Notebook Run All에서는 `.env`의 `RUN_OPENAI_LIVE=1`일 때만 해당 셀을 실행합니다.
 """
         ),
         markdown(
@@ -334,7 +334,7 @@ assert full_test.returncode == 0, full_test.stderr
             """
 ## 6차시 · LangChain LCEL Provider 교체
 
-같은 transcript와 Pydantic schema를 유지하고 provider만 바꿉니다.
+같은 transcript와 Pydantic schema를 유지하고 provider만 바꿉니다. OpenAI 경로는 Responses API Structured Outputs로 `MeetingBrief`를 받은 뒤 LCEL parser와 policy validator를 한 번 더 통과합니다.
 
 `Prompt → fixture/Ollama/OpenAI → Pydantic Parser → Policy Validator`
 
