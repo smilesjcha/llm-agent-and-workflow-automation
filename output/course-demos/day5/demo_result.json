@@ -1,0 +1,89 @@
+{
+  "day": 5,
+  "service": "Agent Operations Console",
+  "status": "SUCCESS",
+  "decision": "READY",
+  "input": {
+    "kinds": [
+      "meeting_transcript",
+      "code_diff"
+    ],
+    "synthetic": true
+  },
+  "stages": [
+    {
+      "name": "explicit_router",
+      "status": "SUCCESS",
+      "artifact": "unified_service_result.json"
+    },
+    {
+      "name": "local_trace",
+      "status": "SUCCESS",
+      "artifact": "trace.json"
+    },
+    {
+      "name": "dataset_experiment",
+      "status": "READY",
+      "artifact": "experiment_result.json"
+    },
+    {
+      "name": "release_candidate",
+      "status": "READY",
+      "artifact": "release_scorecard.json"
+    }
+  ],
+  "metrics": {
+    "true_positive": 3,
+    "false_positive": 0,
+    "false_negative": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "service_count": 2,
+    "trace_span_count": 3
+  },
+  "result": {
+    "services": {
+      "meeting": "SUCCESS",
+      "code_review": "SUCCESS"
+    },
+    "trace": {
+      "run_name": "agent-operations-console",
+      "data_classification": "synthetic",
+      "spans": [
+        {
+          "name": "route_meeting",
+          "status": "SUCCESS",
+          "latency_ms": 12.1
+        },
+        {
+          "name": "route_code_review",
+          "status": "SUCCESS",
+          "latency_ms": 18.4
+        },
+        {
+          "name": "offline_evaluation",
+          "status": "READY",
+          "latency_ms": 2.8
+        }
+      ],
+      "raw_content_uploaded": false
+    },
+    "release_gate": {
+      "decision": "READY",
+      "reasons": [],
+      "human_release_required": true
+    }
+  },
+  "boundary_case": {
+    "status": "HOLD",
+    "reasons": [
+      "RECALL_BELOW_0_8",
+      "PRECISION_BELOW_0_8",
+      "SAFETY_CHECK_FAILED",
+      "LATENCY_BUDGET_EXCEEDED"
+    ]
+  },
+  "external_write": false,
+  "human_release_required": true
+}

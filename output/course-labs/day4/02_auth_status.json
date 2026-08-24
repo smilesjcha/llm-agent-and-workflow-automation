@@ -1,0 +1,6 @@
+{
+  "env_ignored": true,
+  "github_token_configured": false,
+  "token_value_printed": false,
+  "recommended_scope": "read-only until explicit sandbox approval"
+}

@@ -1,0 +1,39 @@
+{
+  "normal": {
+    "title": "고객 문의 자동화 PoC 범위 회의",
+    "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+    "decisions": [
+      "배송 지연과 반품 절차 안내만 자동화한다.",
+      "개인정보·근거 부족·낮은 신뢰도는 상담원 검토 큐로 보낸다."
+    ],
+    "action_items": [
+      {
+        "task": "공개 FAQ 30건 비식별 샘플 정리",
+        "owner": "서연",
+        "due_date": "2026-08-27",
+        "evidence_ids": [
+          "s12",
+          "s18"
+        ]
+      },
+      {
+        "task": "응답 JSON Schema와 실패 테스트 작성",
+        "owner": "준호",
+        "due_date": "2026-08-28",
+        "evidence_ids": [
+          "s27",
+          "s31"
+        ]
+      }
+    ],
+    "risk_flags": [
+      "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+    ],
+    "requires_human_approval": true,
+    "automatic_email": false
+  },
+  "boundary": {
+    "status": "EXPECTED_FAILURE",
+    "error_code": "too_short"
+  }
+}

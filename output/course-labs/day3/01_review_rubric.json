@@ -1,0 +1,24 @@
+{
+  "required_fields": [
+    "path",
+    "line",
+    "severity",
+    "title",
+    "body",
+    "evidence",
+    "suggestion",
+    "confidence",
+    "rule_id"
+  ],
+  "severity": {
+    "P0": "즉시 악용·데이터 손실",
+    "P1": "외부 상태·핵심 기능 위험",
+    "P2": "복구·운영 품질 저하",
+    "P3": "국소적 개선"
+  },
+  "excluded": [
+    "style_only",
+    "unrelated_file",
+    "invented_runtime_result"
+  ]
+}

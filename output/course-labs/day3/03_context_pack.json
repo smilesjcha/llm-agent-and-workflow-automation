@@ -1,0 +1,20 @@
+{
+  "changed_paths": [
+    "src/payment_job.py"
+  ],
+  "added_line_count": 6,
+  "test_candidates": [
+    "tests/test_payment_job.py"
+  ],
+  "review_focus": [
+    "correctness",
+    "security",
+    "data_loss",
+    "contract_break"
+  ],
+  "excluded_focus": [
+    "style_only",
+    "unrelated_files",
+    "invented_runtime_result"
+  ]
+}

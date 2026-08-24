@@ -1,0 +1,15 @@
+{
+  "classification": "synthetic",
+  "redaction": {
+    "text": "담당자 [EMAIL_REDACTED] [PHONE_REDACTED] [TOKEN_REDACTED]",
+    "redacted": true,
+    "replacements": {
+      "EMAIL_REDACTED": 1,
+      "PHONE_REDACTED": 1,
+      "TOKEN_REDACTED": 1
+    }
+  },
+  "retention_days": 7,
+  "raw_content_upload": false,
+  "incident_owner_required": true
+}

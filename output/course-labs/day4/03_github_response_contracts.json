@@ -1,0 +1,58 @@
+{
+  "200": {
+    "status": "SUCCESS",
+    "status_code": 200,
+    "action": "USE_RESPONSE",
+    "retryable": false,
+    "retry_after_seconds": null,
+    "error_code": null
+  },
+  "401": {
+    "status": "EXPECTED_FAILURE",
+    "status_code": 401,
+    "action": "STOP_AND_REAUTHENTICATE",
+    "retryable": false,
+    "retry_after_seconds": null,
+    "error_code": "GITHUB_AUTH_REQUIRED"
+  },
+  "403": {
+    "status": "EXPECTED_FAILURE",
+    "status_code": 403,
+    "action": "STOP_AND_CHECK_PERMISSION",
+    "retryable": false,
+    "retry_after_seconds": null,
+    "error_code": "GITHUB_PERMISSION_DENIED"
+  },
+  "404": {
+    "status": "EXPECTED_FAILURE",
+    "status_code": 404,
+    "action": "STOP_AND_CHECK_TARGET",
+    "retryable": false,
+    "retry_after_seconds": null,
+    "error_code": "GITHUB_TARGET_NOT_FOUND"
+  },
+  "422": {
+    "status": "EXPECTED_FAILURE",
+    "status_code": 422,
+    "action": "REFRESH_TARGET_AND_DIFF",
+    "retryable": false,
+    "retry_after_seconds": null,
+    "error_code": "GITHUB_VALIDATION_FAILED"
+  },
+  "429": {
+    "status": "EXPECTED_FAILURE",
+    "status_code": 429,
+    "action": "BOUNDED_RETRY",
+    "retryable": true,
+    "retry_after_seconds": 3,
+    "error_code": "GITHUB_RATE_LIMITED"
+  },
+  "500": {
+    "status": "EXPECTED_FAILURE",
+    "status_code": 500,
+    "action": "STOP_AND_INSPECT",
+    "retryable": false,
+    "retry_after_seconds": null,
+    "error_code": "GITHUB_UNEXPECTED_STATUS"
+  }
+}

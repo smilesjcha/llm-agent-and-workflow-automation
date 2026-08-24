@@ -1,0 +1,136 @@
+{
+  "codex_task": "목표\nreview rule 하나와 정상·실패 test를 추가한다.\n\n먼저 읽을 파일\n- AGENTS.md\n- README.md\n\n변경 허용 범위\n- src/course_services\n- tests\n\n완료 조건\n- python -m pytest -q tests/test_course_services.py\n\n금지 행동\n- secret 출력 또는 commit\n- workspace 밖 파일 변경\n- 사람 승인 없는 외부 쓰기\n- 통과를 위한 기존 test 약화\n\n복구 지점\n- 작업 전 commit\n\n마지막에 변경 파일, 핵심 diff, 실행한 test 명령과 결과를 보고하세요.",
+  "ready_assessment": {
+    "decision": "READY_FOR_HUMAN_MERGE",
+    "reasons": [],
+    "unexpected_paths": [],
+    "missing_tests": [],
+    "human_merge_required": true
+  },
+  "hold_assessment": {
+    "decision": "HOLD",
+    "reasons": [
+      "UNEXPECTED_CHANGED_PATH",
+      "ACCEPTANCE_TEST_NOT_PASSED",
+      "DIFF_REVIEW_REQUIRED",
+      "SECRET_DETECTED"
+    ],
+    "unexpected_paths": [
+      ".env"
+    ],
+    "missing_tests": [
+      "python -m pytest -q tests/test_course_services.py"
+    ],
+    "human_merge_required": true
+  },
+  "scorecard": {
+    "day": 3,
+    "service": "Review Intelligence Service",
+    "status": "SUCCESS",
+    "decision": "READY_FOR_HUMAN_REVIEW",
+    "input": {
+      "diff": "data/day3_review_cases/unsafe_pr.diff",
+      "synthetic": true
+    },
+    "stages": [
+      {
+        "name": "unified_diff",
+        "status": "PARSED",
+        "artifact": "parsed_hunks.json"
+      },
+      {
+        "name": "deterministic_review",
+        "status": "SUCCESS",
+        "artifact": "review_report.json"
+      },
+      {
+        "name": "offline_evaluation",
+        "status": "READY",
+        "artifact": "review_eval.json"
+      }
+    ],
+    "metrics": {
+      "true_positive": 3,
+      "false_positive": 0,
+      "false_negative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "finding_count": 3
+    },
+    "result": {
+      "status": "SUCCESS",
+      "findings": [
+        {
+          "path": "src/payment_job.py",
+          "line": 9,
+          "severity": "P0",
+          "title": "검증되지 않은 문자열이 코드로 실행될 수 있음",
+          "body": "입력 경로에 따라 임의 코드 실행으로 이어질 수 있습니다.",
+          "evidence": "result = eval(command)",
+          "suggestion": "허용된 명령이나 파서만 호출하는 명시적 registry로 교체하세요.",
+          "confidence": 0.99,
+          "rule_id": "unsafe-dynamic-execution"
+        },
+        {
+          "path": "src/payment_job.py",
+          "line": 11,
+          "severity": "P1",
+          "title": "외부 쓰기 전에 사람 승인 경계가 보이지 않음",
+          "body": "재시도나 잘못된 대상 선택이 실제 게시·수정으로 이어질 수 있습니다.",
+          "evidence": "requests.post(\"https://example.invalid/jobs\", json=payload)",
+          "suggestion": "dry-run payload, 대상 확인, human_approved 조건을 쓰기 호출 앞에 두세요.",
+          "confidence": 0.91,
+          "rule_id": "external-write-without-approval"
+        },
+        {
+          "path": "src/payment_job.py",
+          "line": 12,
+          "severity": "P2",
+          "title": "넓은 예외 처리가 실패 계약을 지움",
+          "body": "인증 오류와 입력 오류가 같은 경로로 숨겨져 복구 결정을 내릴 수 없습니다.",
+          "evidence": "except Exception:",
+          "suggestion": "복구 가능한 예외만 잡고 구조화된 error_code를 반환하세요.",
+          "confidence": 0.94,
+          "rule_id": "broad-exception-boundary"
+        }
+      ],
+      "changed_paths": [
+        "src/payment_job.py"
+      ],
+      "checks": {
+        "line_mapping_valid": true,
+        "finding_count": 3,
+        "context_pack": {
+          "changed_paths": [
+            "src/payment_job.py"
+          ],
+          "added_line_count": 6,
+          "test_candidates": [
+            "tests/test_payment_job.py"
+          ],
+          "review_focus": [
+            "correctness",
+            "security",
+            "data_loss",
+            "contract_break"
+          ],
+          "excluded_focus": [
+            "style_only",
+            "unrelated_files",
+            "invented_runtime_result"
+          ]
+        }
+      },
+      "error_code": null,
+      "automatic_publish": false
+    },
+    "boundary_case": {
+      "status": "EXPECTED_FAILURE",
+      "error_code": "EMPTY_DIFF",
+      "automatic_publish": false
+    },
+    "external_write": false,
+    "human_merge_required": true
+  }
+}

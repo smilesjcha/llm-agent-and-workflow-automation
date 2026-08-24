@@ -1,0 +1,17 @@
+{
+  "demo_decisions": {
+    "2": "READY",
+    "3": "READY_FOR_HUMAN_REVIEW",
+    "4": "READY_FOR_SANDBOX_REVIEW",
+    "5": "READY"
+  },
+  "web_build": {
+    "command": "/opt/homebrew/bin/node build.mjs",
+    "returncode": 0,
+    "stdout_tail": [
+      "Built dist/ with Day 1 review UI and Day 2-5 course result demos."
+    ],
+    "stderr_tail": []
+  },
+  "schema_source": "output/course-demos/dayN/demo_result.json"
+}

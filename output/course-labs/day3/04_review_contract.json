@@ -1,0 +1,73 @@
+{
+  "normal": {
+    "status": "SUCCESS",
+    "findings": [
+      {
+        "path": "src/payment_job.py",
+        "line": 9,
+        "severity": "P0",
+        "title": "검증되지 않은 문자열이 코드로 실행될 수 있음",
+        "body": "입력 경로에 따라 임의 코드 실행으로 이어질 수 있습니다.",
+        "evidence": "result = eval(command)",
+        "suggestion": "허용된 명령이나 파서만 호출하는 명시적 registry로 교체하세요.",
+        "confidence": 0.99,
+        "rule_id": "unsafe-dynamic-execution"
+      },
+      {
+        "path": "src/payment_job.py",
+        "line": 11,
+        "severity": "P1",
+        "title": "외부 쓰기 전에 사람 승인 경계가 보이지 않음",
+        "body": "재시도나 잘못된 대상 선택이 실제 게시·수정으로 이어질 수 있습니다.",
+        "evidence": "requests.post(\"https://example.invalid/jobs\", json=payload)",
+        "suggestion": "dry-run payload, 대상 확인, human_approved 조건을 쓰기 호출 앞에 두세요.",
+        "confidence": 0.91,
+        "rule_id": "external-write-without-approval"
+      },
+      {
+        "path": "src/payment_job.py",
+        "line": 12,
+        "severity": "P2",
+        "title": "넓은 예외 처리가 실패 계약을 지움",
+        "body": "인증 오류와 입력 오류가 같은 경로로 숨겨져 복구 결정을 내릴 수 없습니다.",
+        "evidence": "except Exception:",
+        "suggestion": "복구 가능한 예외만 잡고 구조화된 error_code를 반환하세요.",
+        "confidence": 0.94,
+        "rule_id": "broad-exception-boundary"
+      }
+    ],
+    "changed_paths": [
+      "src/payment_job.py"
+    ],
+    "checks": {
+      "line_mapping_valid": true,
+      "finding_count": 3,
+      "context_pack": {
+        "changed_paths": [
+          "src/payment_job.py"
+        ],
+        "added_line_count": 6,
+        "test_candidates": [
+          "tests/test_payment_job.py"
+        ],
+        "review_focus": [
+          "correctness",
+          "security",
+          "data_loss",
+          "contract_break"
+        ],
+        "excluded_focus": [
+          "style_only",
+          "unrelated_files",
+          "invented_runtime_result"
+        ]
+      }
+    },
+    "error_code": null,
+    "automatic_publish": false
+  },
+  "boundary": {
+    "status": "EXPECTED_FAILURE",
+    "error_code": "1 validation error for ReviewReport"
+  }
+}

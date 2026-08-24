@@ -1,0 +1,31 @@
+{
+  "run_name": "day5-agent-operations",
+  "started_at": "2026-08-24T16:25:09.469872+00:00",
+  "finished_at": "2026-08-24T16:25:09.469928+00:00",
+  "metadata": {
+    "data_classification": "synthetic",
+    "external_write": false
+  },
+  "spans": [
+    {
+      "name": "route_meeting",
+      "status": "SUCCESS",
+      "input_keys": [
+        "input_kind"
+      ],
+      "latency_ms": 0.0
+    },
+    {
+      "name": "route_code_review",
+      "status": "SUCCESS",
+      "input_keys": [
+        "input_kind"
+      ],
+      "latency_ms": 0.0
+    }
+  ],
+  "langsmith_upload": {
+    "requested": false,
+    "reason": "LOCAL_FIRST"
+  }
+}

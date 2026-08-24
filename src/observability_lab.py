@@ -13,12 +13,36 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import re
 from time import perf_counter
 from typing import Any, Iterator
 from uuid import uuid4
 
 
 LANGSMITH_SAFE_CLASSIFICATIONS = frozenset({"synthetic", "deidentified"})
+
+
+SECRET_PATTERNS = (
+    (re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"), "[EMAIL_REDACTED]"),
+    (re.compile(r"\b01[016789]-?\d{3,4}-?\d{4}\b"), "[PHONE_REDACTED]"),
+    (re.compile(r"\b(?:sk-|lsv2_)[A-Za-z0-9_-]{12,}\b"), "[TOKEN_REDACTED]"),
+)
+
+
+def redact_observability_text(text: str) -> dict[str, Any]:
+    """Redact common classroom PII and token shapes before trace export."""
+
+    redacted = text
+    replacements: dict[str, int] = {}
+    for pattern, label in SECRET_PATTERNS:
+        redacted, count = pattern.subn(label, redacted)
+        if count:
+            replacements[label.strip("[]")] = count
+    return {
+        "text": redacted,
+        "redacted": bool(replacements),
+        "replacements": replacements,
+    }
 
 
 def disable_automatic_langsmith_tracing() -> bool:

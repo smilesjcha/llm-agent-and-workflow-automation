@@ -1,0 +1,321 @@
+{
+  "approve": {
+    "status": "READY_FOR_EXPORT",
+    "framework": "LangGraph",
+    "request_id": "day4-approve",
+    "thread_id_reused": true,
+    "interrupted": true,
+    "interrupt_payload": {
+      "question": "회의 결과를 승인·수정·거절하시겠습니까?",
+      "request_id": "day4-approve",
+      "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+      "action_items": [
+        {
+          "task": "공개 FAQ 30건 비식별 샘플 정리",
+          "owner": "서연",
+          "due_date": "2026-08-27",
+          "evidence_ids": [
+            "s12",
+            "s18"
+          ]
+        },
+        {
+          "task": "응답 JSON Schema와 실패 테스트 작성",
+          "owner": "준호",
+          "due_date": "2026-08-28",
+          "evidence_ids": [
+            "s27",
+            "s31"
+          ]
+        }
+      ],
+      "risk_flags": [
+        "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+      ],
+      "options": [
+        "approve",
+        "edit",
+        "reject"
+      ],
+      "automatic_email": false
+    },
+    "human_input": {
+      "decision": "approve",
+      "reviewer": "day1-learner",
+      "reason": "실습에서 선택한 결정"
+    },
+    "final_state": {
+      "request_id": "day4-approve",
+      "draft": {
+        "title": "고객 문의 자동화 PoC 범위 회의",
+        "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+        "decisions": [
+          "배송 지연과 반품 절차 안내만 자동화한다.",
+          "개인정보·근거 부족·낮은 신뢰도는 상담원 검토 큐로 보낸다."
+        ],
+        "action_items": [
+          {
+            "task": "공개 FAQ 30건 비식별 샘플 정리",
+            "owner": "서연",
+            "due_date": "2026-08-27",
+            "evidence_ids": [
+              "s12",
+              "s18"
+            ]
+          },
+          {
+            "task": "응답 JSON Schema와 실패 테스트 작성",
+            "owner": "준호",
+            "due_date": "2026-08-28",
+            "evidence_ids": [
+              "s27",
+              "s31"
+            ]
+          }
+        ],
+        "risk_flags": [
+          "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+        ],
+        "requires_human_approval": true,
+        "automatic_email": false
+      },
+      "validation_errors": [],
+      "status": "READY_FOR_EXPORT",
+      "review": {
+        "decision": "approve",
+        "reviewer": "day1-learner",
+        "reason": "실습에서 선택한 결정"
+      },
+      "audit_events": [
+        {
+          "node": "validate",
+          "status": "REVIEW_REQUIRED",
+          "errors": []
+        },
+        {
+          "node": "review",
+          "decision": "approve"
+        },
+        {
+          "node": "finalize",
+          "side_effect": "local_json_only",
+          "automatic_email": false
+        }
+      ],
+      "export_ready": true,
+      "automatic_email": false
+    }
+  },
+  "edit": {
+    "status": "REJECTED",
+    "framework": "LangGraph",
+    "request_id": "day4-edit",
+    "thread_id_reused": true,
+    "interrupted": true,
+    "interrupt_payload": {
+      "question": "회의 결과를 승인·수정·거절하시겠습니까?",
+      "request_id": "day4-edit",
+      "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+      "action_items": [
+        {
+          "task": "공개 FAQ 30건 비식별 샘플 정리",
+          "owner": "서연",
+          "due_date": "2026-08-27",
+          "evidence_ids": [
+            "s12",
+            "s18"
+          ]
+        },
+        {
+          "task": "응답 JSON Schema와 실패 테스트 작성",
+          "owner": "준호",
+          "due_date": "2026-08-28",
+          "evidence_ids": [
+            "s27",
+            "s31"
+          ]
+        }
+      ],
+      "risk_flags": [
+        "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+      ],
+      "options": [
+        "approve",
+        "edit",
+        "reject"
+      ],
+      "automatic_email": false
+    },
+    "human_input": {
+      "decision": "edit",
+      "reviewer": "day1-learner",
+      "reason": "실습에서 선택한 결정"
+    },
+    "final_state": {
+      "request_id": "day4-edit",
+      "draft": {
+        "title": "고객 문의 자동화 PoC 범위 회의",
+        "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+        "decisions": [
+          "배송 지연과 반품 절차 안내만 자동화한다.",
+          "개인정보·근거 부족·낮은 신뢰도는 상담원 검토 큐로 보낸다."
+        ],
+        "action_items": [
+          {
+            "task": "공개 FAQ 30건 비식별 샘플 정리",
+            "owner": "서연",
+            "due_date": "2026-08-27",
+            "evidence_ids": [
+              "s12",
+              "s18"
+            ]
+          },
+          {
+            "task": "응답 JSON Schema와 실패 테스트 작성",
+            "owner": "준호",
+            "due_date": "2026-08-28",
+            "evidence_ids": [
+              "s27",
+              "s31"
+            ]
+          }
+        ],
+        "risk_flags": [
+          "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+        ],
+        "requires_human_approval": true,
+        "automatic_email": false
+      },
+      "validation_errors": [],
+      "status": "REJECTED",
+      "review": {
+        "decision": "edit",
+        "reviewer": "day1-learner",
+        "reason": "edited_summary가 비어 있음"
+      },
+      "audit_events": [
+        {
+          "node": "validate",
+          "status": "REVIEW_REQUIRED",
+          "errors": []
+        },
+        {
+          "node": "review",
+          "decision": "reject"
+        },
+        {
+          "node": "rejected",
+          "export_ready": false
+        }
+      ],
+      "export_ready": false,
+      "automatic_email": false
+    }
+  },
+  "reject": {
+    "status": "REJECTED",
+    "framework": "LangGraph",
+    "request_id": "day4-reject",
+    "thread_id_reused": true,
+    "interrupted": true,
+    "interrupt_payload": {
+      "question": "회의 결과를 승인·수정·거절하시겠습니까?",
+      "request_id": "day4-reject",
+      "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+      "action_items": [
+        {
+          "task": "공개 FAQ 30건 비식별 샘플 정리",
+          "owner": "서연",
+          "due_date": "2026-08-27",
+          "evidence_ids": [
+            "s12",
+            "s18"
+          ]
+        },
+        {
+          "task": "응답 JSON Schema와 실패 테스트 작성",
+          "owner": "준호",
+          "due_date": "2026-08-28",
+          "evidence_ids": [
+            "s27",
+            "s31"
+          ]
+        }
+      ],
+      "risk_flags": [
+        "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+      ],
+      "options": [
+        "approve",
+        "edit",
+        "reject"
+      ],
+      "automatic_email": false
+    },
+    "human_input": {
+      "decision": "reject",
+      "reviewer": "day1-learner",
+      "reason": "실습에서 선택한 결정"
+    },
+    "final_state": {
+      "request_id": "day4-reject",
+      "draft": {
+        "title": "고객 문의 자동화 PoC 범위 회의",
+        "summary": "배송 지연과 반품 절차 안내만 1차 자동화 범위로 정하고, 외부 발행 전 사람이 검토한다.",
+        "decisions": [
+          "배송 지연과 반품 절차 안내만 자동화한다.",
+          "개인정보·근거 부족·낮은 신뢰도는 상담원 검토 큐로 보낸다."
+        ],
+        "action_items": [
+          {
+            "task": "공개 FAQ 30건 비식별 샘플 정리",
+            "owner": "서연",
+            "due_date": "2026-08-27",
+            "evidence_ids": [
+              "s12",
+              "s18"
+            ]
+          },
+          {
+            "task": "응답 JSON Schema와 실패 테스트 작성",
+            "owner": "준호",
+            "due_date": "2026-08-28",
+            "evidence_ids": [
+              "s27",
+              "s31"
+            ]
+          }
+        ],
+        "risk_flags": [
+          "EXTERNAL_WRITE_REQUIRES_APPROVAL"
+        ],
+        "requires_human_approval": true,
+        "automatic_email": false
+      },
+      "validation_errors": [],
+      "status": "REJECTED",
+      "review": {
+        "decision": "reject",
+        "reviewer": "day1-learner",
+        "reason": "실습에서 선택한 결정"
+      },
+      "audit_events": [
+        {
+          "node": "validate",
+          "status": "REVIEW_REQUIRED",
+          "errors": []
+        },
+        {
+          "node": "review",
+          "decision": "reject"
+        },
+        {
+          "node": "rejected",
+          "export_ready": false
+        }
+      ],
+      "export_ready": false,
+      "automatic_email": false
+    }
+  }
+}

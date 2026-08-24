@@ -1,0 +1,3 @@
+{"run_id": "synthetic-001", "decision": "approve", "reason": "EVIDENCE_CONFIRMED", "reviewer": "human"}
+{"run_id": "synthetic-002", "decision": "edit", "reason": "OWNER_CORRECTED", "reviewer": "human"}
+{"run_id": "synthetic-003", "decision": "reject", "reason": "UNKNOWN_EVIDENCE", "reviewer": "human"}

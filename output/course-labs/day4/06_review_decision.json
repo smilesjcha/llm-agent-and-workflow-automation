@@ -1,0 +1,21 @@
+{
+  "approve": {
+    "status": "PUBLISHED",
+    "external_write": true,
+    "publisher_mode": "fake"
+  },
+  "reject": {
+    "status": "BLOCKED",
+    "target": {
+      "repository": "classroom-owner/agent-sandbox",
+      "number": 17,
+      "head_sha": "7c83e8fce9a24d90b6d4a6c9123aa90817b65b1a"
+    },
+    "body": "## 교육용 코드 리뷰 초안\n\n- **P0 · 검증되지 않은 문자열이 코드로 실행될 수 있음**\n  - 위치: `src/payment_job.py:9`\n  - 근거: `result = eval(command)`\n  - 제안: 허용된 명령이나 파서만 호출하는 명시적 registry로 교체하세요.\n- **P1 · 외부 쓰기 전에 사람 승인 경계가 보이지 않음**\n  - 위치: `src/payment_job.py:11`\n  - 근거: `requests.post(\"https://example.invalid/jobs\", json=payload)`\n  - 제안: dry-run payload, 대상 확인, human_approved 조건을 쓰기 호출 앞에 두세요.\n- **P2 · 넓은 예외 처리가 실패 계약을 지움**\n  - 위치: `src/payment_job.py:12`\n  - 근거: `except Exception:`\n  - 제안: 복구 가능한 예외만 잡고 구조화된 error_code를 반환하세요.\n\n자동 게시하지 않았습니다. 대상과 내용을 사람이 확인해야 합니다.",
+    "idempotency_key": "c97ba39c959d7fda585b86c3",
+    "human_approval_required": true,
+    "external_write": false,
+    "error_code": "HUMAN_APPROVAL_REQUIRED",
+    "remote_result": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "metrics": {
+    "true_positive": 3,
+    "false_positive": 0,
+    "false_negative": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "normal": {
+    "decision": "READY",
+    "reasons": [],
+    "human_release_required": true
+  },
+  "boundary": {
+    "decision": "HOLD",
+    "reasons": [
+      "RECALL_BELOW_0_8",
+      "PRECISION_BELOW_0_8",
+      "SAFETY_CHECK_FAILED",
+      "LATENCY_BUDGET_EXCEEDED"
+    ],
+    "human_release_required": true
+  }
+}

@@ -12,6 +12,33 @@ from src.course_services.contracts import PullRequestTarget, ReviewCommentPlan, 
 from src.meeting_demo import ensure_workspace_path
 
 
+def classify_github_response(
+    status_code: int, *, retry_after_seconds: int | None = None
+) -> dict[str, Any]:
+    """Turn GitHub HTTP status codes into explicit classroom recovery decisions."""
+
+    decisions = {
+        200: ("SUCCESS", "USE_RESPONSE", False, None),
+        401: ("EXPECTED_FAILURE", "STOP_AND_REAUTHENTICATE", False, "GITHUB_AUTH_REQUIRED"),
+        403: ("EXPECTED_FAILURE", "STOP_AND_CHECK_PERMISSION", False, "GITHUB_PERMISSION_DENIED"),
+        404: ("EXPECTED_FAILURE", "STOP_AND_CHECK_TARGET", False, "GITHUB_TARGET_NOT_FOUND"),
+        422: ("EXPECTED_FAILURE", "REFRESH_TARGET_AND_DIFF", False, "GITHUB_VALIDATION_FAILED"),
+        429: ("EXPECTED_FAILURE", "BOUNDED_RETRY", True, "GITHUB_RATE_LIMITED"),
+    }
+    status, action, retryable, error_code = decisions.get(
+        status_code,
+        ("EXPECTED_FAILURE", "STOP_AND_INSPECT", False, "GITHUB_UNEXPECTED_STATUS"),
+    )
+    return {
+        "status": status,
+        "status_code": status_code,
+        "action": action,
+        "retryable": retryable,
+        "retry_after_seconds": retry_after_seconds if status_code == 429 else None,
+        "error_code": error_code,
+    }
+
+
 class InMemoryIdempotencyStore:
     """Classroom store that makes duplicate publication observable."""
 

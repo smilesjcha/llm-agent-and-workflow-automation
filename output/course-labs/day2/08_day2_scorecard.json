@@ -1,0 +1,119 @@
+{
+  "day": 2,
+  "service": "Meeting Intelligence Service",
+  "status": "SUCCESS",
+  "decision": "READY",
+  "input": {
+    "audio": "data/meeting_sample_ko_12min.wav",
+    "transcript": "data/meeting_sample_ko_12min.txt",
+    "synthetic": true
+  },
+  "stages": [
+    {
+      "name": "audio_contract",
+      "status": "READY",
+      "artifact": "audio_metadata.json"
+    },
+    {
+      "name": "transcript_segments",
+      "status": "SUCCESS",
+      "artifact": "transcript.json"
+    },
+    {
+      "name": "evidence_chunks",
+      "status": "SUCCESS",
+      "artifact": "meeting_chunks.json"
+    },
+    {
+      "name": "meeting_brief",
+      "status": "VALIDATED",
+      "artifact": "meeting_brief.json"
+    }
+  ],
+  "metrics": {
+    "segment_count": 45,
+    "chunk_count": 7,
+    "action_item_count": 5,
+    "evidence_error_count": 0
+  },
+  "result": {
+    "title": "고객 문의 자동화 PoC 범위·안전·평가 기준 회의",
+    "summary": "상담원용 고객 문의 Copilot의 1차 범위를 합성 문의와 공개 FAQ 기반의 답변 초안 생성으로 제한하고, 외부 발행 전 사람 승인과 근거 연결을 필수화했다.",
+    "action_items": [
+      {
+        "task": "합성 문의 50건·FAQ 30건과 Dataset Card 초안 작성",
+        "owner": "서연",
+        "due_date": "2026-08-27T17:00:00+09:00",
+        "evidence_ids": [
+          "s27"
+        ],
+        "needs_review": false
+      },
+      {
+        "task": "Tool schema·path guard·정상 1건·실패 4건 unit test 작성",
+        "owner": "준호",
+        "due_date": "2026-08-28T12:00:00+09:00",
+        "evidence_ids": [
+          "s28"
+        ],
+        "needs_review": false
+      },
+      {
+        "task": "Golden JSON 5건과 evidence evaluator 작성",
+        "owner": "현우",
+        "due_date": "2026-08-28T16:00:00+09:00",
+        "evidence_ids": [
+          "s29"
+        ],
+        "needs_review": false
+      },
+      {
+        "task": "승인 정책 초안 작성",
+        "owner": "민지",
+        "due_date": "2026-08-29T14:00:00+09:00",
+        "evidence_ids": [
+          "s30",
+          "s32"
+        ],
+        "needs_review": false,
+        "correction_note": "s30의 오전 일정을 s32에서 오후 2시로 정정"
+      },
+      {
+        "task": "상담원 화면 문구 최종 확정",
+        "owner": "민지",
+        "due_date": null,
+        "evidence_ids": [
+          "s30",
+          "s31",
+          "s32"
+        ],
+        "needs_review": true,
+        "review_reason": "RELATIVE_DATE"
+      }
+    ],
+    "policy": {
+      "automatic_email": false,
+      "automatic_publish": false,
+      "requires_human_approval": true,
+      "pii_allowed": false
+    }
+  },
+  "boundary_case": {
+    "status": "HOLD",
+    "errors": [
+      "ACTION_1_UNKNOWN_EVIDENCE:s999"
+    ],
+    "external_write": false
+  },
+  "external_write": false,
+  "human_approval_required": true,
+  "focused_test": {
+    "command": "python -m pytest -q tests/test_meeting_agent_workflow.py tests/test_course_services.py",
+    "returncode": 0,
+    "stdout_tail": [
+      ".......................                                                  [100%]",
+      "23 passed in 0.18s"
+    ],
+    "stderr_tail": []
+  }
+}

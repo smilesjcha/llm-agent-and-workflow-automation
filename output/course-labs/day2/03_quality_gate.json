@@ -1,0 +1,30 @@
+{
+  "normal": {
+    "decision": "READY",
+    "flagged_segment_count": 0,
+    "reasons": [],
+    "human_decision_required": true,
+    "detected_language": "ko",
+    "language_probability": 0.99,
+    "segment_count": 45,
+    "text_length": 5141,
+    "reference_similarity": 1.0,
+    "minimum_reference_similarity": 0.8
+  },
+  "boundary": {
+    "decision": "HOLD",
+    "flagged_segment_count": 0,
+    "reasons": [
+      "NO_SPEECH_SEGMENTS",
+      "STT_FALLBACK_USED",
+      "TRANSCRIPT_TOO_SHORT"
+    ],
+    "human_decision_required": true,
+    "detected_language": "ko",
+    "language_probability": null,
+    "segment_count": 0,
+    "text_length": 0,
+    "reference_similarity": null,
+    "minimum_reference_similarity": null
+  }
+}

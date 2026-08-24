@@ -4,9 +4,11 @@ from pathlib import Path
 import pytest
 
 from src.course_services.codex_harness import CodexTaskSpec, assess_codex_run, render_codex_task
+from src.course_services.course_demo import build_course_demo
 from src.course_services.eval_service import evaluate_review_findings, release_gate
 from src.course_services.github_service import (
     InMemoryIdempotencyStore,
+    classify_github_response,
     load_pr_fixture,
     prepare_review_comment,
     publish_review_comment,
@@ -17,6 +19,7 @@ from src.course_services.meeting_service import (
 )
 from src.course_services.review_service import parse_unified_diff, run_review_service
 from src.course_services.service_router import route_service_request
+from src.observability_lab import redact_observability_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -184,3 +187,46 @@ def test_offline_eval_drives_release_gate() -> None:
         "f1": 1.0,
     }
     assert decision["decision"] == "READY"
+
+
+@pytest.mark.parametrize("day", [2, 3, 4, 5])
+def test_course_demo_has_success_boundary_and_no_real_external_write(day: int) -> None:
+    result = build_course_demo(day, workspace_root=ROOT)
+
+    assert result["status"] == "SUCCESS"
+    assert result["stages"]
+    assert result["boundary_case"]
+    assert result["external_write"] is False
+
+
+def test_course_demo_rejects_unknown_day() -> None:
+    result = build_course_demo(1, workspace_root=ROOT)
+
+    assert result == {
+        "status": "EXPECTED_FAILURE",
+        "error_code": "UNSUPPORTED_COURSE_DAY",
+        "supported_days": [2, 3, 4, 5],
+        "external_write": False,
+    }
+
+
+def test_github_status_contract_retries_only_rate_limit() -> None:
+    rate_limited = classify_github_response(429, retry_after_seconds=3)
+    unauthorized = classify_github_response(401, retry_after_seconds=3)
+
+    assert rate_limited["retryable"] is True
+    assert rate_limited["retry_after_seconds"] == 3
+    assert unauthorized["retryable"] is False
+    assert unauthorized["retry_after_seconds"] is None
+    assert unauthorized["error_code"] == "GITHUB_AUTH_REQUIRED"
+
+
+def test_observability_redaction_removes_pii_and_token_shapes() -> None:
+    result = redact_observability_text(
+        "담당자 test@example.com 010-1234-5678 sk-exampletoken123456789"
+    )
+
+    assert result["redacted"] is True
+    assert "test@example.com" not in result["text"]
+    assert "010-1234-5678" not in result["text"]
+    assert "sk-exampletoken123456789" not in result["text"]

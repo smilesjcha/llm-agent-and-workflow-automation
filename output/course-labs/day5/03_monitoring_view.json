@@ -1,0 +1,18 @@
+{
+  "run_name": "day5-agent-operations",
+  "status_counts": {
+    "SUCCESS": 2,
+    "ERROR": 0
+  },
+  "latency_ms": {
+    "route_meeting": 0.0,
+    "route_code_review": 0.0
+  },
+  "filters": [
+    "provider_used",
+    "error_code",
+    "fallback_reason",
+    "decision"
+  ],
+  "raw_content_uploaded": false
+}
