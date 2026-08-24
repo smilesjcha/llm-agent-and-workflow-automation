@@ -1,0 +1,264 @@
+# 강의 준비 Quality Validation
+
+## 1. 문서 목적
+
+이 문서는 Day 2~5의 PPT·Notebook·Python·Demo 영상·Codex/Claude Code 진행 사례가 실제 8시간 교육으로 성립하는지 검증하는 제작자용 기준이다. 수강생에게 보여줄 강의 내용이 아니며, PPT 화면에 `Quality Gate`, `장표 수`, `중복률`, `제작 기준` 같은 내부 메타 표현을 노출하지 않는다.
+
+검증의 핵심은 장표 수가 아니라 다음 질문이다.
+
+> 앞 차시 결과를 입력으로 받아, 새 개념 하나를 이해하고, 실제 코드를 바꾸고, 정상·실패를 실행한 뒤, 다음 차시가 사용할 증거를 남기는가?
+
+## 2. 8시간 강의 성립 조건
+
+### 2.1 하루의 시간 구조
+
+| 시간 | 구간 | 학습 기능 |
+|---|---|---|
+| 09:00~11:30 | 1~3차시 | 입력·문제·품질 경계 구현 |
+| 11:30~12:00 | 쉬는 시간 | 3개 차시 연강 뒤 30분 |
+| 12:00~13:40 | 4~5차시 | Schema·State·Contract 확장 |
+| 13:40~14:00 | 쉬는 시간 | 2개 차시 연강 뒤 20분 |
+| 14:00~15:00 | 점심시간 | 수업과 분리 |
+| 15:00~17:30 | 6~8차시 | Provider·Workflow·평가·운영 통합 |
+| 17:30~18:00 | 쉬는 시간·복구 | 질문·미완료 실행 복구 포함 |
+
+### 2.2 한 차시 50분의 역할
+
+| 구간 | 시간 | 권장 장표 | 장표의 역할 |
+|---|---:|---:|---|
+| 개념 강의 | 12분 | 7~8장 | 문제·용어·판단 기준·반례 |
+| 강사 시연 | 10분 | 5~6장 | 실제 입력·코드·명령·정상·실패 화면 |
+| 소프트웨어 제작 | 23분 | 12~14장 | Notebook·Codex·Claude Code 단계 안내와 실행 대기 화면 |
+| 실행 확인 | 5분 | 2~4장 | test·diff·artifact·다음 입력 확인 |
+
+30장은 모두 1~2분씩 설명하는 강의 장표가 아니다. 코드 셀·명령·diff·결과 화면은 수강생이 실행하는 동안 계속 띄워 두는 Tutorial 장표다. 개념 설명용 7~8장과 실행용 22~23장이 서로 다른 기능을 가질 때만 30장 구성이 성립한다.
+
+### 2.3 8시간을 채우는 방식
+
+- 같은 정의를 길게 반복하지 않는다.
+- 정상 경로만 여러 번 보여주지 않는다.
+- 실제 코드 작성, 설치·Kernel 복구, test 실패 분석, diff 검토, 사람 판단에 시간을 사용한다.
+- 빠른 수강생에게는 새 장표가 아니라 boundary test·Codex 개선 요청·Claude Code 대안 리뷰를 제공한다.
+- 느린 수강생은 fixture·executed Notebook·dry-run으로 같은 결과 계약을 따라간다.
+- 강사는 결과가 빨리 나오면 실제 현업 반례와 운영 판단을 확장하고, 설치 문제로 시간을 소비하지 않는다.
+
+## 3. 하루의 두괄식 Narrative
+
+각 날짜의 첫 5분은 그날 마지막에 완성할 결과를 45~75초 영상으로 보여준다. 영상 뒤에는 결과 화면의 세 가지 상태만 짚고, 구현 원리는 설명하지 않는다.
+
+```text
+완성 결과 영상
+→ 오늘의 사용자 문제
+→ 여덟 차시 제작 경로
+→ 차시별 입력·구현·실패·증거
+→ 마지막 통합 실행
+→ READY/HOLD와 다음 개선 결정
+```
+
+오프닝 영상은 예고다. STT·LangGraph·LangSmith·Idempotency의 정의를 미리 완결하지 않는다. 각 개념은 소유 차시에서 처음 상세히 설명한다.
+
+## 4. Day 2~5 메시지 소유권
+
+### Day 2 · Meeting Intelligence Service
+
+| 차시 | 소유 질문 | 새로 만드는 것 | 다음 차시 입력 |
+|---|---|---|---|
+| 1차시 | 이 음성을 처리해도 되는가 | 오디오 계약·metadata 검사 | 검증된 audio path |
+| 2차시 | 음성을 어떤 공통 형식으로 바꿀까 | STT adapter·timestamp segment | `transcript.json` |
+| 3차시 | 문자 생성과 사용 가능 상태는 어떻게 다른가 | STT quality gate | READY segment·HOLD flag |
+| 4차시 | 회의 결과의 필수 field는 무엇인가 | Pydantic `MeetingBrief` | validated schema |
+| 5차시 | 긴 회의에서 근거 ID를 어떻게 보존할까 | segment chunk·overlap | evidence-preserving chunks |
+| 6차시 | Provider를 바꿔도 계약을 어떻게 유지할까 | LangChain adapter pipeline | typed meeting brief |
+| 7차시 | Action Item이 실제 발화에 근거하는가 | evidence validator | validated action items |
+| 8차시 | 이 결과를 내보내도 되는가 | Golden Set·release decision | Day 2 scorecard |
+
+### Day 3 · Review Intelligence Service
+
+| 차시 | 소유 질문 | 새로 만드는 것 | 다음 차시 입력 |
+|---|---|---|---|
+| 1차시 | 좋은 finding은 무엇인가 | severity·review rubric | review policy |
+| 2차시 | 변경된 줄을 정확히 어떻게 찾는가 | Unified Diff parser | added lines |
+| 3차시 | 모델에 어떤 context만 줄 것인가 | context pack | bounded context |
+| 4차시 | 리뷰 결과가 어떤 계약을 지켜야 하는가 | `ReviewFinding` schema | validated report |
+| 5차시 | LLM 전 비교 기준은 무엇인가 | deterministic baseline | baseline findings |
+| 6차시 | 규칙·test·LLM을 어떻게 결합하는가 | hybrid reviewer | candidate findings |
+| 7차시 | 더 좋아졌다는 것을 어떻게 증명하는가 | precision·recall·F1 | evaluation result |
+| 8차시 | 실패를 어떻게 회귀 test로 남기는가 | Codex Harness·regression gate | Day 3 report |
+
+### Day 4 · PR Review Automation
+
+| 차시 | 소유 질문 | 새로 만드는 것 | 다음 차시 입력 |
+|---|---|---|---|
+| 1차시 | 어느 PR을 검토하는가 | target fixture·head SHA | fixed target |
+| 2차시 | 어떤 권한만 허용할 것인가 | secret·permission boundary | read-only session |
+| 3차시 | API 실패마다 무엇이 달라지는가 | status contract·recovery | normalized read result |
+| 4차시 | 어떤 상태와 분기가 필요한가 | LangGraph nodes·edges | compiled graph |
+| 5차시 | 재시작이 왜 중복 게시가 되지 않는가 | checkpoint·idempotency | reusable request key |
+| 6차시 | 사람은 무엇을 보고 결정해야 하는가 | interrupt payload | approve·edit·reject event |
+| 7차시 | 실제 게시 전에 무엇을 검토할까 | API-equivalent dry-run | comment plan |
+| 8차시 | 외부 쓰기를 어디까지 허용할까 | sandbox publish·audit | Day 4 audit record |
+
+### Day 5 · Agent Operations Console
+
+| 차시 | 소유 질문 | 새로 만드는 것 | 다음 차시 입력 |
+|---|---|---|---|
+| 1차시 | 어떤 service를 실행할 것인가 | explicit router | unified result |
+| 2차시 | 어느 node에서 무엇이 일어났는가 | local/LangSmith trace | trace spans |
+| 3차시 | 운영자는 어떤 신호를 봐야 하는가 | monitoring metadata | monitoring view |
+| 4차시 | 새 버전을 내보내도 되는가 | dataset experiment | release gate |
+| 5차시 | 사람 수정에서 무엇을 배울 것인가 | feedback schema | annotation candidates |
+| 6차시 | 데이터와 장애를 어떻게 통제할까 | PII·retention·incident policy | ops checklist |
+| 7차시 | 코드·문서·Demo가 같은 버전인가 | release candidate·local web build | reproducible demo |
+| 8차시 | 제품 가치를 어떤 증거로 말할까 | 정상/HOLD Demo·scorecard | final portfolio package |
+
+## 5. 장표 중복 Validation
+
+### 5.1 자동 Gate
+
+| 항목 | 통과 기준 |
+|---|---|
+| Exact headline | 허용된 시간표·footer 외 중복 0건 |
+| Near headline | 유사도 0.80 이상 문구를 전수 검토하고 역할 중복 0건 |
+| Repeated narrative line | 파일·명령·시간표·acceptance contract를 제외한 본문 문장 반복 0건 |
+| Summary slide | 하루 전체 요약은 마지막 차시만 허용 |
+| Ownership | 소유 차시 밖 상세 구현 설명 0건 |
+| Generic title | `문제와 필요성`, `차시 목표`, `완료 기준` 같은 범용 제목의 반복 0건 |
+| Production meta | `KEY POINT`, `장표 리듬`, `Quality Validation` 등 내부 표현 0건 |
+
+### 5.2 사람이 제목만 읽는 Gate
+
+1. 1쪽부터 240쪽까지 제목만 읽어도 질문이 앞으로 전진하는가?
+2. 앞 장의 결론을 표현만 바꿔 다시 말하지 않는가?
+3. 개념→근거→코드→실패→복구→실행→test 순서가 보이는가?
+4. 같은 표·목록·카드 구조가 세 장 이상 이어지지 않는가?
+5. 차시 마지막은 요약이 아니라 다음 차시가 사용할 artifact를 확인하는가?
+6. 마지막 차시에서만 하루 전체의 결과와 판단을 회수하는가?
+
+정상·경계 acceptance condition은 `계약 → Codex task → 실행 → test`의 네 위치에서 같은 문구를 interface처럼 다시 사용할 수 있다. 이는 요약 반복이 아니라 동일 계약의 추적성이다. 네 위치를 넘거나 설명 문장까지 같은 경우에는 중복으로 판단한다.
+
+### 5.3 장표 수를 유지할 때의 대체 원칙
+
+중복 장표를 삭제한 자리는 다른 말의 요약으로 채우지 않는다. 다음 중 하나로 전환한다.
+
+- 실제 코드의 한 함수
+- 실제 Notebook 셀과 실행 결과
+- 정상·경계 test 비교
+- 의도적 실패와 복구 로그
+- Codex/Claude Code 작업 요청과 실제 diff
+- 재직자 운영 반례
+- 구직자 README·commit·portfolio 증거
+- 새로운 상황을 판단하는 Application Gate
+
+## 6. 오프닝 Demo 영상 Validation
+
+| 기준 | 요구 사항 |
+|---|---|
+| 길이 | 45~75초 |
+| 화면 | 16:9, 최소 1280×720 |
+| 구성 | 입력 10초 → 실행·상태 25~40초 → 결과·READY/HOLD 15~20초 |
+| 데이터 | 합성·공개·비식별 자료만 사용 |
+| 진실성 | 실제 현재 코드가 생성한 JSON·test·UI만 촬영 |
+| 보안 | token·`.env`·개인 경로·회사 데이터 노출 없음 |
+| 소리 | 무음이어도 이해 가능한 자막, 선택적으로 강사 음성 |
+| 수업 연결 | 영상의 각 장면이 여덟 차시 중 하나와 매핑 |
+
+Day 2 영상은 audio→transcript→evidence→READY, Day 3은 diff→three findings→evaluation, Day 4는 dry-run→approve/reject→idempotent publish, Day 5는 router→trace→experiment→release scorecard를 보여준다.
+
+## 7. Notebook Validation
+
+각 Day Notebook은 8개 차시를 같은 입력과 결과 계약으로 연결한다.
+
+- 상단에 현재 Python·workspace·필수 library 확인 셀이 있다.
+- 필요 library 설치 셀은 없는 패키지만 설치하거나 명확한 requirements 파일을 사용한다.
+- 1~8차시 heading이 모두 존재한다.
+- 각 차시에 최소 한 개의 실행 가능한 code cell이 있다.
+- 정상 case와 가장 중요한 boundary case를 모두 실행한다.
+- 결과는 `output/dayN-*` 아래 JSON·JSONL·MD로 저장한다.
+- `RUN_*_LIVE=False`가 기본이며 fixture만으로 Run All이 성공한다.
+- live provider를 선택하면 실제 provider와 fallback reason을 숨기지 않는다.
+- `.env`와 token 값을 출력하지 않는다.
+- 마지막 셀에서 focused test와 artifact 존재를 확인한다.
+- `.executed.ipynb`는 현재 코드로 처음부터 끝까지 다시 실행한 결과다.
+
+## 8. Codex·Claude Code Harness
+
+### 8.1 공통 작업 계약
+
+```text
+목표
+현재 동작과 사용자 영향
+변경 허용 경로
+변경 금지 경로
+정상 완료 조건
+가장 중요한 실패 조건
+실행할 focused test
+diff에서 사람이 확인할 항목
+```
+
+두 도구에 같은 모호한 “잘 만들어줘” 요청을 주지 않는다. 같은 계약을 주고, 결과의 범위·test·diff·복구 품질을 사람이 비교한다.
+
+### 8.2 ChatGPT Desktop·Codex 진행
+
+1. repository root와 `AGENTS.md`를 읽게 한다.
+2. 관련 파일·test·data만 먼저 찾게 한다.
+3. 한 책임만 가진 작업 명세를 전달한다.
+4. 최소 patch와 focused test를 요청한다.
+5. test 실행 결과와 변경 diff를 함께 검토한다.
+6. 정상만 통과하면 boundary test를 추가한다.
+7. 사람이 승인한 작은 commit으로 남긴다.
+
+OpenAI 공식 자료가 설명하는 Codex의 코드베이스 이해, 기능 구현, test, diff review, 배포 준비 흐름을 수업의 공통 Harness로 사용한다.
+
+### 8.3 Claude Desktop·Claude Code 진행
+
+1. Code tab에서 Local·project folder·permission mode를 명시한다.
+2. 별도 session 또는 Git-isolated worktree에서 같은 작업 계약을 사용한다.
+3. integrated terminal에서 focused test를 실행한다.
+4. visual diff review로 의도하지 않은 파일 변경을 확인한다.
+5. Browser preview가 있는 Day 5는 local Demo를 직접 확인한다.
+6. Codex와 같은 working tree를 동시에 수정하게 하지 않는다.
+7. 두 결과 중 하나를 자동 채택하지 않고 사람이 작은 patch를 선택한다.
+
+Claude Code Desktop의 parallel session, Git isolation, integrated terminal, visual diff, app preview는 구현 대안과 리뷰 실습에 사용한다. 유료 구독이 필요한 경로는 필수 실습으로 두지 않고 강사 시연·선택 확장으로 둔다.
+
+### 8.4 역할 분리 예시
+
+| 단계 | Codex | Claude Code | 사람 |
+|---|---|---|---|
+| 탐색 | 관련 코드·test·규칙 찾기 | 별도 session에서 누락 경계 찾기 | 입력·목표 확정 |
+| 구현 | 최소 patch와 test | 대안 patch 또는 reviewer 역할 | scope·trade-off 판단 |
+| 검증 | focused/full test·diff 요약 | visual diff·app preview | 실제 결과·보안 확인 |
+| 반영 | commit 초안 | PR 설명 초안 | commit·merge·배포 승인 |
+
+## 9. 실제 소프트웨어 결과 Validation
+
+각 날짜가 끝날 때 최소 다음 결과가 있어야 한다.
+
+| 일자 | 코드 결과 | 실행 결과 | 사람 판단 |
+|---|---|---|---|
+| Day 2 | STT adapter·chunk·schema·evidence validator | transcript·MeetingBrief·quality report | READY/HOLD |
+| Day 3 | diff parser·reviewer·evaluation | findings·precision·recall·F1 | READY_FOR_HUMAN_REVIEW |
+| Day 4 | PR target·graph·dry-run·idempotency | comment plan·approve/reject·audit | PUBLISH/BLOCK |
+| Day 5 | router·trace·experiment·web Demo | scorecard·local build·release report | RELEASE/HOLD |
+
+## 10. Release Gate
+
+다음 항목이 모두 통과해야 강의안을 배포한다.
+
+1. PPT 240장·speaker notes 240개
+2. PPT overflow 0건
+3. PDF 240쪽·깨진 한글 glyph 0건
+4. Exact headline duplicate 0건
+5. Repeated narrative line 0건
+6. Notebook 8개 차시 heading·Run All 성공
+7. focused test와 전체 test 통과
+8. Demo 영상 4개가 현재 결과 JSON과 일치
+9. 실제 외부 쓰기 기본값 false
+10. 사람 검수 기록과 commit 분리
+
+## 참고 출처
+
+- OpenAI Codex use cases: https://learn.chatgpt.com/use-cases
+- OpenAI Codex documentation: https://developers.openai.com/codex/
+- Claude Code Desktop: https://code.claude.com/docs/en/desktop
+- Claude Code Desktop quickstart: https://code.claude.com/docs/en/desktop-quickstart

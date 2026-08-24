@@ -2,6 +2,8 @@
 
 이 문서는 PPT를 한 번 예쁘게 만드는 규칙이 아니라, 강의 메시지가 버전이 바뀌어도 흔들리지 않게 관리하는 기준이다. 장표·노트북·코드·캡처를 고칠 때 모두 같은 질문을 사용한다.
 
+Day 2~5의 8시간 성립 조건, 오프닝 결과 Demo, 240장 중복 Gate, Notebook·Codex·Claude Code 검증은 `COURSE_QUALITY_VALIDATION.md`를 함께 적용한다.
+
 ## 1. 커뮤니케이션 한 문장
 
 > 8시간이 끝나면 처음 배우는 학습자도 **STT → LLM → Tool → LangGraph → Human Review → LangSmith** 흐름을 말로 설명하고, 무료·로컬 우선 환경에서 실패를 재현한 증거를 남길 수 있어야 한다.

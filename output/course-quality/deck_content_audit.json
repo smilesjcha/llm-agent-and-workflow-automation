@@ -1,0 +1,45 @@
+{
+  "days": [
+    {
+      "day": 2,
+      "slide_count": 240,
+      "exact_title_duplicates": {},
+      "generic_title_hits": [],
+      "repeated_narrative": [],
+      "contract_overuse": [],
+      "internal_meta_hits": [],
+      "passed": true
+    },
+    {
+      "day": 3,
+      "slide_count": 240,
+      "exact_title_duplicates": {},
+      "generic_title_hits": [],
+      "repeated_narrative": [],
+      "contract_overuse": [],
+      "internal_meta_hits": [],
+      "passed": true
+    },
+    {
+      "day": 4,
+      "slide_count": 240,
+      "exact_title_duplicates": {},
+      "generic_title_hits": [],
+      "repeated_narrative": [],
+      "contract_overuse": [],
+      "internal_meta_hits": [],
+      "passed": true
+    },
+    {
+      "day": 5,
+      "slide_count": 240,
+      "exact_title_duplicates": {},
+      "generic_title_hits": [],
+      "repeated_narrative": [],
+      "contract_overuse": [],
+      "internal_meta_hits": [],
+      "passed": true
+    }
+  ],
+  "passed": true
+}

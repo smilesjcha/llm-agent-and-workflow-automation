@@ -259,3 +259,5 @@ export const DAY_TIMES = [
 
 export const CODEX_OFFICIAL_SOURCE = "https://learn.chatgpt.com/use-cases";
 export const OPENAI_CODEX_DOCS = "https://developers.openai.com/codex/";
+export const CLAUDE_CODE_DESKTOP = "https://code.claude.com/docs/en/desktop";
+export const CLAUDE_CODE_QUICKSTART = "https://code.claude.com/docs/en/desktop-quickstart";

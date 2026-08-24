@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
 import { MUSINSA_PPT, MUSINSA_REFERENCE, makeCoursePalette } from "../../design-system/ppt/cha-sungjae-lecture/design-system.mjs";
-import { CODEX_OFFICIAL_SOURCE, COURSE_DAYS, DAY_TIMES, OPENAI_CODEX_DOCS } from "./days2_5_content.mjs";
+import { CLAUDE_CODE_DESKTOP, CLAUDE_CODE_QUICKSTART, CODEX_OFFICIAL_SOURCE, COURSE_DAYS, DAY_TIMES, OPENAI_CODEX_DOCS } from "./days2_5_content.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const argIndex = process.argv.indexOf("--day");
@@ -13,9 +13,15 @@ if (![2, 3, 4, 5].includes(day)) throw new Error("--day must be one of 2, 3, 4, 
 const config = COURSE_DAYS[day];
 const outPath = path.join(ROOT, `slides/IPA_LLM_Agent_업무자동화_Day${day}_DRAFT_240p.pptx`);
 const C = makeCoursePalette();
-const FONT = "AppleGothic";
+const FONT = "NanumGothic";
 const deck = Presentation.create({ slideSize: MUSINSA_PPT.slide });
 const screenshotBytes = new Map();
+const notebookPath = path.join(ROOT, `materials/day${day}/day${day}_service_lab.ipynb`);
+const notebookData = JSON.parse(await fs.readFile(notebookPath, "utf8"));
+const labOutputDir = path.join(ROOT, `output/course-labs/day${day}`);
+const labResultFiles = (await fs.readdir(labOutputDir))
+  .filter((name) => /^\d{2}_/.test(name))
+  .sort();
 
 function addShape(slide, geometry, position, fill = "none", lineFill = "none", lineWidth = 0) {
   return slide.shapes.add({ geometry, position, fill, line: { style: "solid", fill: lineFill, width: lineWidth } });
@@ -28,7 +34,7 @@ function addText(slide, text, position, options = {}) {
     fontSize: options.size ?? 20,
     bold: options.bold ?? false,
     color: options.color ?? C.ink,
-    typeface: FONT,
+    typeface: options.typeface ?? FONT,
     alignment: options.align ?? "left",
     verticalAlignment: options.valign ?? "top",
     autoFit: options.autoFit ?? "shrinkText",
@@ -37,6 +43,29 @@ function addText(slide, text, position, options = {}) {
     insets: options.insets ?? { left: 0, right: 0, top: 0, bottom: 0 },
   };
   return box;
+}
+
+function periodNotebookCode(periodIndex) {
+  const heading = `## ${partNumber(periodIndex)}차시`;
+  const headingIndex = notebookData.cells.findIndex(
+    (cell) => cell.cell_type === "markdown" && cell.source.join("").includes(heading),
+  );
+  const codeCell = notebookData.cells.slice(headingIndex + 1).find((cell) => cell.cell_type === "code");
+  if (!codeCell) return "# NOTEBOOK_CELL_NOT_FOUND";
+  const lines = codeCell.source.join("").trim().split("\n");
+  return lines.slice(0, 20).join("\n") + (lines.length > 20 ? "\n# ... 다음 줄은 Notebook에서 계속" : "");
+}
+
+async function periodResultText(periodIndex) {
+  const fileName = labResultFiles[periodIndex];
+  const resultPath = path.join(labOutputDir, fileName);
+  const raw = await fs.readFile(resultPath, "utf8");
+  if (fileName.endsWith(".json")) {
+    const lines = JSON.stringify(JSON.parse(raw), null, 2).split("\n");
+    return { fileName, resultPath, text: lines.slice(0, 25).join("\n") + (lines.length > 25 ? "\n..." : "") };
+  }
+  const lines = raw.trim().split("\n");
+  return { fileName, resultPath, text: lines.slice(0, 12).join("\n") + (lines.length > 12 ? "\n..." : "") };
 }
 
 function addNotes(slide, teachingJob, sources = []) {
@@ -86,8 +115,8 @@ function addHeader(slide, title, periodIndex, label = "") {
   assertAudienceTitle(title);
   const page = deck.slides.items.length;
   slide.background.fill = C.paper;
-  if (label) addText(slide, label, { left: 64, top: 38, width: 560, height: 18 }, { size: 11, bold: true, color: C.muted });
   addText(slide, title, { left: 64, top: label ? 72 : 54, width: 1152, height: 74 }, { size: 36, bold: true, color: C.ink, valign: "top" });
+  if (label) addText(slide, label, { left: 64, top: 38, width: 560, height: 18 }, { size: 11, bold: true, color: C.muted });
   addFooter(slide, periodIndex, page);
 }
 
@@ -106,13 +135,13 @@ function addCover(period, periodIndex) {
   const slide = deck.slides.add();
   slide.background.fill = C.black;
   addShape(slide, "rect", { left: 0, top: 0, width: 18, height: 720 }, C.blue);
+  addText(slide, period.title, { left: 84, top: 176, width: 1080, height: 142 }, { size: 54, bold: true, color: C.white, lineSpacing: 0.98, valign: "middle" });
   addText(slide, periodIndex === 0 ? "IPA · LLM AGENT & 업무자동화 40H" : `DAY ${day} · ${partNumber(periodIndex)}차시`, { left: 84, top: 62, width: 720, height: 26 }, { size: 14, bold: true, color: C.white });
   addText(slide, `${partTime(periodIndex)}  (${accumulatedBreak(periodIndex)})`, { left: 84, top: 108, width: 840, height: 34 }, { size: 20, bold: true, color: C.blue });
-  addText(slide, period.title, { left: 84, top: 176, width: 1080, height: 142 }, { size: 54, bold: true, color: C.white, lineSpacing: 0.98, valign: "middle" });
   addText(slide, `${period.terms[0][0]} · ${period.terms[1][0]} · ${period.artifact}`, { left: 88, top: 340, width: 1040, height: 70 }, { size: 25, bold: true, color: C.faint });
   addShape(slide, "line", { left: 84, top: 448, width: 1092, height: 0 }, "none", C.blue, 3);
   const columns = [
-    ["진행", period.mode],
+    ["진행", `${period.title}\n${period.mode}`],
     ["사용 파일", period.files.slice(0, 2).join("\n")],
     ["확인할 결과", period.artifact],
   ];
@@ -151,6 +180,31 @@ function addTimetable(periodIndex) {
   addNotes(slide, "수강생이 현재 차시와 강의·시연·소프트웨어 실습 비중을 한 번에 확인한다.", ["local:IPA_40H_상세_커리큘럼_및_무료실습_설계.md"]);
 }
 
+async function addOpeningDemo(period, periodIndex) {
+  const slide = deck.slides.add();
+  addHeader(slide, `${config.service} 완성 화면`, periodIndex, "45초 결과 Demo");
+  const imagePath = path.join(ROOT, `assets/demo-videos/day${day}_overview.png`);
+  if (!screenshotBytes.has(imagePath)) screenshotBytes.set(imagePath, await fs.readFile(imagePath));
+  slide.images.add({
+    blob: screenshotBytes.get(imagePath),
+    contentType: "image/png",
+    alt: `${config.service} 실제 실행 결과`,
+    fit: "contain",
+    position: { left: 556, top: 148, width: 636, height: 358 },
+    geometry: "rect",
+    borderRadius: 0,
+  });
+  addText(slide, period.why, { left: 70, top: 164, width: 430, height: 128 }, { size: 27, bold: true, color: C.ink });
+  addText(slide, "입력 계약\n→ 핵심 처리\n→ 실패 경계\n→ 사람 판단\n→ 평가·실행 증거", { left: 70, top: 336, width: 430, height: 174 }, { size: 22, bold: true, color: C.muted, lineSpacing: 1.28 });
+  addText(slide, `재생 파일 · assets/demo-videos/day${day}_service_teaser.gif`, { left: 556, top: 530, width: 636, height: 26 }, { size: 13, bold: true, color: C.ink, align: "center" });
+  addText(slide, "오늘 8차시는 이 화면을 현재 저장소에서 다시 만드는 과정입니다.", { left: 96, top: 600, width: 1088, height: 34 }, { size: 20, bold: true, color: C.ink, align: "center" });
+  addNotes(slide, "45초 teaser로 완성 결과·정상 수치·대표 HOLD를 먼저 보여주고 구현 설명은 하지 않는다.", [
+    `local:assets/demo-videos/day${day}_service_teaser.gif`,
+    `local:output/course-demos/day${day}/demo_result.json`,
+    "local:materials/days2_5/Codex_Claude_제작_사례와_오프닝_데모_런북.md",
+  ]);
+}
+
 function addPositionMap(period, periodIndex) {
   const slide = deck.slides.add();
   addHeader(slide, `${partNumber(periodIndex)}차시 입력과 결과`, periodIndex, "현재 위치");
@@ -173,9 +227,9 @@ function addPositionMap(period, periodIndex) {
 
 function addClaim(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "문제와 필요성", periodIndex);
+  addHeader(slide, `${period.title} 필요성`, periodIndex);
   addText(slide, period.why, { left: 80, top: 182, width: 1040, height: 92 }, { size: 31, bold: true, color: C.ink, valign: "middle", align: "center" });
-  addText(slide, period.outcome, { left: 120, top: 300, width: 960, height: 70 }, { size: 22, bold: false, color: C.muted, valign: "middle", align: "center" });
+  addText(slide, `${period.pipeline[0]}에서 ${period.artifact}까지, 가장 먼저 고정할 판단은 무엇인가`, { left: 120, top: 300, width: 960, height: 70 }, { size: 22, bold: false, color: C.muted, valign: "middle", align: "center" });
   addShape(slide, "line", { left: 384, top: 376, width: 512, height: 0 }, "none", C.blue, 4);
   addText(slide, `이번 차시의 확인 결과: ${period.artifact}`, { left: 180, top: 418, width: 920, height: 46 }, { size: 19, bold: true, color: C.muted, align: "center" });
   addNotes(slide, "이번 차시가 필요한 이유를 한 문장으로 먼저 이해시킨다.");
@@ -183,7 +237,7 @@ function addClaim(period, periodIndex) {
 
 function addOutcome(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "차시 목표", periodIndex);
+  addHeader(slide, `${period.title} 학습 결과`, periodIndex);
   addBullets(slide, [
     period.outcome,
     `${period.failure} 왜 위험한지 설명한다.`,
@@ -194,7 +248,7 @@ function addOutcome(period, periodIndex) {
 
 function addTermTable(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "핵심 용어 4가지", periodIndex, "용어 풀이");
+  addHeader(slide, `${period.title} 용어`, periodIndex, "용어 풀이");
   const left = 80;
   const widths = [260, 820];
   [["용어", "이 수업에서 쓰는 뜻"], ...period.terms].forEach((row, rowIndex) => {
@@ -211,7 +265,7 @@ function addTermTable(period, periodIndex) {
 
 function addInputOutput(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "입력·처리·결과·검증", periodIndex);
+  addHeader(slide, `${period.artifact} 입출력`, periodIndex);
   const items = [
     ["INPUT", period.files[0]],
     ["PROCESS", period.pipeline.slice(0, 3).join(" → ")],
@@ -230,7 +284,7 @@ function addInputOutput(period, periodIndex) {
 
 function addProcess(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "5단계 실행 흐름", periodIndex, "업무 흐름");
+  addHeader(slide, `${period.title} 실행 흐름`, periodIndex, "업무 흐름");
   period.pipeline.forEach((value, index) => {
     const x = 72 + index * 226;
     addText(slide, String(index + 1).padStart(2, "0"), { left: x, top: 190, width: 72, height: 52 }, { size: 35, bold: true, color: index === 0 ? C.blue : C.ink });
@@ -243,11 +297,11 @@ function addProcess(period, periodIndex) {
 
 function addContract(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "성공·실패 계약", periodIndex);
+  addHeader(slide, `${period.artifact} 정상·실패 계약`, periodIndex);
   const rows = [
     ["정상", period.normalTest],
     ["경계", period.boundaryTest],
-    ["외부 쓰기", "기본값 false · dry-run과 사람 승인 뒤에만 별도 adapter 호출"],
+    ["외부 쓰기", `${period.title}: 기본값 false · dry-run과 사람 승인 뒤 별도 adapter 호출`],
     ["기록", `status·error_code·입력 식별자·${period.artifact}`],
   ];
   rows.forEach(([label, value], index) => {
@@ -261,7 +315,7 @@ function addContract(period, periodIndex) {
 
 function addFiles(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "저장소 파일 지도", periodIndex, "저장소 구조");
+  addHeader(slide, `${period.title} 파일 지도`, periodIndex, "저장소 구조");
   const roles = ["입력·fixture", "구현 코드", "검증·test", "따라하기 notebook"];
   period.files.forEach((file, index) => {
     const y = 158 + index * 112;
@@ -274,23 +328,26 @@ function addFiles(period, periodIndex) {
 
 function addConcept(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "개념과 코드 연결", periodIndex, period.title);
-  addText(slide, period.why, { left: 72, top: 164, width: 760, height: 128 }, { size: 30, bold: true, color: C.ink });
-  addShape(slide, "rect", { left: 870, top: 158, width: 290, height: 350 }, C.black);
-  addText(slide, "이 차시에서\n버릴 오해", { left: 902, top: 194, width: 226, height: 74 }, { size: 18, bold: true, color: C.gray300, align: "center" });
-  addText(slide, period.failure, { left: 906, top: 298, width: 218, height: 164 }, { size: 20, bold: true, color: C.white, align: "center", valign: "middle" });
-  addText(slide, period.recovery, { left: 72, top: 350, width: 760, height: 142 }, { size: 23, bold: true, color: C.ink });
-  addNotes(slide, "흔한 오해와 안전한 복구 원칙을 한 화면에서 대조한다.");
+  addHeader(slide, `${period.title} 개념·코드`, periodIndex, "개념 연결");
+  period.terms.forEach(([term, meaning], index) => {
+    const x = 72 + (index % 2) * 568;
+    const y = 158 + Math.floor(index / 2) * 208;
+    addText(slide, term, { left: x, top: y, width: 240, height: 34 }, { size: 23, bold: true, color: C.ink });
+    addText(slide, meaning, { left: x, top: y + 48, width: 500, height: 58 }, { size: 18, color: C.muted });
+    addShape(slide, "rect", { left: x, top: y + 122, width: 500, height: 44 }, C.gray025, C.faint, 1);
+    addText(slide, period.files[index] ?? period.artifact, { left: x + 14, top: y + 134, width: 472, height: 20 }, { size: 13, bold: true, color: C.ink, typeface: "Menlo" });
+  });
+  addNotes(slide, "용어를 실제 저장소 파일과 연결해 다음 코드 화면의 위치를 준비한다.", period.files.map((file) => `local:${file}`));
 }
 
 function addComparison(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "역할과 선택 기준", periodIndex, "비교");
+  addHeader(slide, `${period.title} 선택 기준`, periodIndex, "비교");
   const rows = [
-    [period.terms[0][0], period.terms[0][1], "결정론 test로 먼저 확인"],
-    [period.terms[1][0], period.terms[1][1], "adapter 경계를 확인"],
-    [period.terms[2][0], period.terms[2][1], "비용·지연·권한을 확인"],
-    [period.terms[3][0], period.terms[3][1], "사람 판단과 운영 기록을 확인"],
+    [period.terms[0][0], `${period.pipeline[0]} 단계의 입력 기준`, "결정론 test로 먼저 확인"],
+    [period.terms[1][0], `${period.pipeline[1]} 단계의 교체 경계`, "adapter 경계를 확인"],
+    [period.terms[2][0], `${period.pipeline[2]} 단계의 운영 조건`, "비용·지연·권한을 확인"],
+    [period.terms[3][0], `${period.pipeline[3]} 단계의 판단 기록`, "사람 판단과 운영 기록을 확인"],
   ];
   const widths = [250, 480, 410];
   [["구분", "역할", "이번 차시의 판단 기준"], ...rows].forEach((row, rowIndex) => {
@@ -307,19 +364,19 @@ function addComparison(period, periodIndex) {
 
 function addFailure(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "대표 실패", periodIndex, "실패 사례");
+  addHeader(slide, `${period.title} 대표 실패`, periodIndex, "실패 사례");
   addShape(slide, "rect", { left: 72, top: 170, width: 496, height: 348 }, C.black);
   addText(slide, "실패", { left: 104, top: 202, width: 160, height: 30 }, { size: 14, bold: true, color: C.gray300 });
   addText(slide, period.failure, { left: 104, top: 260, width: 432, height: 184 }, { size: 26, bold: true, color: C.white, valign: "middle" });
   addText(slide, "사용자 영향", { left: 628, top: 202, width: 180, height: 30 }, { size: 14, bold: true, color: C.muted });
-  addText(slide, period.why, { left: 628, top: 260, width: 506, height: 184 }, { size: 25, bold: true, color: C.ink, valign: "middle" });
-  addText(slide, "실패가 재현돼야 복구 코드와 회귀 test를 만들 수 있습니다.", { left: 160, top: 568, width: 960, height: 34 }, { size: 18, bold: true, color: C.ink, align: "center" });
+  addText(slide, `${period.failure} 상태에서는 ${period.artifact}을 운영 판단에 사용할 수 없다.`, { left: 628, top: 260, width: 506, height: 184 }, { size: 25, bold: true, color: C.ink, valign: "middle" });
+  addText(slide, `${period.title} 실패가 재현돼야 복구 코드와 회귀 test를 만들 수 있습니다.`, { left: 160, top: 568, width: 960, height: 34 }, { size: 18, bold: true, color: C.ink, align: "center" });
   addNotes(slide, "대표 실패를 숨기지 않고 사용자 영향까지 연결한다.");
 }
 
 function addRecovery(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "복구 경로", periodIndex, "오류 처리");
+  addHeader(slide, `${period.title} 복구 경로`, periodIndex, "오류 처리");
   addBullets(slide, [
     `탐지: ${period.boundaryTest}`,
     `중단: ${period.failure}`,
@@ -331,7 +388,7 @@ function addRecovery(period, periodIndex) {
 
 async function addCodexReference(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "Codex 검증 루프", periodIndex, "공식·로컬 참고 화면");
+  addHeader(slide, `${period.title} Codex 검증 루프`, periodIndex, "공식·로컬 참고 화면");
   const [file, source] = period.screenshot;
   const imagePath = path.join(ROOT, "assets/screenshots", file);
   try {
@@ -349,19 +406,19 @@ async function addCodexReference(period, periodIndex) {
     addShape(slide, "rect", { left: 526, top: 156, width: 650, height: 438 }, C.gray025, C.faint, 1);
     addText(slide, file, { left: 566, top: 330, width: 570, height: 50 }, { size: 18, bold: true, color: C.muted, align: "center" });
   }
-  addText(slide, period.codex, { left: 72, top: 180, width: 402, height: 182 }, { size: 27, bold: true, color: C.ink });
-  addText(slide, "저장소 이해\n→ 허용 범위 변경\n→ focused test\n→ diff 리뷰\n→ 사람 merge", { left: 72, top: 406, width: 402, height: 158 }, { size: 21, bold: true, color: C.muted, lineSpacing: 1.24 });
+  addText(slide, `${period.files[1]}의 책임을 찾고 ${period.artifact} 계약을 focused test로 고정합니다.`, { left: 72, top: 180, width: 402, height: 182 }, { size: 27, bold: true, color: C.ink });
+  addText(slide, `${period.title}\n저장소 이해 → 허용 범위 변경\n→ focused test → diff 리뷰\n→ 사람 merge`, { left: 72, top: 406, width: 402, height: 158 }, { size: 20, bold: true, color: C.muted, lineSpacing: 1.24 });
   addNotes(slide, "Codex의 공식 use case를 현재 차시의 코드·test·review 흐름에 연결한다.", [source, CODEX_OFFICIAL_SOURCE, OPENAI_CODEX_DOCS]);
 }
 
 function addCodexTask(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "Codex 작업 명세", periodIndex, "작업 요청 예시");
+  addHeader(slide, `${period.title} Codex 작업 명세`, periodIndex, "작업 요청 예시");
   const task = [
     ["목표", period.codex],
     ["허용 경로", period.files.slice(1, 3).join("\n")],
     ["완료 조건", `${period.normalTest}\n${period.boundaryTest}`],
-    ["금지", "secret 출력 · workspace 밖 변경 · test 약화 · 사람 승인 없는 외부 쓰기"],
+    ["금지", `${period.title}: secret 출력 · workspace 밖 변경 · test 약화 · 승인 없는 외부 쓰기`],
   ];
   task.forEach(([label, value], index) => {
     const y = 150 + index * 118;
@@ -374,12 +431,12 @@ function addCodexTask(period, periodIndex) {
 
 function addCodexReview(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "Patch 검증과 사람 Merge", periodIndex, "Codex 검증 루프");
+  addHeader(slide, `${period.title} 독립 리뷰`, periodIndex, "Codex·Claude Code");
   const checks = [
-    ["01", "Scope", "허용 경로 밖 파일이 바뀌지 않았는가"],
+    ["01", "Codex diff", `${period.title} 허용 경로 밖 파일이 바뀌지 않았는가`],
     ["02", "Focused test", period.normalTest],
-    ["03", "Boundary test", period.boundaryTest],
-    ["04", "Human merge", "Codex 리뷰와 test 통과는 자동 승인이 아니다"],
+    ["03", "Claude review", `${period.artifact} 변경 라인·누락 경계를 별도 session에서 검토`],
+    ["04", "Human merge", `${period.title}의 두 LLM 의견과 test는 자동 승인이 아니다`],
   ];
   checks.forEach(([number, label, value], index) => {
     const y = 158 + index * 112;
@@ -388,12 +445,12 @@ function addCodexReview(period, periodIndex) {
     addShape(slide, "line", { left: 392, top: y + 28, width: 60, height: 0 }, "none", C.black, 2);
     addText(slide, value, { left: 486, top: y, width: 672, height: 62 }, { size: 20, bold: false, color: C.ink, valign: "middle" });
   });
-  addNotes(slide, "Codex 실행 결과를 사람이 merge하기 전 확인할 네 가지 증거를 설명한다.", [CODEX_OFFICIAL_SOURCE, "local:AGENTS.md"]);
+  addNotes(slide, "Codex 구현과 Claude Code 독립 리뷰를 같은 Harness로 비교하고 사람이 merge를 결정한다.", [CODEX_OFFICIAL_SOURCE, CLAUDE_CODE_DESKTOP, CLAUDE_CODE_QUICKSTART, "local:AGENTS.md"]);
 }
 
 function addDemoSetup(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "강사 정상 경로 시연", periodIndex, "강사 시연");
+  addHeader(slide, `${period.title} 정상 시연`, periodIndex, "강사 시연");
   addBullets(slide, [
     `열기: ${period.files[0]}`,
     `구현 확인: ${period.files[1]}`,
@@ -405,20 +462,20 @@ function addDemoSetup(period, periodIndex) {
 
 function addCommand(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "실행 명령", periodIndex, "Terminal");
+  addHeader(slide, `${period.title} 실행 명령`, periodIndex, "Terminal");
   addShape(slide, "rect", { left: 72, top: 190, width: 1136, height: 242 }, C.black);
   addText(slide, "$", { left: 112, top: 250, width: 36, height: 40 }, { size: 27, bold: true, color: C.blue });
   addText(slide, period.command, { left: 166, top: 236, width: 980, height: 92 }, { size: 23, bold: true, color: C.white, valign: "middle" });
   addText(slide, "실행 전 확인", { left: 86, top: 488, width: 190, height: 24 }, { size: 14, bold: true, color: C.muted });
-  addText(slide, "현재 경로가 repository root인지 · Python 3.12 환경인지 · .env가 출력되지 않는지", { left: 300, top: 478, width: 840, height: 58 }, { size: 20, bold: true, color: C.ink, valign: "middle" });
+  addText(slide, `${period.title}: repository root · Python 3.12 · .env 미출력`, { left: 300, top: 478, width: 840, height: 58 }, { size: 20, bold: true, color: C.ink, valign: "middle" });
   addNotes(slide, "명령을 복사하기 전에 실행 경로와 environment를 확인한다.", period.files.map((file) => `local:${file}`));
 }
 
 function addExpected(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "완료 기준", periodIndex, "예상 결과");
+  addHeader(slide, `${period.artifact} 완료 조건`, periodIndex, "예상 결과");
   addText(slide, "STATUS", { left: 80, top: 176, width: 220, height: 26 }, { size: 13, bold: true, color: C.muted });
-  addText(slide, "SUCCESS 또는 EXPECTED_FAILURE", { left: 80, top: 220, width: 520, height: 64 }, { size: 30, bold: true, color: C.ink });
+  addText(slide, `${period.artifact}\nSUCCESS 또는 EXPECTED_FAILURE`, { left: 80, top: 210, width: 520, height: 86 }, { size: 26, bold: true, color: C.ink });
   addText(slide, "ARTIFACT", { left: 80, top: 336, width: 220, height: 26 }, { size: 13, bold: true, color: C.muted });
   addText(slide, period.artifact, { left: 80, top: 380, width: 520, height: 64 }, { size: 30, bold: true, color: C.ink });
   addShape(slide, "rect", { left: 668, top: 166, width: 470, height: 330 }, C.gray025, C.faint, 1);
@@ -429,9 +486,9 @@ function addExpected(period, periodIndex) {
 
 function addDemoFailure(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "강사 실패·복구 시연", periodIndex, "실패 시연");
+  addHeader(slide, `${period.title} 실패·복구 시연`, periodIndex, "실패 시연");
   addText(slide, "재현", { left: 80, top: 170, width: 180, height: 30 }, { size: 14, bold: true, color: C.muted });
-  addText(slide, period.failure, { left: 80, top: 224, width: 500, height: 152 }, { size: 28, bold: true, color: C.ink });
+  addText(slide, period.boundaryTest, { left: 80, top: 224, width: 500, height: 152 }, { size: 28, bold: true, color: C.ink });
   addShape(slide, "line", { left: 630, top: 174, width: 0, height: 360 }, "none", C.faint, 1);
   addText(slide, "복구", { left: 688, top: 170, width: 180, height: 30 }, { size: 14, bold: true, color: C.muted });
   addText(slide, period.recovery, { left: 688, top: 224, width: 478, height: 152 }, { size: 28, bold: true, color: C.ink });
@@ -441,14 +498,53 @@ function addDemoFailure(period, periodIndex) {
 
 function addLabSetup(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "Codex 기반 소프트웨어 제작", periodIndex, "소프트웨어 실습");
+  addHeader(slide, `${period.title} 소프트웨어 제작`, periodIndex, "소프트웨어 실습");
   addText(slide, "열 파일", { left: 80, top: 174, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
   addText(slide, `${period.files[1]}\n${period.files[2]}`, { left: 260, top: 154, width: 860, height: 76 }, { size: 22, bold: true, color: C.ink });
   addText(slide, "작업 범위", { left: 80, top: 280, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
-  addText(slide, "Codex 작업 명세 → 최소 Patch → Focused Test → Diff 검토", { left: 260, top: 270, width: 860, height: 74 }, { size: 23, bold: true, color: C.ink });
+  addText(slide, `${period.title} 명세 → 최소 Patch → Focused Test → Diff 검토`, { left: 260, top: 270, width: 860, height: 74 }, { size: 23, bold: true, color: C.ink });
   addText(slide, "완료 기준", { left: 80, top: 410, width: 150, height: 26 }, { size: 14, bold: true, color: C.muted });
   addText(slide, `${period.normalTest}\n${period.artifact} 저장`, { left: 260, top: 400, width: 860, height: 84 }, { size: 23, bold: true, color: C.ink });
   addNotes(slide, "IDE·terminal·Codex에서 코드를 수정하고 test와 결과 파일을 남기는 실제 제작 구간이다.", period.files.map((file) => `local:${file}`));
+}
+
+function addNotebookCode(period, periodIndex) {
+  const slide = deck.slides.add();
+  addHeader(slide, `${period.title} Notebook 셀`, periodIndex, "소프트웨어 실습");
+  addText(slide, `materials/day${day}/day${day}_service_lab.ipynb · ${partNumber(periodIndex)}차시`, { left: 72, top: 144, width: 1136, height: 24 }, { size: 13, bold: true, color: C.muted, typeface: "Menlo" });
+  addShape(slide, "rect", { left: 72, top: 182, width: 1136, height: 414 }, C.black);
+  addText(slide, periodNotebookCode(periodIndex), { left: 98, top: 206, width: 1084, height: 366 }, { size: 15, color: C.white, typeface: "Menlo", lineSpacing: 1.15 });
+  addNotes(slide, "해당 차시 Notebook의 실제 code cell을 열고 같은 순서로 실행한다.", [`local:${notebookPath}`]);
+}
+
+function addExecutionTrace(period, periodIndex) {
+  const slide = deck.slides.add();
+  addHeader(slide, `${period.title} Terminal 실행`, periodIndex, "소프트웨어 실습");
+  addShape(slide, "rect", { left: 72, top: 174, width: 1136, height: 280 }, C.black);
+  addText(slide, `$ ${period.command}`, { left: 100, top: 212, width: 1080, height: 90 }, { size: 22, bold: true, color: C.white, typeface: "Menlo", valign: "middle" });
+  addText(slide, `저장 위치\noutput/course-labs/day${day}/${labResultFiles[periodIndex]}`, { left: 100, top: 326, width: 1080, height: 80 }, { size: 17, bold: true, color: C.gray300, typeface: "Menlo" });
+  addText(slide, `${period.normalTest}\n실패 시 ${period.artifact}의 status·error_code를 먼저 확인`, { left: 112, top: 508, width: 1056, height: 82 }, { size: 20, bold: true, color: C.ink, align: "center" });
+  addNotes(slide, "현재 차시의 실제 명령과 결과 파일 경로를 한 화면에서 확인한다.", [`local:${period.files[1]}`, `local:output/course-labs/day${day}/${labResultFiles[periodIndex]}`]);
+}
+
+async function addActualResult(period, periodIndex) {
+  const slide = deck.slides.add();
+  const result = await periodResultText(periodIndex);
+  addHeader(slide, `${result.fileName} 실행 결과`, periodIndex, "Actual Output");
+  addShape(slide, "rect", { left: 72, top: 154, width: 1136, height: 462 }, C.black);
+  addText(slide, result.text, { left: 98, top: 178, width: 1084, height: 414 }, { size: 14, color: C.white, typeface: "Menlo", lineSpacing: 1.12 });
+  addNotes(slide, "현재 코드로 생성한 실제 결과를 읽고 status·metric·boundary field를 확인한다.", [`local:${result.resultPath}`]);
+}
+
+async function addBoundaryEvidence(period, periodIndex) {
+  const slide = deck.slides.add();
+  const result = await periodResultText(periodIndex);
+  addHeader(slide, `${period.title} 실패 증거`, periodIndex, "Boundary Evidence");
+  addText(slide, period.boundaryTest, { left: 78, top: 164, width: 1100, height: 82 }, { size: 27, bold: true, color: C.ink, align: "center", valign: "middle" });
+  addShape(slide, "rect", { left: 104, top: 286, width: 1072, height: 190 }, C.black);
+  addText(slide, `result_file = "output/course-labs/day${day}/${result.fileName}"\nexpected = "HOLD | EXPECTED_FAILURE | BLOCKED"\nexternal_write = false`, { left: 140, top: 324, width: 1000, height: 116 }, { size: 20, bold: true, color: C.white, typeface: "Menlo" });
+  addText(slide, `${period.artifact}이 HOLD라면 외부 쓰기 없이 해당 차시 입력으로 돌아갑니다.`, { left: 130, top: 522, width: 1020, height: 58 }, { size: 20, bold: true, color: C.ink, align: "center" });
+  addNotes(slide, "대표 실패를 실제 결과 파일·기대 상태·복구 경로로 연결한다.", [`local:${result.resultPath}`, "local:tests/test_course_services.py"]);
 }
 
 function addLabStep(period, periodIndex, stepIndex) {
@@ -459,7 +555,7 @@ function addLabStep(period, periodIndex, stepIndex) {
     ["Diff 리뷰와 경계 Case", `${period.boundaryTest}\n복구: ${period.recovery}`],
   ];
   const [title, body] = steps[stepIndex];
-  addHeader(slide, `STEP ${stepIndex + 1} · ${title}`, periodIndex, "소프트웨어 실습");
+  addHeader(slide, `${period.title} · ${title}`, periodIndex, "소프트웨어 실습");
   addText(slide, body, { left: 100, top: 200, width: 1080, height: 176 }, { size: 30, bold: true, color: C.ink, valign: "middle", align: "center" });
   addShape(slide, "line", { left: 320, top: 422, width: 640, height: 0 }, "none", C.blue, 3);
   addText(slide, stepIndex === 2 ? `결과에 error_code와 external_write=false가 보이면 완료` : `결과 파일: ${period.artifact}`, { left: 180, top: 466, width: 920, height: 52 }, { size: 20, bold: true, color: C.muted, align: "center" });
@@ -468,19 +564,19 @@ function addLabStep(period, periodIndex, stepIndex) {
 
 function addTest(period, periodIndex, isBoundary) {
   const slide = deck.slides.add();
-  const title = isBoundary ? "경계 Case Test" : "정상 Case Test";
+  const title = isBoundary ? `${period.title} 경계 Case` : `${period.title} 정상 Case`;
   addHeader(slide, title, periodIndex, "실행 확인");
   addShape(slide, "rect", { left: 72, top: 164, width: 1136, height: 126 }, C.black);
   addText(slide, isBoundary ? "BOUNDARY" : "NORMAL", { left: 104, top: 194, width: 160, height: 24 }, { size: 13, bold: true, color: C.gray300 });
   addText(slide, isBoundary ? period.boundaryTest : period.normalTest, { left: 294, top: 188, width: 850, height: 66 }, { size: 24, bold: true, color: C.white, valign: "middle" });
   addBullets(slide, isBoundary ? [
-    "raw traceback 대신 stable error_code가 남는가",
-    "외부 쓰기·자동 메일이 false인가",
-    "실패가 다음 차시에서 재현 가능한가",
+    `${period.title}: raw traceback 대신 stable error_code가 남는가`,
+    `${period.artifact}: 외부 쓰기·자동 메일이 false인가`,
+    `${period.boundaryTest} 재현이 가능한가`,
   ] : [
-    "입력 fixture와 실행 command가 기록됐는가",
-    "결과 schema가 validate되는가",
-    "focused test가 실제로 통과했는가",
+    `${period.files[0]} 입력과 command가 기록됐는가`,
+    `${period.artifact} schema가 validate되는가`,
+    `${period.title} focused test가 실제로 통과했는가`,
   ], { left: 96, top: 342, width: 1060 }, { rowHeight: 84, size: 20 });
   addNotes(slide, `${isBoundary ? "실패" : "정상"} case를 실제 test 증거로 확인한다.`, ["local:tests/test_course_services.py"]);
 }
@@ -488,17 +584,17 @@ function addTest(period, periodIndex, isBoundary) {
 function addCareer(period, periodIndex, kind) {
   const slide = deck.slides.add();
   const incumbent = kind === "incumbent";
-  addHeader(slide, incumbent ? "현업 적용" : "포트폴리오 적용", periodIndex, incumbent ? "재직자" : "구직자");
-  addText(slide, period.serviceCase, { left: 90, top: 170, width: 1100, height: 116 }, { size: 31, bold: true, color: C.ink, valign: "middle", align: "center" });
+  addHeader(slide, incumbent ? `${period.title} 현업 적용` : `${period.title} 포트폴리오 적용`, periodIndex, incumbent ? "재직자" : "구직자");
+  addText(slide, incumbent ? period.serviceCase : `${period.title} · 문제·코드·실패·검증을 한 저장소로 제출`, { left: 90, top: 170, width: 1100, height: 116 }, { size: 31, bold: true, color: C.ink, valign: "middle", align: "center" });
   const bullets = incumbent ? [
-    "실제 업무 데이터 대신 합성·비식별 sample로 먼저 실행",
-    "현재 수작업 시간과 오류를 baseline으로 기록",
-    "사람 승인 전에는 외부 시스템을 바꾸지 않음",
+    `${period.title}은 합성·비식별 sample로 먼저 실행`,
+    `${period.serviceCase}의 현재 수작업 시간과 오류를 baseline으로 기록`,
+    `${period.artifact} 사람 승인 전에는 외부 시스템을 바꾸지 않음`,
     `${period.artifact}을 운영 검토 자료로 사용`,
   ] : [
-    "문제와 사용자 영향을 한 문장으로 설명",
-    "정상 demo와 대표 실패 demo를 함께 준비",
-    "Codex가 만든 diff와 직접 검토한 test 증거를 구분",
+    `${period.failure}의 사용자 영향을 한 문장으로 설명`,
+    `${period.title} 정상 Demo와 대표 실패 Demo를 함께 준비`,
+    `${period.codex}의 diff와 직접 검토한 test 증거를 구분`,
     `${period.artifact}과 README 재현 절차를 제출`,
   ];
   addBullets(slide, bullets, { left: 130, top: 342, width: 1020 }, { rowHeight: 70, size: 19 });
@@ -507,11 +603,11 @@ function addCareer(period, periodIndex, kind) {
 
 function addOperations(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, "서비스 운영 점검", periodIndex, "운영 기준");
+  addHeader(slide, `${period.title} 운영 점검`, periodIndex, "운영 기준");
   const questions = [
     ["품질", `무엇을 ${period.normalTest}로 정의하는가`],
-    ["안전", "어디에서 사람 승인과 external_write=false를 확인하는가"],
-    ["복구", period.recovery],
+    ["안전", `${period.title}의 사람 승인과 external_write=false 위치`],
+    ["복구", `${period.failure} 발생 시 ${period.artifact}에서 원인 상태를 확인`],
     ["관측", `${period.artifact}에서 어떤 status·error_code를 보는가`],
   ];
   questions.forEach(([label, value], index) => {
@@ -526,7 +622,7 @@ function addOperations(period, periodIndex) {
 
 function addCheckpoint(period, periodIndex) {
   const slide = deck.slides.add();
-  addHeader(slide, `${partNumber(periodIndex)}차시 완료 확인`, periodIndex, "차시 마무리");
+  addHeader(slide, `${period.artifact} 실행 증거`, periodIndex, "차시 마무리");
   addBullets(slide, [
     `설명: ${period.title}이 필요한 이유를 한 문장으로 말할 수 있다.`,
     `실행: ${period.command}`,
@@ -539,9 +635,10 @@ function addCheckpoint(period, periodIndex) {
 
 async function buildPeriod(period, periodIndex) {
   addCover(period, periodIndex);                        // 1
-  if (periodIndex === 0) addTimetable(periodIndex);     // 2
+  if (periodIndex === 0) await addOpeningDemo(period, periodIndex); // 2
   else addPositionMap(period, periodIndex);             // 2
-  addClaim(period, periodIndex);                        // 3
+  if (periodIndex === 0) addTimetable(periodIndex);     // 3
+  else addClaim(period, periodIndex);                   // 3
   addOutcome(period, periodIndex);                      // 4
   addTermTable(period, periodIndex);                    // 5
   addInputOutput(period, periodIndex);                  // 6
@@ -557,12 +654,12 @@ async function buildPeriod(period, periodIndex) {
   addCodexReview(period, periodIndex);                  // 16
   addDemoSetup(period, periodIndex);                    // 17
   addCommand(period, periodIndex);                      // 18
-  addExpected(period, periodIndex);                     // 19
+  await addActualResult(period, periodIndex);           // 19
   addDemoFailure(period, periodIndex);                  // 20
   addLabSetup(period, periodIndex);                     // 21
-  addLabStep(period, periodIndex, 0);                   // 22
-  addLabStep(period, periodIndex, 1);                   // 23
-  addLabStep(period, periodIndex, 2);                   // 24
+  addNotebookCode(period, periodIndex);                 // 22
+  addExecutionTrace(period, periodIndex);               // 23
+  await addBoundaryEvidence(period, periodIndex);       // 24
   addTest(period, periodIndex, false);                  // 25
   addTest(period, periodIndex, true);                   // 26
   addCareer(period, periodIndex, "incumbent");         // 27
