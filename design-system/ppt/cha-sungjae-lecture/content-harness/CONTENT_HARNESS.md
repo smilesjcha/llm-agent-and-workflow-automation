@@ -189,9 +189,9 @@
 실행 예시:
 
 ```bash
-node design-system/ppt/cha-sungjae-musinsa-lecture/content-harness/audit_deck_content.mjs \
+node design-system/ppt/cha-sungjae-lecture/content-harness/audit_deck_content.mjs \
   --inspect slides/<deck>.pptx.inspect.ndjson \
-  --map design-system/ppt/cha-sungjae-musinsa-lecture/content-harness/DAY1_MESSAGE_MAP.json \
+  --map design-system/ppt/cha-sungjae-lecture/content-harness/DAY1_MESSAGE_MAP.json \
   --out-dir .build/day1-content-audit
 ```
 

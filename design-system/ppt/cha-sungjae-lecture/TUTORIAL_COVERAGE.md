@@ -1,6 +1,6 @@
 # Day 1 Tutorial 화면·실행 커버리지
 
-대상 deck: `slides/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_MUSINSA_PARTS_270p.pptx`
+대상 deck: `slides/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_PARTS_270p.pptx`
 
 - 총 장표: 270장
 - 구분: `1일차 1차시~8차시`

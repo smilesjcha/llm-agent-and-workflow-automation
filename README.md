@@ -4,8 +4,8 @@
 
 ## 1일차 핵심 산출물
 
-- `slides/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_MUSINSA_PARTS_270p.pptx`: 1일차 270장 강의 자료
-- `output/pdf/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_MUSINSA_PARTS_270p.pdf`: 배포·검수용 PDF
+- `slides/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_PARTS_270p.pptx`: 1일차 270장 강의 자료
+- `output/pdf/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_PARTS_270p.pdf`: 배포·검수용 PDF
 - `materials/day1/2026-08-23_Day1_강사용_핵심교안.md`: 시간대별 강의·시연·실습 운영안
 - `materials/day1/04_codex_github_pr_lab.md`: GitHub·Codex·PR 리뷰 실습 런북
 - `materials/day1/04_ollama_agent_workflow.ipynb`: 환경·Ollama/GPT Tool Calling·LCEL provider 비교 실습
@@ -29,11 +29,11 @@
 
 ## 2-5일차 초안 산출물
 
-- `slides/IPA_LLM_Agent_업무자동화_Day2_MUSINSA_DRAFT_240p.pptx`: STT·품질 gate·회의 schema·chunk·LangChain·근거 검증
-- `slides/IPA_LLM_Agent_업무자동화_Day3_MUSINSA_DRAFT_240p.pptx`: diff parser·review contract·Codex harness·hybrid review·평가
-- `slides/IPA_LLM_Agent_업무자동화_Day4_MUSINSA_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
-- `slides/IPA_LLM_Agent_업무자동화_Day5_MUSINSA_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
-- `output/pdf/IPA_LLM_Agent_업무자동화_Day2_MUSINSA_DRAFT_240p.pdf` 등: AppleGothic 기반 240쪽 PDF 검수본
+- `slides/IPA_LLM_Agent_업무자동화_Day2_DRAFT_240p.pptx`: STT·품질 gate·회의 schema·chunk·LangChain·근거 검증
+- `slides/IPA_LLM_Agent_업무자동화_Day3_DRAFT_240p.pptx`: diff parser·review contract·Codex harness·hybrid review·평가
+- `slides/IPA_LLM_Agent_업무자동화_Day4_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
+- `slides/IPA_LLM_Agent_업무자동화_Day5_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
+- `output/pdf/IPA_LLM_Agent_업무자동화_Day2_DRAFT_240p.pdf` 등: AppleGothic 기반 240쪽 PDF 검수본
 - `materials/day2/day2_service_lab.ipynb`: audio metadata·segment chunk·선택 STT
 - `materials/day3/day3_service_lab.ipynb`: unified diff·finding·Codex task spec
 - `materials/day4/day4_service_lab.ipynb`: GitHub dry-run·사람 승인·중복 실행 방지
@@ -124,7 +124,7 @@ python -m src.meeting_demo --audio data/demo_meeting.wav \
 - `AGENTS.md`: 구현·리뷰·사람 승인 기준
 - `.github/pull_request_template.md`: 검증 증거와 위험을 남기는 PR 템플릿
 - `.github/workflows/test.yml`: `pytest`와 diff 검증
-- `design-system/ppt/cha-sungjae-musinsa-lecture/`: PPT 디자인 시스템과 콘텐츠 하네스
+- `design-system/ppt/cha-sungjae-lecture/`: PPT 디자인 시스템과 콘텐츠 하네스
 
 실행 캐시, 슬라이드 렌더 이미지, 비밀키가 담길 수 있는 `.env`와 `.env.*`는 Git에서 제외하고 `.env.sample`만 추적합니다.
 

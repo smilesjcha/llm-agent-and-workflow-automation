@@ -2,12 +2,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
-import { MUSINSA_PPT, MUSINSA_REFERENCE, makeCoursePalette } from "../../design-system/ppt/cha-sungjae-musinsa-lecture/design-system.mjs";
+import { MUSINSA_PPT, MUSINSA_REFERENCE, makeCoursePalette } from "../../design-system/ppt/cha-sungjae-lecture/design-system.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const OUT = path.join(ROOT, "slides/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_MUSINSA_PARTS_270p.pptx");
+const OUT = path.join(ROOT, "slides/IPA_LLM_Agent_업무자동화_Day1_2026-08-23_PARTS_270p.pptx");
 const ASSET = (name) => path.join(ROOT, "assets/screenshots", name);
-const COMPONENT_ROOT = path.join(ROOT, "design-system/ppt/cha-sungjae-musinsa-lecture/components");
+const COMPONENT_ROOT = path.join(ROOT, "design-system/ppt/cha-sungjae-lecture/components");
 const ICON = (name) => path.join(COMPONENT_ROOT, "icons/lucide", `${name}.svg`);
 const REFERENCE = (name) => path.join(COMPONENT_ROOT, "references", name);
 const INSTRUCTOR_NAME = "차성재";

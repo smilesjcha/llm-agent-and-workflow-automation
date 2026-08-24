@@ -1,4 +1,4 @@
-CHA SUNGJAE · MUSINSA-INSPIRED LECTURE PPT DESIGN SYSTEM
+CHA SUNGJAE · LECTURE PPT DESIGN SYSTEM
 
 PURPOSE
 - 16:9 technical lectures, tutorials, PBL workshops, and instructor-led follow-along sessions.
@@ -48,7 +48,7 @@ CONTENT RULES
 REUSE
 - design-tokens.json is the single source of color, typography, spacing, and geometry values.
 - design-system.mjs exposes the runtime constants used by PowerPoint builders.
-- IPA_MUSINSA_LECTURE_TEMPLATE.pptx is a visual layout catalog.
+- IPA_LECTURE_TEMPLATE.pptx is a visual layout catalog.
 - components/ contains reusable monochrome icons, brand marks, and attributed reference images.
 - New deck builders should import design-system.mjs and avoid local color definitions.
 

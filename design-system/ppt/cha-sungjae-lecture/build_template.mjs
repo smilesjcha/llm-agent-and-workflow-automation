@@ -1,7 +1,7 @@
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
 import { MUSINSA_PPT, MUSINSA_REFERENCE } from "./design-system.mjs";
 
-const OUT = "/Users/sungjae-cha/sungjae-cha/llm-agent-and-workflow-automation/design-system/ppt/cha-sungjae-musinsa-lecture/IPA_MUSINSA_LECTURE_TEMPLATE.pptx";
+const OUT = "/Users/sungjae-cha/sungjae-cha/llm-agent-and-workflow-automation/design-system/ppt/cha-sungjae-lecture/IPA_LECTURE_TEMPLATE.pptx";
 const T = MUSINSA_PPT;
 const C = T.colors;
 const deck = Presentation.create({ slideSize: T.slide });

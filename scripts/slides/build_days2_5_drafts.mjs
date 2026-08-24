@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Presentation, PresentationFile } from "@oai/artifact-tool";
-import { MUSINSA_PPT, MUSINSA_REFERENCE, makeCoursePalette } from "../../design-system/ppt/cha-sungjae-musinsa-lecture/design-system.mjs";
+import { MUSINSA_PPT, MUSINSA_REFERENCE, makeCoursePalette } from "../../design-system/ppt/cha-sungjae-lecture/design-system.mjs";
 import { CODEX_OFFICIAL_SOURCE, COURSE_DAYS, DAY_TIMES, OPENAI_CODEX_DOCS } from "./days2_5_content.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -11,7 +11,7 @@ const day = Number(argIndex >= 0 ? process.argv[argIndex + 1] : process.env.COUR
 if (![2, 3, 4, 5].includes(day)) throw new Error("--day must be one of 2, 3, 4, 5");
 
 const config = COURSE_DAYS[day];
-const outPath = path.join(ROOT, `slides/IPA_LLM_Agent_업무자동화_Day${day}_MUSINSA_DRAFT_240p.pptx`);
+const outPath = path.join(ROOT, `slides/IPA_LLM_Agent_업무자동화_Day${day}_DRAFT_240p.pptx`);
 const C = makeCoursePalette();
 const FONT = "AppleGothic";
 const deck = Presentation.create({ slideSize: MUSINSA_PPT.slide });

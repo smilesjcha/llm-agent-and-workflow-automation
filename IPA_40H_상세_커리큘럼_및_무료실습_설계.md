@@ -867,11 +867,11 @@ LangSmith를 마지막 날 갑자기 켜는 것처럼 보이지만, 앞선 4일 
 
 ### 12.6 프로젝트 전용 PPT 디자인 시스템
 
-PPT 제작 규칙은 `design-system/ppt/cha-sungjae-musinsa-lecture/`에 고정한다. 컬러는 black·white·neutral gray를 주색으로, navy·blue만 기능성 보조색으로 사용한다. 본문 UI는 flat·sharp·compact 원칙을 따르고, 장식성 gradient·glow·큰 round card·무관한 색상은 사용하지 않는다. 실제 서비스 캡처만 원본 UI 색을 유지한다.
+PPT 제작 규칙은 `design-system/ppt/cha-sungjae-lecture/`에 고정한다. 컬러는 black·white·neutral gray를 주색으로, navy·blue만 기능성 보조색으로 사용한다. 본문 UI는 flat·sharp·compact 원칙을 따르고, 장식성 gradient·glow·큰 round card·무관한 색상은 사용하지 않는다. 실제 서비스 캡처만 원본 UI 색을 유지한다.
 
 - `design-tokens.json`: 컬러·타이포그래피·간격·모서리·금지 규칙
 - `design-system.mjs`: 16:9 slide size와 공통 palette를 제공하는 구현 모듈
-- `IPA_MUSINSA_LECTURE_TEMPLATE.pptx`: 12개 핵심 layout 예시
+- `IPA_LECTURE_TEMPLATE.pptx`: 12개 핵심 layout 예시
 - `USAGE.txt`: 새 deck 제작·검수 절차
 - `TUTORIAL_COVERAGE.md`: 시간대별 실제 화면과 장표 번호 대응표
 - `components/`: Lucide·Simple Icons·글로벌 개발자 발표·HITL 참고 이미지를 재사용하는 자산 폴더
@@ -1106,9 +1106,9 @@ llm-agent-and-workflow-automation/
 
 Day 1 장표와 이후 5일 자료는 아래 파일을 단일 검수 기준으로 사용한다.
 
-- `design-system/ppt/cha-sungjae-musinsa-lecture/content-harness/CONTENT_HARNESS.md`: 메시지 계층, 반복 정책, 장표 역할, 사람 검수 체크리스트
-- `design-system/ppt/cha-sungjae-musinsa-lecture/content-harness/DAY1_MESSAGE_MAP.json`: 8개 블록의 소유 메시지·예고 범위·산출물
-- `design-system/ppt/cha-sungjae-musinsa-lecture/content-harness/audit_deck_content.mjs`: 제목 중복, 반복 narrative line, 중간 요약을 찾는 자동 검사기
-- `design-system/ppt/cha-sungjae-musinsa-lecture/content-harness/DAY1_AUDIT_LOG.md`: 버전별 변경 전/후 수치와 판단 기록
+- `design-system/ppt/cha-sungjae-lecture/content-harness/CONTENT_HARNESS.md`: 메시지 계층, 반복 정책, 장표 역할, 사람 검수 체크리스트
+- `design-system/ppt/cha-sungjae-lecture/content-harness/DAY1_MESSAGE_MAP.json`: 8개 블록의 소유 메시지·예고 범위·산출물
+- `design-system/ppt/cha-sungjae-lecture/content-harness/audit_deck_content.mjs`: 제목 중복, 반복 narrative line, 중간 요약을 찾는 자동 검사기
+- `design-system/ppt/cha-sungjae-lecture/content-harness/DAY1_AUDIT_LOG.md`: 버전별 변경 전/후 수치와 판단 기록
 
 운영 원칙은 간단하다. 새 장표를 추가하기 전에 메시지 소유 블록을 먼저 정하고, 기존 설명을 다른 말로 반복하는 장표라면 반례·실제 화면·판단 Gate로 바꾼다. 하루 전체의 회수는 마지막 Q&A·Exit Ticket에서만 짧게 진행한다.
