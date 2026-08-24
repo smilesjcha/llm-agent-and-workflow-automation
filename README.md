@@ -39,6 +39,7 @@
 - `materials/day4/day4_service_lab.ipynb`: GitHub dry-run·사람 승인·중복 실행 방지
 - `materials/day5/day5_service_lab.ipynb`: 서비스 router·golden evaluation·release gate
 - `materials/days2_5/32시간_Codex_서비스_운영_블루프린트.md`: 강사 시연·수강생 실행·파일·명령·운영 기준
+- `materials/40시간_실습_정의와_차시별_실행지도.md`: 실습 정의·1~5일차 40개 차시·준비 상태·보강 순서
 - `src/course_services/`: Day 2-5 서비스 contract·meeting·review·GitHub·Codex harness·evaluation·router
 
 ## 빠른 시작
