@@ -1,10 +1,10 @@
 {
-  "name": "ipa-day1-langgraph-review-demo",
+  "name": "ipa-agent-service-labs",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "node build.mjs",
     "dev": "python3 -m http.server 4173",
-    "check": "node --check app.js"
+    "check": "node --check app.js && node --check course.js && node --check build.mjs"
   }
 }

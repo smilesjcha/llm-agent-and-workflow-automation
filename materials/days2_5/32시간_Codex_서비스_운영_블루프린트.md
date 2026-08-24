@@ -18,6 +18,8 @@ Day 5 Agent Operations Console
   explicit router → local/LangSmith trace → dataset eval → feedback → release gate → demo
 ```
 
+각 일차 8시간의 상세 논리, 결과 먼저 보여 주는 45초 teaser, Codex 구현 대화와 Claude Code 독립 리뷰 방식은 `Codex_Claude_제작_사례와_오프닝_데모_런북.md`를 따른다.
+
 ## 2. Codex를 쓰는 위치
 
 Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. 한 번의 요청은 한 가지 책임과 검증 가능한 완료 조건만 가진다.
@@ -70,6 +72,8 @@ Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. �
 - 핵심 코드: `src/meeting_demo.py`, `src/course_services/meeting_service.py`, `src/meeting_agent_workflow.py`
 - 입력: `data/demo_meeting.wav`, `data/demo_meeting_transcript.txt`
 - test: `tests/test_meeting_agent_workflow.py`, `tests/test_course_services.py`
+- 실행 결과: `output/course-labs/day2/01_audio_metadata.json`~`08_day2_scorecard.json`
+- 오프닝 teaser: `assets/demo-videos/day2_service_teaser.gif`
 
 ```bash
 .venv312/bin/python -m pytest -q tests/test_meeting_agent_workflow.py
@@ -102,6 +106,8 @@ Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. �
 - 핵심 코드: `src/course_services/review_service.py`, `contracts.py`, `codex_harness.py`
 - 입력: `data/day3_review_cases/unsafe_pr.diff`
 - 정답: `data/day5_eval/golden_review_findings.json`
+- 실행 결과: `output/course-labs/day3/01_review_rubric.json`~`08_day3_report.json`
+- 오프닝 teaser: `assets/demo-videos/day3_service_teaser.gif`
 
 ```bash
 .venv312/bin/python -m pytest -q tests/test_course_services.py -k unified_diff
@@ -134,6 +140,8 @@ Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. �
 - Notebook: `materials/day4/day4_service_lab.ipynb`
 - 핵심 코드: `src/course_services/github_service.py`, `contracts.py`, `src/langgraph_lab.py`
 - 입력: `data/day4_github/pr_fixture.json`
+- 실행 결과: `output/course-labs/day4/01_pr_target.json`~`08_day4_audit_record.json`
+- 오프닝 teaser: `assets/demo-videos/day4_service_teaser.gif`
 
 ```bash
 .venv312/bin/python -m pytest -q tests/test_course_services.py -k github
@@ -164,6 +172,8 @@ Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. �
 - Notebook: `materials/day5/day5_service_lab.ipynb`
 - 핵심 코드: `src/course_services/service_router.py`, `eval_service.py`, `src/observability_lab.py`
 - 입력: `data/meeting_sample_ko.txt`, `data/day3_review_cases/unsafe_pr.diff`
+- 실행 결과: `output/course-labs/day5/01_unified_service_result.json`~`08_release_scorecard.json`
+- 오프닝 teaser: `assets/demo-videos/day5_service_teaser.gif`
 
 ```bash
 .venv312/bin/python -m pytest -q tests/test_course_services.py -k router
@@ -181,7 +191,7 @@ Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. �
 | LangGraph | approve·edit·reject state | local JSON 세 개 |
 | GitHub | 본인 sandbox PR target과 dry-run payload | synthetic fixture |
 | LangSmith | synthetic trace의 node·latency·status | local `trace.json` |
-| Vercel | Python output과 같은 결과 schema | `web-demo/` local server |
+| Vercel | Python output과 같은 결과 schema, `course.html?day=2~5` | `web-demo/` local server |
 
 실제 고객 회의·회사 코드·token·로그는 캡처하지 않는다. 화면 캡처에는 repository와 sample이 교육용 synthetic임을 확인할 수 있어야 한다.
 

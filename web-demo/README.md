@@ -1,6 +1,6 @@
-# Meeting Agent Review Lab
+# Agent Service Labs
 
-Python의 LangChain LCEL과 LangGraph interrupt/resume 실행 결과를 검토하는 정적 UI다. 브라우저에서 승인·수정·거절을 바꾸고 최종 state를 JSON으로 내려받는다.
+Day 1은 LangChain LCEL과 LangGraph interrupt/resume 결과를 검토한다. Day 2~5는 각 Notebook과 Python service가 만든 `output/course-demos/dayN/demo_result.json`을 같은 화면 계약으로 보여준다.
 
 ## 로컬 실행
 
@@ -14,7 +14,7 @@ npm run build
 npm run dev
 ```
 
-브라우저에서 `http://localhost:4173`을 연다.
+브라우저에서 Day 1은 `http://localhost:4173`, Day 2~5는 `http://localhost:4173/course.html?day=2`처럼 연다.
 
 ## Vercel 배포
 
