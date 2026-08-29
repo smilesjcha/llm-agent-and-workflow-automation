@@ -1,0 +1,101 @@
+{
+  "domain_context": {
+    "industry": "이커머스 고객경험",
+    "organization_context": "배송 지연 문의가 증가해 상담 부담과 고객 불편이 함께 커진 상태",
+    "meeting_objective": "배송 지연 회의 기록 자동화 범위 확정",
+    "glossary": {
+      "WISMO": "배송 위치 문의",
+      "SLA": "약속한 응답 시간"
+    },
+    "prior_decisions": [
+      "외부 발송은 사람 승인 뒤에만 진행",
+      "환불 자동화는 이번 범위에서 제외"
+    ],
+    "desired_outcomes": [
+      "근거가 있는 담당자별 To Do",
+      "단기·중기·장기 인사이트"
+    ],
+    "confidentiality": "internal"
+  },
+  "context_prompt_fields": {
+    "industry": "이커머스 고객경험",
+    "organization_context": "배송 지연 문의가 증가해 상담 부담과 고객 불편이 함께 커진 상태",
+    "meeting_objective": "배송 지연 회의 기록 자동화 범위 확정",
+    "glossary": {
+      "WISMO": "배송 위치 문의",
+      "SLA": "약속한 응답 시간"
+    },
+    "prior_decisions": [
+      "외부 발송은 사람 승인 뒤에만 진행",
+      "환불 자동화는 이번 범위에서 제외"
+    ],
+    "desired_outputs": [
+      "근거가 있는 담당자별 To Do",
+      "단기·중기·장기 인사이트"
+    ],
+    "evidence_rule": "회의 발화의 사실 주장에는 s01 같은 evidence ID 필수"
+  },
+  "mcp_retrieval_plan": {
+    "status": "SIMULATED_POLICY_PLAN",
+    "meeting_source_mode": "google_meet_text",
+    "operations": [
+      {
+        "connector": "notion",
+        "operation": "search_read_only",
+        "query_terms": [
+          "배송 지연 회의 기록 자동화 범위 확정",
+          "WISMO",
+          "SLA"
+        ],
+        "lookback_days": 14,
+        "allowed_scopes": [
+          "CX PoC"
+        ],
+        "max_items": 12,
+        "participant_match_required": true,
+        "private_message_collection": false
+      },
+      {
+        "connector": "confluence",
+        "operation": "search_read_only",
+        "query_terms": [
+          "배송 지연 회의 기록 자동화 범위 확정",
+          "WISMO",
+          "SLA"
+        ],
+        "lookback_days": 14,
+        "allowed_scopes": [
+          "CX 정책"
+        ],
+        "max_items": 12,
+        "participant_match_required": true,
+        "private_message_collection": false
+      },
+      {
+        "connector": "slack",
+        "operation": "search_read_only",
+        "query_terms": [
+          "배송 지연 회의 기록 자동화 범위 확정",
+          "WISMO",
+          "SLA"
+        ],
+        "lookback_days": 14,
+        "allowed_scopes": [
+          "#delivery-poc"
+        ],
+        "max_items": 12,
+        "participant_match_required": true,
+        "private_message_collection": false
+      }
+    ],
+    "policy_checks": [
+      "READ_ONLY_OPERATION",
+      "SCOPE_ALLOWLIST_REQUIRED",
+      "LOOKBACK_LIMIT_APPLIED",
+      "PRIVATE_MESSAGES_EXCLUDED",
+      "RETRIEVED_TEXT_REQUIRES_CITATION"
+    ],
+    "executed": false,
+    "external_write": false
+  }
+}

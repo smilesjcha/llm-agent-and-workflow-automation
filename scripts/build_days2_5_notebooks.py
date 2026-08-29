@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 from textwrap import dedent
@@ -38,6 +39,56 @@ def code(source: str) -> dict:
 
 
 def notebook(title: str, day: int, cells: list[dict]) -> dict:
+    installation_cell = (
+        """
+        # Run All은 설치가 끝난 환경에서 network 호출 없이 실행합니다.
+        # 처음 한 번만 아래 flag를 True로 바꿔 현재 Notebook Kernel에 설치합니다.
+        INSTALL_CORE_DEPENDENCIES = False
+
+        dependency_groups = {
+            "core": (["pydantic", "pytest", "langchain_core", "langgraph"], ROOT / "requirements-day1.txt"),
+        }
+        install_flags = {
+            "core": INSTALL_CORE_DEPENDENCIES,
+        }
+        dependency_status = {}
+        for group, (modules, requirements_path) in dependency_groups.items():
+            missing = [name for name in modules if importlib.util.find_spec(name) is None]
+            if missing and install_flags[group]:
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "-q", "-r", str(requirements_path)],
+                    check=True,
+                )
+                missing = [name for name in modules if importlib.util.find_spec(name) is None]
+            dependency_status[group] = {
+                "ready": not missing,
+                "missing": missing,
+                "install_command": f"python -m pip install -r {requirements_path.relative_to(ROOT)}",
+                "network_used_by_run_all": bool(install_flags[group]),
+            }
+
+        assert dependency_status["core"]["ready"], (
+            "CORE_DEPENDENCIES_MISSING: 위 INSTALL_CORE_DEPENDENCIES를 True로 바꾸고 이 셀만 먼저 실행하세요."
+        )
+        print(json.dumps(dependency_status, ensure_ascii=False, indent=2))
+
+        # faster-whisper model과 공개 음성 다운로드는 2차시 opt-in 셀에서만 실행합니다.
+        """
+        if day == 2
+        else """
+        # 최초 1회. 없는 핵심 library가 있을 때만 현재 Notebook Kernel에 설치합니다.
+        required = ["pydantic", "pytest", "langchain_core", "langgraph"]
+        missing = [name for name in required if importlib.util.find_spec(name) is None]
+        if missing:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-q", "-r", str(ROOT / "requirements-day1.txt")],
+                check=True,
+            )
+        print({"missing_before_install": missing, "environment_ready": True})
+
+        # 실제 STT를 실행할 사람만 requirements-stt-optional.txt를 별도로 설치합니다.
+        """
+    )
     return {
         "cells": [
             markdown(
@@ -64,29 +115,21 @@ def notebook(title: str, day: int, cells: list[dict]) -> dict:
                 print({"workspace": ROOT.name, "python": sys.version.split()[0]})
                 """
             ),
-            code(
-                """
-                # 최초 1회. 없는 핵심 library가 있을 때만 현재 Notebook Kernel에 설치합니다.
-                required = ["pydantic", "pytest", "langchain_core", "langgraph"]
-                missing = [name for name in required if importlib.util.find_spec(name) is None]
-                if missing:
-                    subprocess.run(
-                        [sys.executable, "-m", "pip", "install", "-q", "-r", str(ROOT / "requirements-day1.txt")],
-                        check=True,
-                    )
-                print({"missing_before_install": missing, "environment_ready": True})
-
-                # 실제 STT를 실행할 사람만 requirements-stt-optional.txt를 별도로 설치합니다.
-                """
-            ),
+            code(installation_cell),
             code(
                 f"""
-                OUT = ROOT / "output/course-labs/day{day}"
+                OUT = ROOT / {('"output/course-labs/day2-v2"' if day == 2 else f'"output/course-labs/day{day}"')}
                 OUT.mkdir(parents=True, exist_ok=True)
 
                 def save_json(name, payload):
                     path = OUT / name
                     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+                    print({{"saved": str(path.relative_to(ROOT))}})
+                    return path
+
+                def save_text(name, text):
+                    path = OUT / name
+                    path.write_text(text.rstrip() + "\\n", encoding="utf-8")
                     print({{"saved": str(path.relative_to(ROOT))}})
                     return path
 
@@ -129,170 +172,6 @@ def notebook(title: str, day: int, cells: list[dict]) -> dict:
 
 
 NOTEBOOKS = {
-    2: notebook(
-        "Day 2 · 한국어 회의 Agent",
-        2,
-        [
-            markdown("""
-            ## 1차시 · 오디오 계약과 Metadata
-
-            모델을 실행하기 전에 파일 존재·길이·channel·sample rate를 확인합니다. 깨진 입력을 모델 오류로 오해하지 않는 첫 경계입니다.
-            """),
-            code("""
-            import wave
-            from src.meeting_demo import ensure_workspace_path
-
-            audio_path = ensure_workspace_path(ROOT / "data/meeting_sample_ko_12min.wav", ROOT)
-            with wave.open(str(audio_path), "rb") as wav:
-                audio_metadata = {
-                    "status": "SUCCESS",
-                    "seconds": round(wav.getnframes() / wav.getframerate(), 2),
-                    "sample_rate": wav.getframerate(),
-                    "channels": wav.getnchannels(),
-                    "sample_width": wav.getsampwidth(),
-                }
-            save_json("01_audio_metadata.json", audio_metadata)
-            audio_metadata
-            """),
-            markdown("""
-            ## 2차시 · STT Adapter와 Timestamp Segment
-
-            `RUN_STT_LIVE=False`가 기본입니다. 모든 수강생은 reviewed fixture로 같은 segment 계약을 먼저 확인하고, 모델이 준비된 컴퓨터만 faster-whisper를 선택 실행합니다.
-            """),
-            code("""
-            from src.meeting_demo import parse_transcript, run_demo
-
-            transcript_path = ROOT / "data/meeting_sample_ko_12min.txt"
-            transcript_text = transcript_path.read_text(encoding="utf-8")
-            RUN_STT_LIVE = False
-            if RUN_STT_LIVE:
-                stt_run = run_demo(
-                    audio_path=audio_path,
-                    transcript_path=transcript_path,
-                    output_dir=OUT / "live-stt",
-                    model_size="small", device="cpu", compute_type="int8",
-                    language="ko", local_files_only=True,
-                )
-                stt_segments = stt_run["segments"]
-                stt_status = {"provider_used": stt_run["mode"], "fallback_reason": stt_run["fallback_reason"]}
-            else:
-                stt_segments = parse_transcript(transcript_text)
-                stt_status = {"provider_used": "reviewed_fixture", "fallback_reason": "LIVE_STT_NOT_SELECTED"}
-            transcript_result = {**stt_status, "segment_count": len(stt_segments), "segments": stt_segments}
-            save_json("02_transcript.json", transcript_result)
-            {"provider_used": stt_status["provider_used"], "segment_count": len(stt_segments)}
-            """),
-            markdown("""
-            ## 3차시 · STT 품질 Gate
-
-            문자가 생성됐다는 사실과 업무에 사용 가능한 상태를 분리합니다. 정상 fixture는 READY, 빈 전사는 HOLD가 되어야 합니다.
-            """),
-            code("""
-            from src.meeting_demo import build_quality_gate
-
-            ready_gate = build_quality_gate(
-                stt_segments, mode="local_stt",
-                metadata={"language": "ko", "language_probability": 0.99},
-                reference_similarity=1.0,
-            )
-            hold_gate = build_quality_gate([], mode="fixture", metadata={"language": "ko"})
-            quality_result = {"normal": ready_gate, "boundary": hold_gate}
-            assert ready_gate["decision"] == "READY"
-            assert hold_gate["decision"] == "HOLD"
-            save_json("03_quality_gate.json", quality_result)
-            quality_result
-            """),
-            markdown("""
-            ## 4차시 · MeetingBrief Schema
-
-            자연스러운 문장보다 필수 field·날짜 형식·evidence ID·사람 승인 정책을 먼저 고정합니다.
-            """),
-            code("""
-            from pydantic import ValidationError
-            from src.langchain_lab import ActionItem, MeetingBrief, fixture_payload
-
-            meeting_brief = MeetingBrief.model_validate(fixture_payload())
-            try:
-                ActionItem(task="근거 없는 할 일", owner="미정", due_date="2026-08-30", evidence_ids=[])
-                schema_boundary = {"status": "UNEXPECTED_SUCCESS"}
-            except ValidationError as exc:
-                schema_boundary = {"status": "EXPECTED_FAILURE", "error_code": exc.errors()[0]["type"]}
-            schema_result = {"normal": meeting_brief.model_dump(mode="json"), "boundary": schema_boundary}
-            save_json("04_meeting_schema.json", schema_result)
-            {"title": meeting_brief.title, "boundary": schema_boundary}
-            """),
-            markdown("""
-            ## 5차시 · Evidence-preserving Chunk
-
-            글자 수로 자르더라도 발화 ID와 overlap을 보존합니다. 너무 작은 chunk 설정은 명시적으로 실패시킵니다.
-            """),
-            code("""
-            from src.course_services.meeting_service import chunk_transcript_segments
-
-            chunks = chunk_transcript_segments(stt_segments, max_chars=900, overlap_segments=1)
-            try:
-                chunk_transcript_segments(stt_segments, max_chars=20)
-                chunk_boundary = {"status": "UNEXPECTED_SUCCESS"}
-            except ValueError as exc:
-                chunk_boundary = {"status": "EXPECTED_FAILURE", "error_code": str(exc)}
-            chunk_result = {"chunks": chunks, "boundary": chunk_boundary}
-            save_json("05_meeting_chunks.json", chunk_result)
-            {"chunk_count": len(chunks), "boundary": chunk_boundary}
-            """),
-            markdown("""
-            ## 6차시 · LangChain MeetingBrief Pipeline
-
-            fixture·Ollama·OpenAI가 같은 `MeetingBrief` 계약을 반환하도록 Prompt·Adapter·Parser·Policy를 분리합니다.
-            """),
-            code("""
-            from src.langchain_lab import run_langchain_lab
-
-            RUN_OLLAMA_LIVE = False
-            provider = "ollama" if RUN_OLLAMA_LIVE else "fixture"
-            chain_result = run_langchain_lab(transcript_text, provider=provider, allow_fallback=True)
-            assert chain_result["checks"]["schema_valid"] is True
-            assert chain_result["result"]["automatic_email"] is False
-            save_json("06_meeting_brief.json", chain_result)
-            {key: chain_result[key] for key in ("provider_requested", "provider_used", "fallback_reason")}
-            """),
-            markdown("""
-            ## 7차시 · Action Item 근거 검증
-
-            LLM이 만든 Action Item의 evidence ID가 실제 transcript에 없으면 HOLD합니다.
-            """),
-            code("""
-            from src.course_services.meeting_service import validate_action_evidence
-
-            known_ids = {segment["id"] for segment in stt_segments}
-            normal_errors = validate_action_evidence(chain_result["result"]["action_items"], known_segment_ids=known_ids)
-            boundary_errors = validate_action_evidence(
-                [{"task": "근거 없는 발행", "evidence_ids": ["s999"]}],
-                known_segment_ids=known_ids,
-            )
-            evidence_result = {"normal_errors": normal_errors, "boundary_errors": boundary_errors}
-            assert normal_errors == []
-            assert boundary_errors == ["ACTION_1_UNKNOWN_EVIDENCE:s999"]
-            save_json("07_evidence_validation.json", evidence_result)
-            evidence_result
-            """),
-            markdown("""
-            ## 8차시 · Golden Set과 Day 2 Scorecard
-
-            하루 결과를 현재 코드로 다시 생성하고 focused test를 실행합니다.
-            """),
-            code("""
-            from src.course_services.course_demo import build_course_demo
-
-            day2_scorecard = build_course_demo(2, workspace_root=ROOT)
-            focused_test = run_command(sys.executable, "-m", "pytest", "-q", "tests/test_meeting_agent_workflow.py", "tests/test_course_services.py")
-            day2_scorecard["focused_test"] = focused_test
-            assert day2_scorecard["decision"] == "READY"
-            assert focused_test["returncode"] == 0
-            save_json("08_day2_scorecard.json", day2_scorecard)
-            {"decision": day2_scorecard["decision"], "metrics": day2_scorecard["metrics"]}
-            """),
-        ],
-    ),
     3: notebook(
         "Day 3 · 코드 리뷰 Agent",
         3,
@@ -753,13 +632,500 @@ NOTEBOOKS = {
 }
 
 
+# Day 2 uses three real input scenarios and one shared workflow contract.
+NOTEBOOKS[2] = notebook(
+    "Day 2 · 한국어 회의 Workflow와 Agent",
+    2,
+    [
+        markdown("""
+        ## 1차시 · 회의 Agent 전체 지도
+
+        일반 사용자의 말로 시작해도 구현에서는 입력·맥락·변환·검증·승인·초안을 분리합니다. LLM은 한 단계의 판단 도구이고, Agent는 요청에 따라 정보원과 Workflow를 고르는 상위 실행 구조입니다.
+        """),
+        code("""
+        from src.course_services.day2_meeting_workflow import (
+            DEFAULT_OPENAI_MODEL, DomainContext, MCPRetrievalPolicy, MeetingRecord,
+            SourceInput, TranscriptEnvelope, build_mcp_retrieval_plan,
+            compact_workflow_result, compare_execution_strategies,
+            diagnose_provider_options, normalize_source, render_email_draft,
+            route_execution_strategy, run_meeting_workflow,
+            run_optional_cli_prompt, run_optional_openai_prompt, run_optional_openai_record,
+            source_mixing_error_example,
+            validate_record_evidence,
+        )
+
+        architecture = {
+            "user_request": "회의를 이해하고 근거 있는 기록·할 일·인사이트 초안을 만들어 줘",
+            "layers": [
+                {"order": 1, "name": "policy", "question": "읽어도 되는 정보와 하면 안 되는 행동은?"},
+                {"order": 2, "name": "input_adapter", "question": "Meet·ClovaNote·음성 중 어떤 한 입력인가?"},
+                {"order": 3, "name": "domain_context", "question": "산업 용어와 이전 결정은 무엇인가?"},
+                {"order": 4, "name": "workflow", "question": "정규화→STT→구조화→근거 검증 순서는?"},
+                {"order": 5, "name": "human_review", "question": "누가 승인·수정·거절하는가?"},
+                {"order": 6, "name": "draft_export", "question": "MD·이메일 초안을 어디까지 만들 것인가?"},
+            ],
+            "two_meanings_of_agent": {
+                "user_view": "여러 단계를 알아서 이어 주는 서비스",
+                "engineering_view": "상태·도구·정책·오류·승인을 가진 실행 시스템",
+            },
+            "fixed_graph": [
+                "policy", "input_normalize", "stt_optional", "structure",
+                "evidence", "human_review", "export_draft",
+            ],
+            "invariants": {
+                "source_count": 1,
+                "human_review_required": True,
+                "external_write": False,
+                "run_all_network_calls": 0,
+            },
+        }
+        assert architecture["invariants"]["external_write"] is False
+        save_json("01_architecture.json", architecture)
+        architecture
+        """),
+        markdown("""
+        ## 2차시 · 세 가지 입력과 STT 선택
+
+        Google Meet 텍스트, ClovaNote TXT, 로컬 음성은 출발점만 다릅니다. 텍스트가 이미 있으면 STT를 건너뛰고, 음성만 있을 때 로컬 STT를 실행합니다. 한 요청에 입력을 섞지 않고 모두 `TranscriptEnvelope`로 바꾼 뒤 같은 Workflow에 넣습니다.
+        """),
+        code("""
+        from src.meeting_demo import parse_transcript
+
+        meet_text = "\\n".join([
+            "[00:00] 민지: 오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다.",
+            "[00:18] 준호: WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+            "[00:37] 서연: 제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+            "[00:55] 민지: 최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+        ])
+        clova_text = "\\n".join([
+            "화자 1 00:00", "배송 지연 원인 분류를 1차 범위로 확정합니다.",
+            "화자 2 00:24", "제가 9월 3일까지 분류 기준을 작성하겠습니다.",
+            "화자 1 00:46", "운영팀 부담을 확인한 뒤 다음 범위를 결정하겠습니다.",
+        ])
+        audio_path = ROOT / "data/meeting_sample_ko_12min.wav"
+
+        sources = {
+            "google_meet_text": SourceInput(
+                source_mode="google_meet_text", source_ref="meet://fixture/delivery-001",
+                meet_transcript=meet_text,
+                speaker_metadata={
+                    "민지": {"display_name": "민지", "role": "PM"},
+                    "준호": {"display_name": "준호", "role": "Engineer"},
+                    "서연": {"display_name": "서연", "role": "Operations"},
+                },
+                history_metadata={"prior_decisions": ["고객 자동 발송 금지"]},
+            ),
+            "clovanote_txt": SourceInput(
+                source_mode="clovanote_txt", source_ref="clovanote-export-001.txt",
+                clovanote_text=clova_text,
+                speaker_metadata={
+                    "화자 1": {"display_name": "민지", "role": "PM"},
+                    "화자 2": {"display_name": "준호", "role": "Engineer"},
+                },
+            ),
+            "audio_stt": SourceInput(
+                source_mode="audio_stt", source_ref="synthetic-12min-audio",
+                audio_path=str(audio_path),
+            ),
+        }
+
+        def reviewed_fixture_stt(path):
+            assert path.resolve() == audio_path.resolve()
+            text = (ROOT / "data/meeting_sample_ko_12min.txt").read_text(encoding="utf-8")
+            segments = parse_transcript(text)
+            return text, segments, {
+                "provider": "reviewed_fixture_stt", "language": "ko",
+                "network_used": False, "matched_audio_transcript_pair": True,
+            }
+
+        envelopes = {
+            "google_meet_text": normalize_source(sources["google_meet_text"]),
+            "clovanote_txt": normalize_source(sources["clovanote_txt"]),
+            "audio_stt": normalize_source(
+                sources["audio_stt"], transcriber=reviewed_fixture_stt
+            ),
+        }
+        input_result = {
+            "contracts": {
+                name: {
+                    "source_mode": envelope.source_mode,
+                    "source_count": envelope.source_count,
+                    "segment_count": len(envelope.segments),
+                    "first_segment": envelope.segments[0].model_dump(mode="json"),
+                    "stt_metadata": envelope.stt_metadata,
+                }
+                for name, envelope in envelopes.items()
+            },
+            "boundary": source_mixing_error_example(),
+        }
+        assert {item["source_count"] for item in input_result["contracts"].values()} == {1}
+        assert input_result["boundary"]["error_code"] == "SOURCE_MODE_MIXING_FORBIDDEN"
+        save_json("02_inputs.json", input_result)
+        input_result
+        """),
+        markdown("""
+        ## 3차시 · 도메인 맥락과 MCP 정책
+
+        회의에서 말한 사실과 사용자가 제공한 업무 맥락을 분리합니다. Notion·Confluence·Slack이 필요해 보여도 자동으로 읽지 않고, 허용된 범위와 기간을 가진 MCP 읽기 계획만 먼저 만듭니다.
+        """),
+        code("""
+        domain_context = DomainContext(
+            industry="이커머스 고객경험",
+            organization_context="배송 지연 문의가 증가해 상담 부담과 고객 불편이 함께 커진 상태",
+            meeting_objective="배송 지연 회의 기록 자동화 범위 확정",
+            glossary={"WISMO": "배송 위치 문의", "SLA": "약속한 응답 시간"},
+            prior_decisions=["외부 발송은 사람 승인 뒤에만 진행", "환불 자동화는 이번 범위에서 제외"],
+            desired_outcomes=["근거가 있는 담당자별 To Do", "단기·중기·장기 인사이트"],
+            confidentiality="internal",
+        )
+        retrieval_policy = MCPRetrievalPolicy(
+            allowed_connectors=["notion", "confluence", "slack"],
+            explicit_user_authorization=True,
+            lookback_days=14,
+            allowed_scopes={
+                "notion": ["CX PoC"], "confluence": ["CX 정책"], "slack": ["#delivery-poc"],
+            },
+            participant_match_required=True,
+            max_items_per_connector=12,
+        )
+        mcp_plan = build_mcp_retrieval_plan(
+            envelope=envelopes["google_meet_text"],
+            domain=domain_context,
+            policy=retrieval_policy,
+        )
+        context_prompt_fields = {
+            "industry": domain_context.industry,
+            "organization_context": domain_context.organization_context,
+            "meeting_objective": domain_context.meeting_objective,
+            "glossary": domain_context.glossary,
+            "prior_decisions": domain_context.prior_decisions,
+            "desired_outputs": domain_context.desired_outcomes,
+            "evidence_rule": "회의 발화의 사실 주장에는 s01 같은 evidence ID 필수",
+        }
+        context_result = {
+            "domain_context": domain_context.model_dump(mode="json"),
+            "context_prompt_fields": context_prompt_fields,
+            "mcp_retrieval_plan": mcp_plan,
+        }
+        assert mcp_plan["executed"] is False and mcp_plan["external_write"] is False
+        save_json("03_domain_context.json", context_result)
+        context_result
+        """),
+        markdown("""
+        ## 4차시 · MeetingRecord 결과 계약
+
+        먼저 모든 실행 방식이 반환해야 할 `MeetingRecord`를 고정합니다. 그 다음 한 번의 생성이면 단일 LLM, 고정 순서면 Workflow, 정보원과 다음 행동이 요청마다 달라지면 Agent Router를 선택합니다. 알려진 경로를 고르는 데 LLM을 쓰지 않으면 비용과 오작동 지점을 줄일 수 있습니다.
+        """),
+        code("""
+        strategy_table = compare_execution_strategies()
+        routing_cases = {
+            "fixed_meeting_record": route_execution_strategy(
+                requested_actions=["normalize", "summarize", "perspectives", "todos", "insights", "draft"]
+            ),
+            "context_retrieval_needed": route_execution_strategy(
+                requested_actions=["summarize", "todos"],
+                external_context_sources=["notion", "confluence", "slack"],
+            ),
+            "one_off_unmodeled_request": route_execution_strategy(
+                requested_actions=["rewrite_as_podcast_script"]
+            ),
+        }
+        cost_guard = {
+            "default_router_llm_calls": 0,
+            "single_llm_expected_calls": 1,
+            "deterministic_workflow_default_llm_calls": 0,
+            "agent_router_budget_must_be_set": True,
+            "stop_conditions": ["MAX_TOOL_CALLS", "MAX_TOKEN_BUDGET", "POLICY_DENIED", "HUMAN_REVIEW"],
+        }
+        strategy_result = {
+            "meeting_record_contract": {
+                "required_fields": [
+                    "meeting_summary", "decisions", "participant_perspectives",
+                    "todos", "insights", "wellbeing_signals", "evidence_index",
+                ],
+                "evidence_rule": "사실·결정·할 일은 실제 발화 evidence ID와 연결",
+                "delivery_rule": "사람 승인 전에는 외부 저장·메일 발송 금지",
+            },
+            "comparison": strategy_table,
+            "rule_router_examples": routing_cases,
+            "cost_guard": cost_guard,
+        }
+        assert routing_cases["fixed_meeting_record"]["strategy"] == "deterministic_workflow"
+        assert routing_cases["context_retrieval_needed"]["strategy"] == "agent_router"
+        assert routing_cases["one_off_unmodeled_request"]["strategy"] == "single_llm"
+        save_json("04_strategy_compare.json", strategy_result)
+        strategy_result
+        """),
+        markdown("""
+        ## 5차시 · Codex·Claude 시나리오 설계
+
+        Codex나 Claude Code에는 곧바로 “Agent를 만들어 줘”라고 하지 않습니다. 세 입력 시나리오, 공통 결과 계약, 금지 행동, 정상·실패 Test를 먼저 합의한 뒤 구현을 요청합니다. 아래 실행 결과가 대화형 코딩 Agent에게 전달할 인수 기준입니다.
+        """),
+        code("""
+        coding_agent_brief = {
+            "scenarios": ["google_meet_text", "clovanote_txt", "audio_stt"],
+            "implementation_request": (
+                "세 입력을 하나의 MeetingRecord로 정규화하고, 근거 검증과 사람 승인 뒤 "
+                "Markdown·이메일 초안까지만 만드는 코드를 구현해 주세요."
+            ),
+            "must_not": ["입력 자동 혼합", "근거 없는 담당자 추정", "승인 전 외부 저장·발송"],
+            "acceptance_tests": [
+                "세 입력 모두 같은 결과 계약", "존재하지 않는 evidence ID 차단",
+                "승인·수정·거절 상태 분리", "모든 기본 실행에서 external_write=false",
+            ],
+            "conversation_guide": "materials/day2/Codex_Claude_대화_시나리오.md",
+        }
+        workflow_runs = {
+            "google_meet_text": run_meeting_workflow(
+                sources["google_meet_text"], domain_context,
+                review_decision="approve", retrieval_policy=retrieval_policy,
+            ),
+            "clovanote_txt": run_meeting_workflow(
+                sources["clovanote_txt"], domain_context,
+                review_decision="approve",
+            ),
+            "audio_stt": run_meeting_workflow(
+                sources["audio_stt"], domain_context,
+                review_decision="edit",
+                review_edits={
+                    "meeting_summary": "고객 문의 자동화 PoC의 범위·금지 행동·담당자별 후속 조치를 근거와 함께 정리했습니다."
+                },
+                transcriber=reviewed_fixture_stt,
+            ),
+        }
+        workflow_result = {
+            "coding_agent_brief": coding_agent_brief,
+            "scenarios": {
+                name: compact_workflow_result(result)
+                for name, result in workflow_runs.items()
+            },
+            "full_records": {
+                name: result["record"] for name, result in workflow_runs.items()
+            },
+        }
+        expected_nodes = [
+            "policy", "input_normalize", "stt_optional", "structure",
+            "evidence", "human_review", "export_draft",
+        ]
+        assert all(
+            [event["node"] for event in item["trace"]] == expected_nodes
+            for item in workflow_result["scenarios"].values()
+        )
+        assert all(item["status"] == "DRAFT_READY" for item in workflow_result["scenarios"].values())
+        assert all(item["external_write"] is False for item in workflow_result["scenarios"].values())
+        save_json("05_workflow_runs.json", workflow_result)
+        workflow_result["scenarios"]
+        """),
+        markdown("""
+        ## 6차시 · LLM Provider와 비용 경계
+
+        기본 `Run All`은 API와 CLI를 호출하지 않습니다. OpenAI는 `OPENAI_LIVE_OPT_IN=1`과 환경변수 key가 모두 있을 때만 선택하며, 모델 접근 불가를 fixture 성공으로 위장하지 않고 `MODEL_NOT_AVAILABLE`로 남깁니다.
+        """),
+        code("""
+        import os
+        from types import SimpleNamespace
+
+        provider_options = diagnose_provider_options()
+        cli_dry_runs = {
+            name: run_optional_cli_prompt(name, "현재 회의 기록을 검토해 주세요.")
+            for name in ("ollama", "codex", "claude_code")
+        }
+        RUN_OPENAI_LIVE = False
+        openai_result = run_optional_openai_record(
+            envelopes["google_meet_text"], domain_context,
+            env=os.environ if RUN_OPENAI_LIVE else {},
+            model=os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL),
+            allow_fixture_fallback=True,
+        )
+
+        class LocalModelNotFound(Exception):
+            status_code = 404
+
+        class FakeResponses:
+            @staticmethod
+            def create(**_kwargs):
+                raise LocalModelNotFound("requested model does not exist")
+
+        model_boundary = run_optional_openai_prompt(
+            "모델 가용성 경계 테스트",
+            env={"OPENAI_LIVE_OPT_IN": "1"},
+            client=SimpleNamespace(responses=FakeResponses()),
+            model=DEFAULT_OPENAI_MODEL,
+        )
+        provider_result = {
+            "options": provider_options,
+            "cli_default_run_all": cli_dry_runs,
+            "openai_default_run_all": openai_result,
+            "model_not_available_boundary": model_boundary,
+            "live_flags": {
+                "openai": RUN_OPENAI_LIVE,
+                "ollama": False, "codex_cli": False, "claude_code_cli": False,
+            },
+        }
+        assert openai_result["provider_used"] == "fixture"
+        assert openai_result["fallback_reason"] == "OPENAI_LIVE_OPT_IN_REQUIRED"
+        assert openai_result["schema_valid"] is True
+        assert model_boundary["fallback_reason"] == "MODEL_NOT_AVAILABLE"
+        assert all(item["error_code"] == "CLI_LIVE_OPT_IN_REQUIRED" for item in cli_dry_runs.values())
+        assert all(
+            item.get("command_executed", False) is False
+            for item in provider_options.values()
+            if isinstance(item, dict)
+        )
+        save_json("06_provider_diagnostics.json", provider_result)
+        provider_result
+        """),
+        markdown("""
+        ## 7차시 · LangGraph 사람 검증
+
+        승인·수정·거절은 각각 다른 상태와 산출물을 만듭니다. 존재하지 않는 evidence ID는 사람이 승인하기 전 `HOLD`하며, 수정은 허용된 필드만 다시 검증합니다.
+        """),
+        code("""
+        review_runs = {
+            "approve": run_meeting_workflow(
+                sources["google_meet_text"], domain_context, review_decision="approve"
+            ),
+            "edit": run_meeting_workflow(
+                sources["google_meet_text"], domain_context, review_decision="edit",
+                review_edits={
+                    "meeting_summary": "사람이 근거를 확인하고 배송 지연 기록 범위를 수정했습니다.",
+                    "todo_updates": {"0": {"owner": "민지", "due_date": "2026-09-05"}},
+                },
+            ),
+            "reject": run_meeting_workflow(
+                sources["google_meet_text"], domain_context, review_decision="reject"
+            ),
+        }
+        boundary_record = MeetingRecord.model_validate(review_runs["approve"]["record"])
+        boundary_payload = boundary_record.model_dump(mode="json")
+        boundary_payload["todos"][0]["evidence_ids"] = ["s999"]
+        evidence_boundary = validate_record_evidence(
+            MeetingRecord.model_validate(boundary_payload),
+            envelopes["google_meet_text"],
+        )
+        human_review_result = {
+            "decisions": {
+                name: {
+                    "status": result["status"],
+                    "review": result["review"],
+                    "export_status": result["exports"]["status"],
+                    "external_write": result["external_write"],
+                }
+                for name, result in review_runs.items()
+            },
+            "unknown_evidence_boundary": evidence_boundary,
+        }
+        assert human_review_result["decisions"]["approve"]["status"] == "DRAFT_READY"
+        assert human_review_result["decisions"]["edit"]["status"] == "DRAFT_READY"
+        assert human_review_result["decisions"]["reject"]["status"] == "REJECTED"
+        assert evidence_boundary == ["TODO_1_UNKNOWN_EVIDENCE:s999"]
+        save_json("07_human_review.json", human_review_result)
+        human_review_result
+        """),
+        markdown("""
+        ## 8차시 · Desktop 선물 패키지
+
+        세 시나리오의 결과를 로컬 Markdown과 이메일 초안으로 만들고 같은 핵심 기능을 Desktop UI에서 실행합니다. 수신자는 비어 있고 발송은 `false`입니다. 소스 실행과 Docker 실행, macOS PKG·Windows EXE 전달 경로까지 확인한 뒤 Day 2와 기존 Day 1 회귀 Test를 실행합니다.
+        """),
+        code("""
+        markdown_files = {}
+        email_drafts = {}
+        for name, result in workflow_runs.items():
+            record = MeetingRecord.model_validate(result["record"])
+            markdown_text = result["exports"]["markdown"]
+            markdown_path = save_text(f"08_{name}_meeting.md", markdown_text)
+            markdown_files[name] = str(markdown_path.relative_to(ROOT))
+            email_drafts[name] = render_email_draft(record, audience="internal")
+
+        save_json("08_email_drafts.json", email_drafts)
+        desktop_delivery = {
+            "source_run": "cd desktop-app/meeting-intelligence && python -m uvicorn app.main:app --host 127.0.0.1 --port 8766",
+            "docker_run": "cd desktop-app/meeting-intelligence && docker compose up --build",
+            "browser": "http://127.0.0.1:8766",
+            "windows_exe": "desktop-app/meeting-intelligence/dist/MeetingIntelligence-Windows.exe",
+            "macos_pkg": "desktop-app/meeting-intelligence/dist/MeetingIntelligence-macOS.pkg",
+            "human_review_required": True,
+            "external_write": False,
+        }
+        focused_test = run_command(
+            sys.executable, "-m", "pytest", "-q", "tests/test_day2_meeting_workflow.py"
+        )
+        day1_suite = run_command(
+            sys.executable, "-m", "pytest", "-q",
+            "tests/test_day1_agent.py",
+            "tests/test_langchain_langgraph_lab.py",
+            "tests/test_meeting_agent_workflow.py",
+            "tests/test_openai_provider.py",
+            "tests/test_ollama_tool_agent.py",
+        )
+        export_result = {
+            "markdown_files": markdown_files,
+            "email_drafts": email_drafts,
+            "desktop_delivery": desktop_delivery,
+            "checks": {
+                "all_emails_unsent": all(item["send"] is False for item in email_drafts.values()),
+                "all_external_write_false": all(item["external_write"] is False for item in email_drafts.values()),
+                "focused_test_returncode": focused_test["returncode"],
+                "day1_suite_returncode": day1_suite["returncode"],
+            },
+        }
+        assert export_result["checks"] == {
+            "all_emails_unsent": True,
+            "all_external_write_false": True,
+            "focused_test_returncode": 0,
+            "day1_suite_returncode": 0,
+        }
+        save_json("08_export_drafts.json", export_result)
+        export_result
+        """),
+    ],
+)
+NOTEBOOKS = {2: NOTEBOOKS[2], **NOTEBOOKS}
+
+
+def write_notebook(day: int, payload: dict) -> Path:
+    """Write one generated notebook and return its path."""
+
+    folder = ROOT / f"materials/day{day}"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"day{day}_service_lab.ipynb"
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def execute_notebook(path: Path, *, timeout_seconds: int = 900) -> Path:
+    """Execute a generated notebook from the repository root and save a separate copy."""
+
+    import nbformat
+    from nbclient import NotebookClient
+
+    payload = nbformat.read(path, as_version=4)
+    client = NotebookClient(
+        payload,
+        timeout=timeout_seconds,
+        kernel_name="python3",
+        resources={"metadata": {"path": str(ROOT)}},
+    )
+    client.execute()
+    executed_path = path.with_name(f"{path.stem}.executed.ipynb")
+    nbformat.write(payload, executed_path)
+    return executed_path
+
+
 def main() -> None:
-    for day, payload in NOTEBOOKS.items():
-        folder = ROOT / f"materials/day{day}"
-        folder.mkdir(parents=True, exist_ok=True)
-        path = folder / f"day{day}_service_lab.ipynb"
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--day", type=int, choices=sorted(NOTEBOOKS))
+    parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--timeout-seconds", type=int, default=900)
+    args = parser.parse_args()
+
+    selected = {args.day: NOTEBOOKS[args.day]} if args.day else NOTEBOOKS
+    for day, payload in selected.items():
+        path = write_notebook(day, payload)
         print(path.relative_to(ROOT))
+        if args.execute:
+            executed = execute_notebook(path, timeout_seconds=args.timeout_seconds)
+            print(executed.relative_to(ROOT))
 
 
 if __name__ == "__main__":

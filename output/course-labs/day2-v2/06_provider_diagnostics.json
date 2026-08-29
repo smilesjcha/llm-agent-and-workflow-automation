@@ -1,0 +1,202 @@
+{
+  "options": {
+    "ollama": {
+      "command": "ollama",
+      "opt_in_example": "ollama run qwen3:4b",
+      "role": "로컬 LLM 선택 실습",
+      "installed": true,
+      "status": "INSTALLED_NOT_EXECUTED",
+      "auth_checked": false,
+      "command_executed": false,
+      "credential_value_read": false,
+      "external_write": false
+    },
+    "codex": {
+      "command": "codex",
+      "opt_in_example": "codex exec --ephemeral --sandbox read-only '<요청>'",
+      "role": "저장소 분석·코드 생성 Harness",
+      "installed": true,
+      "status": "INSTALLED_NOT_EXECUTED",
+      "auth_checked": false,
+      "command_executed": false,
+      "credential_value_read": false,
+      "external_write": false
+    },
+    "claude_code": {
+      "command": "claude",
+      "opt_in_example": "claude -p --tools '' --no-session-persistence '<요청>'",
+      "role": "대체 코딩 Agent Harness",
+      "installed": true,
+      "status": "INSTALLED_NOT_EXECUTED",
+      "auth_checked": false,
+      "command_executed": false,
+      "credential_value_read": false,
+      "external_write": false
+    },
+    "openai_api": {
+      "default_model": "gpt-5.6-luna",
+      "activation": "OPENAI_LIVE_OPT_IN=1 and OPENAI_API_KEY configured",
+      "status": "ENV_OPT_IN_ONLY",
+      "credential_value_read": false,
+      "external_write": false
+    }
+  },
+  "cli_default_run_all": {
+    "ollama": {
+      "provider_requested": "ollama",
+      "command": [
+        "ollama",
+        "run",
+        "qwen3:4b",
+        "<PROMPT>"
+      ],
+      "shell": false,
+      "external_write": false,
+      "credential_value_read": false,
+      "status": "EXPECTED_SKIP",
+      "error_code": "CLI_LIVE_OPT_IN_REQUIRED",
+      "command_executed": false,
+      "output_text": null
+    },
+    "codex": {
+      "provider_requested": "codex",
+      "command": [
+        "codex",
+        "exec",
+        "--ephemeral",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "<PROMPT>"
+      ],
+      "shell": false,
+      "external_write": false,
+      "credential_value_read": false,
+      "status": "EXPECTED_SKIP",
+      "error_code": "CLI_LIVE_OPT_IN_REQUIRED",
+      "command_executed": false,
+      "output_text": null
+    },
+    "claude_code": {
+      "provider_requested": "claude_code",
+      "command": [
+        "claude",
+        "-p",
+        "--tools",
+        "",
+        "--no-session-persistence",
+        "<PROMPT>"
+      ],
+      "shell": false,
+      "external_write": false,
+      "credential_value_read": false,
+      "status": "EXPECTED_SKIP",
+      "error_code": "CLI_LIVE_OPT_IN_REQUIRED",
+      "command_executed": false,
+      "output_text": null
+    }
+  },
+  "openai_default_run_all": {
+    "status": "FALLBACK",
+    "provider_requested": "openai",
+    "provider_used": "fixture",
+    "model": "gpt-5.6-luna",
+    "model_available": null,
+    "live_attempted": false,
+    "output_text": "{\"title\":\"배송 지연 회의 기록 자동화 범위 확정 회의 기록\",\"domain\":\"이커머스 고객경험\",\"purpose\":\"배송 지연 회의 기록 자동화 범위 확정\",\"previous_context\":\"외부 발송은 사람 승인 뒤에만 진행; 환불 자동화는 이번 범위에서 제외\",\"meeting_summary\":\"오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.\",\"summary_evidence_ids\":[\"s01\",\"s02\"],\"participant_perspectives\":[{\"participant\":\"민지\",\"perspective\":\"오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. 최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.\",\"evidence_ids\":[\"s01\",\"s04\"]},{\"participant\":\"준호\",\"perspective\":\"WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.\",\"evidence_ids\":[\"s02\"]},{\"participant\":\"서연\",\"perspective\":\"제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.\",\"evidence_ids\":[\"s03\"]}],\"todos\":[{\"task\":\"제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.\",\"owner\":\"서연\",\"due_date\":\"2026-09-02\",\"evidence_ids\":[\"s03\"]}],\"insights\":{\"short_term\":[\"담당자·기한이 비어 있는 실행 항목을 먼저 확정하고 근거가 있는 담당자별 To Do 초안을 준비\"],\"medium_term\":[\"반복되는 회의 입력을 동일 계약으로 정규화하고 품질 기준을 수치화\"],\"long_term\":[\"이커머스 고객경험 맥락·근거·승인 이력을 조직 지식으로 축적\"]},\"wellbeing_risks\":[{\"signal\":\"최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.\",\"risk\":\"업무 지속 가능성 저하 가능성\",\"severity\":\"MEDIUM\",\"mitigation\":\"담당 범위·기한을 다시 확인하고 필요한 경우 업무량을 조정\",\"evidence_ids\":[\"s04\"]}],\"evidence_segment_count\":4,\"status\":\"DRAFT\",\"human_review_required\":true,\"external_write\":false}",
+    "fallback_reason": "OPENAI_LIVE_OPT_IN_REQUIRED",
+    "api_key_value_exposed": false,
+    "external_write": false,
+    "record": {
+      "title": "배송 지연 회의 기록 자동화 범위 확정 회의 기록",
+      "domain": "이커머스 고객경험",
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "previous_context": "외부 발송은 사람 승인 뒤에만 진행; 환불 자동화는 이번 범위에서 제외",
+      "meeting_summary": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+      "summary_evidence_ids": [
+        "s01",
+        "s02"
+      ],
+      "participant_perspectives": [
+        {
+          "participant": "민지",
+          "perspective": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. 최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+          "evidence_ids": [
+            "s01",
+            "s04"
+          ]
+        },
+        {
+          "participant": "준호",
+          "perspective": "WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+          "evidence_ids": [
+            "s02"
+          ]
+        },
+        {
+          "participant": "서연",
+          "perspective": "제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+          "evidence_ids": [
+            "s03"
+          ]
+        }
+      ],
+      "todos": [
+        {
+          "task": "제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+          "owner": "서연",
+          "due_date": "2026-09-02",
+          "evidence_ids": [
+            "s03"
+          ]
+        }
+      ],
+      "insights": {
+        "short_term": [
+          "담당자·기한이 비어 있는 실행 항목을 먼저 확정하고 근거가 있는 담당자별 To Do 초안을 준비"
+        ],
+        "medium_term": [
+          "반복되는 회의 입력을 동일 계약으로 정규화하고 품질 기준을 수치화"
+        ],
+        "long_term": [
+          "이커머스 고객경험 맥락·근거·승인 이력을 조직 지식으로 축적"
+        ]
+      },
+      "wellbeing_risks": [
+        {
+          "signal": "최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+          "risk": "업무 지속 가능성 저하 가능성",
+          "severity": "MEDIUM",
+          "mitigation": "담당 범위·기한을 다시 확인하고 필요한 경우 업무량을 조정",
+          "evidence_ids": [
+            "s04"
+          ]
+        }
+      ],
+      "evidence_segment_count": 4,
+      "status": "DRAFT",
+      "human_review_required": true,
+      "external_write": false
+    },
+    "schema_valid": true,
+    "evidence_errors": []
+  },
+  "model_not_available_boundary": {
+    "status": "FALLBACK",
+    "provider_requested": "openai",
+    "provider_used": "fixture",
+    "model": "gpt-5.6-luna",
+    "model_available": false,
+    "live_attempted": true,
+    "output_text": "로컬 fixture: API를 호출하지 않은 구조 검증 결과",
+    "fallback_reason": "MODEL_NOT_AVAILABLE",
+    "api_key_value_exposed": false,
+    "external_write": false
+  },
+  "live_flags": {
+    "openai": false,
+    "ollama": false,
+    "codex_cli": false,
+    "claude_code_cli": false
+  }
+}

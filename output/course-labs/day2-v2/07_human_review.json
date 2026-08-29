@@ -1,0 +1,43 @@
+{
+  "decisions": {
+    "approve": {
+      "status": "DRAFT_READY",
+      "review": {
+        "decision": "approve",
+        "status": "APPROVED_READY_FOR_DRAFT",
+        "export_ready": true,
+        "human_reviewed": true,
+        "external_write": false
+      },
+      "export_status": "DRAFT_READY",
+      "external_write": false
+    },
+    "edit": {
+      "status": "DRAFT_READY",
+      "review": {
+        "decision": "edit",
+        "status": "EDITED_READY_FOR_DRAFT",
+        "export_ready": true,
+        "human_reviewed": true,
+        "external_write": false
+      },
+      "export_status": "DRAFT_READY",
+      "external_write": false
+    },
+    "reject": {
+      "status": "REJECTED",
+      "review": {
+        "decision": "reject",
+        "status": "REJECTED",
+        "export_ready": false,
+        "human_reviewed": true,
+        "external_write": false
+      },
+      "export_status": "SKIPPED_NOT_APPROVED",
+      "external_write": false
+    }
+  },
+  "unknown_evidence_boundary": [
+    "TODO_1_UNKNOWN_EVIDENCE:s999"
+  ]
+}

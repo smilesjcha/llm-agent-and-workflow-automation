@@ -1,0 +1,4 @@
+# Never commit the hundreds-of-megabytes source video or interrupted downloads.
+*.webm
+*.part
+*.part.*

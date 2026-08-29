@@ -1,0 +1,55 @@
+{
+  "contracts": {
+    "google_meet_text": {
+      "source_mode": "google_meet_text",
+      "source_count": 1,
+      "segment_count": 4,
+      "first_segment": {
+        "id": "s01",
+        "speaker": "민지",
+        "text": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다.",
+        "start_seconds": 0.0,
+        "quality_flags": []
+      },
+      "stt_metadata": null
+    },
+    "clovanote_txt": {
+      "source_mode": "clovanote_txt",
+      "source_count": 1,
+      "segment_count": 3,
+      "first_segment": {
+        "id": "s01",
+        "speaker": "민지",
+        "text": "배송 지연 원인 분류를 1차 범위로 확정합니다.",
+        "start_seconds": 0.0,
+        "quality_flags": []
+      },
+      "stt_metadata": null
+    },
+    "audio_stt": {
+      "source_mode": "audio_stt",
+      "source_count": 1,
+      "segment_count": 45,
+      "first_segment": {
+        "id": "s01",
+        "speaker": "민지",
+        "text": "모두 들어오셨죠? 오늘 회의 목적은 고객 문의 자동화 PoC의 첫 범위를 확정하는 것입니다. 모델을 고르는 회의가 아니라, 어떤 문의를 어디까지 자동화하고 어디서 사람이 확인할지 정하는 회의로 진행하겠습니다.",
+        "start_seconds": 0.0,
+        "quality_flags": []
+      },
+      "stt_metadata": {
+        "provider": "reviewed_fixture_stt",
+        "language": "ko",
+        "network_used": false,
+        "matched_audio_transcript_pair": true,
+        "audio_path": "/Users/sungjae-cha/sungjae-cha/llm-agent-and-workflow-automation/data/meeting_sample_ko_12min.wav",
+        "fallback_transcript_substituted": false
+      }
+    }
+  },
+  "boundary": {
+    "status": "EXPECTED_FAILURE",
+    "error_code": "SOURCE_MODE_MIXING_FORBIDDEN",
+    "external_write": false
+  }
+}

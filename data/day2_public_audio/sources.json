@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "default_source_id": "andong_council_meeting_2026_08_26",
+  "fallback_audio": "data/meeting_sample_ko_12min.wav",
+  "sources": [
+    {
+      "id": "andong_council_meeting_2026_08_26",
+      "status": "enabled",
+      "language": "ko-KR",
+      "content_type": "public_meeting",
+      "title": "2026년 8월 26일 - 안동 최고위원회의 생중계",
+      "date": "2026-08-26",
+      "author": "델리민주 [더불어민주당]",
+      "source_page_url": "https://commons.wikimedia.org/wiki/File:2026%EB%85%84_8%EC%9B%94_26%EC%9D%BC_-_%EC%95%88%EB%8F%99_%EC%B5%9C%EA%B3%A0%EC%9C%84%EC%9B%90%ED%9A%8C%EC%9D%98_%EC%83%9D%EC%A4%91%EA%B3%84_-_%EB%8D%94%EB%B6%88%EC%96%B4%EB%AF%BC%EC%A3%BC%EB%8B%B9.webm",
+      "mediawiki_title": "File:2026년 8월 26일 - 안동 최고위원회의 생중계 - 더불어민주당.webm",
+      "license": {
+        "spdx": "CC-BY-4.0",
+        "name": "Creative Commons Attribution 4.0 International",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "attribution_required": true,
+        "changes_must_be_indicated": true
+      },
+      "attribution": "델리민주 [더불어민주당], ‘2026년 8월 26일 - 안동 최고위원회의 생중계’, Wikimedia Commons, CC BY 4.0. 05:00~15:00 구간을 교육용 16 kHz mono MP3로 발췌·변환함. 원본: https://commons.wikimedia.org/wiki/File:2026%EB%85%84_8%EC%9B%94_26%EC%9D%BC_-_%EC%95%88%EB%8F%99_%EC%B5%9C%EA%B3%A0%EC%9C%84%EC%9B%90%ED%9A%8C%EC%9D%98_%EC%83%9D%EC%A4%91%EA%B3%84_-_%EB%8D%94%EB%B6%88%EC%96%B4%EB%AF%BC%EC%A3%BC%EB%8B%B9.webm ; 라이선스: https://creativecommons.org/licenses/by/4.0/",
+      "expected_original": {
+        "mime": "video/webm",
+        "bytes": 398994641,
+        "sha1": "825cdafee093a5a930b5db85bc8d116bfd69d589",
+        "duration_seconds": 4370.088
+      },
+      "excerpt": {
+        "start_seconds": 300,
+        "duration_seconds": 600,
+        "preferred_transcodekey": "240p.vp9.webm",
+        "output": "data/day2_public_audio/meeting_ko_ccby_excerpt_10m.mp3",
+        "codec": "libmp3lame",
+        "bitrate": "48k",
+        "sample_rate_hz": 16000,
+        "channels": 1
+      },
+      "course_use_note": "정치적 주장 분석이 아니라 다화자·고유명사·현장 잡음이 포함된 공개 한국어 STT 입력으로만 사용한다. 저작자의 지지나 보증을 암시하지 않는다."
+    }
+  ],
+  "excluded_sources": [
+    {
+      "id": "seoul_metropolitan_council_vod",
+      "status": "link_only_not_redistributable_in_repo",
+      "reason": "서울특별시의회 회의규칙 제49조의3 안내에 따라 회의 동영상의 상업적 목적 사용이 금지된다. 유료 교육과 저장소 재배포 가능성을 배제할 수 없어 자동 다운로드·발췌·저장소 포함 대상에서 제외한다.",
+      "reference_url": "https://ibs.smc.seoul.kr/kr/cast/vod.do"
+    }
+  ]
+}

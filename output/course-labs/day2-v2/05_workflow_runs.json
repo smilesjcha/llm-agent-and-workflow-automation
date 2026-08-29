@@ -1,0 +1,548 @@
+{
+  "coding_agent_brief": {
+    "scenarios": [
+      "google_meet_text",
+      "clovanote_txt",
+      "audio_stt"
+    ],
+    "implementation_request": "세 입력을 하나의 MeetingRecord로 정규화하고, 근거 검증과 사람 승인 뒤 Markdown·이메일 초안까지만 만드는 코드를 구현해 주세요.",
+    "must_not": [
+      "입력 자동 혼합",
+      "근거 없는 담당자 추정",
+      "승인 전 외부 저장·발송"
+    ],
+    "acceptance_tests": [
+      "세 입력 모두 같은 결과 계약",
+      "존재하지 않는 evidence ID 차단",
+      "승인·수정·거절 상태 분리",
+      "모든 기본 실행에서 external_write=false"
+    ],
+    "conversation_guide": "materials/day2/Codex_Claude_대화_시나리오.md"
+  },
+  "scenarios": {
+    "google_meet_text": {
+      "status": "DRAFT_READY",
+      "source_mode": "google_meet_text",
+      "segment_count": 4,
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "summary": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+      "participant_count": 3,
+      "todo_count": 1,
+      "wellbeing_risk_count": 1,
+      "review": {
+        "decision": "approve",
+        "status": "APPROVED_READY_FOR_DRAFT",
+        "export_ready": true,
+        "human_reviewed": true,
+        "external_write": false
+      },
+      "trace": [
+        {
+          "node": "policy",
+          "status": "SUCCESS",
+          "external_write": false,
+          "source_mode": "google_meet_text",
+          "source_count": 1,
+          "human_review_required": true
+        },
+        {
+          "node": "input_normalize",
+          "status": "SUCCESS",
+          "external_write": false,
+          "source_mode": "google_meet_text",
+          "segment_count": 4
+        },
+        {
+          "node": "stt_optional",
+          "status": "SKIPPED_TEXT_INPUT",
+          "external_write": false
+        },
+        {
+          "node": "structure",
+          "status": "SUCCESS",
+          "external_write": false,
+          "participant_count": 3,
+          "todo_count": 1
+        },
+        {
+          "node": "evidence",
+          "status": "SUCCESS",
+          "external_write": false,
+          "error_count": 0
+        },
+        {
+          "node": "human_review",
+          "status": "APPROVED_READY_FOR_DRAFT",
+          "external_write": false,
+          "decision": "approve"
+        },
+        {
+          "node": "export_draft",
+          "status": "DRAFT_READY",
+          "external_write": false
+        }
+      ],
+      "retrieval_plan": {
+        "status": "SIMULATED_POLICY_PLAN",
+        "meeting_source_mode": "google_meet_text",
+        "operations": [
+          {
+            "connector": "notion",
+            "operation": "search_read_only",
+            "query_terms": [
+              "배송 지연 회의 기록 자동화 범위 확정",
+              "WISMO",
+              "SLA"
+            ],
+            "lookback_days": 14,
+            "allowed_scopes": [
+              "CX PoC"
+            ],
+            "max_items": 12,
+            "participant_match_required": true,
+            "private_message_collection": false
+          },
+          {
+            "connector": "confluence",
+            "operation": "search_read_only",
+            "query_terms": [
+              "배송 지연 회의 기록 자동화 범위 확정",
+              "WISMO",
+              "SLA"
+            ],
+            "lookback_days": 14,
+            "allowed_scopes": [
+              "CX 정책"
+            ],
+            "max_items": 12,
+            "participant_match_required": true,
+            "private_message_collection": false
+          },
+          {
+            "connector": "slack",
+            "operation": "search_read_only",
+            "query_terms": [
+              "배송 지연 회의 기록 자동화 범위 확정",
+              "WISMO",
+              "SLA"
+            ],
+            "lookback_days": 14,
+            "allowed_scopes": [
+              "#delivery-poc"
+            ],
+            "max_items": 12,
+            "participant_match_required": true,
+            "private_message_collection": false
+          }
+        ],
+        "policy_checks": [
+          "READ_ONLY_OPERATION",
+          "SCOPE_ALLOWLIST_REQUIRED",
+          "LOOKBACK_LIMIT_APPLIED",
+          "PRIVATE_MESSAGES_EXCLUDED",
+          "RETRIEVED_TEXT_REQUIRES_CITATION"
+        ],
+        "executed": false,
+        "external_write": false
+      },
+      "external_write": false
+    },
+    "clovanote_txt": {
+      "status": "DRAFT_READY",
+      "source_mode": "clovanote_txt",
+      "segment_count": 3,
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "summary": "배송 지연 원인 분류를 1차 범위로 확정합니다. 운영팀 부담을 확인한 뒤 다음 범위를 결정하겠습니다.",
+      "participant_count": 2,
+      "todo_count": 1,
+      "wellbeing_risk_count": 1,
+      "review": {
+        "decision": "approve",
+        "status": "APPROVED_READY_FOR_DRAFT",
+        "export_ready": true,
+        "human_reviewed": true,
+        "external_write": false
+      },
+      "trace": [
+        {
+          "node": "policy",
+          "status": "SUCCESS",
+          "external_write": false,
+          "source_mode": "clovanote_txt",
+          "source_count": 1,
+          "human_review_required": true
+        },
+        {
+          "node": "input_normalize",
+          "status": "SUCCESS",
+          "external_write": false,
+          "source_mode": "clovanote_txt",
+          "segment_count": 3
+        },
+        {
+          "node": "stt_optional",
+          "status": "SKIPPED_TEXT_INPUT",
+          "external_write": false
+        },
+        {
+          "node": "structure",
+          "status": "SUCCESS",
+          "external_write": false,
+          "participant_count": 2,
+          "todo_count": 1
+        },
+        {
+          "node": "evidence",
+          "status": "SUCCESS",
+          "external_write": false,
+          "error_count": 0
+        },
+        {
+          "node": "human_review",
+          "status": "APPROVED_READY_FOR_DRAFT",
+          "external_write": false,
+          "decision": "approve"
+        },
+        {
+          "node": "export_draft",
+          "status": "DRAFT_READY",
+          "external_write": false
+        }
+      ],
+      "retrieval_plan": {
+        "status": "NOT_REQUESTED",
+        "operations": [],
+        "executed": false,
+        "external_write": false
+      },
+      "external_write": false
+    },
+    "audio_stt": {
+      "status": "DRAFT_READY",
+      "source_mode": "audio_stt",
+      "segment_count": 45,
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "summary": "고객 문의 자동화 PoC의 범위·금지 행동·담당자별 후속 조치를 근거와 함께 정리했습니다.",
+      "participant_count": 4,
+      "todo_count": 5,
+      "wellbeing_risk_count": 1,
+      "review": {
+        "decision": "edit",
+        "status": "EDITED_READY_FOR_DRAFT",
+        "export_ready": true,
+        "human_reviewed": true,
+        "external_write": false
+      },
+      "trace": [
+        {
+          "node": "policy",
+          "status": "SUCCESS",
+          "external_write": false,
+          "source_mode": "audio_stt",
+          "source_count": 1,
+          "human_review_required": true
+        },
+        {
+          "node": "input_normalize",
+          "status": "SOURCE_CONTRACT_VALID",
+          "external_write": false,
+          "source_mode": "audio_stt",
+          "segment_count": null
+        },
+        {
+          "node": "stt_optional",
+          "status": "SUCCESS",
+          "external_write": false,
+          "provider": "reviewed_fixture_stt",
+          "segment_count": 45
+        },
+        {
+          "node": "structure",
+          "status": "SUCCESS",
+          "external_write": false,
+          "participant_count": 4,
+          "todo_count": 5
+        },
+        {
+          "node": "evidence",
+          "status": "SUCCESS",
+          "external_write": false,
+          "error_count": 0
+        },
+        {
+          "node": "human_review",
+          "status": "EDITED_READY_FOR_DRAFT",
+          "external_write": false,
+          "decision": "edit"
+        },
+        {
+          "node": "export_draft",
+          "status": "DRAFT_READY",
+          "external_write": false
+        }
+      ],
+      "retrieval_plan": {
+        "status": "NOT_REQUESTED",
+        "operations": [],
+        "executed": false,
+        "external_write": false
+      },
+      "external_write": false
+    }
+  },
+  "full_records": {
+    "google_meet_text": {
+      "title": "배송 지연 회의 기록 자동화 범위 확정 회의 기록",
+      "domain": "이커머스 고객경험",
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "previous_context": "외부 발송은 사람 승인 뒤에만 진행; 환불 자동화는 이번 범위에서 제외",
+      "meeting_summary": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+      "summary_evidence_ids": [
+        "s01",
+        "s02"
+      ],
+      "participant_perspectives": [
+        {
+          "participant": "민지",
+          "perspective": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. 최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+          "evidence_ids": [
+            "s01",
+            "s04"
+          ]
+        },
+        {
+          "participant": "준호",
+          "perspective": "WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+          "evidence_ids": [
+            "s02"
+          ]
+        },
+        {
+          "participant": "서연",
+          "perspective": "제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+          "evidence_ids": [
+            "s03"
+          ]
+        }
+      ],
+      "todos": [
+        {
+          "task": "제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+          "owner": "서연",
+          "due_date": "2026-09-02",
+          "evidence_ids": [
+            "s03"
+          ]
+        }
+      ],
+      "insights": {
+        "short_term": [
+          "담당자·기한이 비어 있는 실행 항목을 먼저 확정하고 근거가 있는 담당자별 To Do 초안을 준비"
+        ],
+        "medium_term": [
+          "반복되는 회의 입력을 동일 계약으로 정규화하고 품질 기준을 수치화"
+        ],
+        "long_term": [
+          "이커머스 고객경험 맥락·근거·승인 이력을 조직 지식으로 축적"
+        ]
+      },
+      "wellbeing_risks": [
+        {
+          "signal": "최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+          "risk": "업무 지속 가능성 저하 가능성",
+          "severity": "MEDIUM",
+          "mitigation": "담당 범위·기한을 다시 확인하고 필요한 경우 업무량을 조정",
+          "evidence_ids": [
+            "s04"
+          ]
+        }
+      ],
+      "evidence_segment_count": 4,
+      "status": "APPROVED",
+      "human_review_required": true,
+      "external_write": false
+    },
+    "clovanote_txt": {
+      "title": "배송 지연 회의 기록 자동화 범위 확정 회의 기록",
+      "domain": "이커머스 고객경험",
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "previous_context": "외부 발송은 사람 승인 뒤에만 진행; 환불 자동화는 이번 범위에서 제외",
+      "meeting_summary": "배송 지연 원인 분류를 1차 범위로 확정합니다. 운영팀 부담을 확인한 뒤 다음 범위를 결정하겠습니다.",
+      "summary_evidence_ids": [
+        "s01",
+        "s03"
+      ],
+      "participant_perspectives": [
+        {
+          "participant": "민지",
+          "perspective": "배송 지연 원인 분류를 1차 범위로 확정합니다. 운영팀 부담을 확인한 뒤 다음 범위를 결정하겠습니다.",
+          "evidence_ids": [
+            "s01",
+            "s03"
+          ]
+        },
+        {
+          "participant": "준호",
+          "perspective": "제가 9월 3일까지 분류 기준을 작성하겠습니다.",
+          "evidence_ids": [
+            "s02"
+          ]
+        }
+      ],
+      "todos": [
+        {
+          "task": "제가 9월 3일까지 분류 기준을 작성하겠습니다.",
+          "owner": "준호",
+          "due_date": "2026-09-03",
+          "evidence_ids": [
+            "s02"
+          ]
+        }
+      ],
+      "insights": {
+        "short_term": [
+          "담당자·기한이 비어 있는 실행 항목을 먼저 확정하고 근거가 있는 담당자별 To Do 초안을 준비"
+        ],
+        "medium_term": [
+          "반복되는 회의 입력을 동일 계약으로 정규화하고 품질 기준을 수치화"
+        ],
+        "long_term": [
+          "이커머스 고객경험 맥락·근거·승인 이력을 조직 지식으로 축적"
+        ]
+      },
+      "wellbeing_risks": [
+        {
+          "signal": "운영팀 부담을 확인한 뒤 다음 범위를 결정하겠습니다.",
+          "risk": "업무 지속 가능성 저하 가능성",
+          "severity": "MEDIUM",
+          "mitigation": "담당 범위·기한을 다시 확인하고 필요한 경우 업무량을 조정",
+          "evidence_ids": [
+            "s03"
+          ]
+        }
+      ],
+      "evidence_segment_count": 3,
+      "status": "APPROVED",
+      "human_review_required": true,
+      "external_write": false
+    },
+    "audio_stt": {
+      "title": "배송 지연 회의 기록 자동화 범위 확정 회의 기록",
+      "domain": "이커머스 고객경험",
+      "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+      "previous_context": "외부 발송은 사람 승인 뒤에만 진행; 환불 자동화는 이번 범위에서 제외",
+      "meeting_summary": "고객 문의 자동화 PoC의 범위·금지 행동·담당자별 후속 조치를 근거와 함께 정리했습니다.",
+      "summary_evidence_ids": [
+        "s01",
+        "s05",
+        "s06"
+      ],
+      "participant_perspectives": [
+        {
+          "participant": "민지",
+          "perspective": "자동 실행에서 제외할 것은 고객정보 조회, 환불과 보상 결정, 주문 상태 변경, 메일과 상담 시스템 게시입니다. 성공 기준은 schema와 근거, 오발행 0건, 그리고 사람이 수정한 기록까지 남는 것입니다. 정리하면 이번 주에는 작은 안전 경계를 완성하고, 다음 주에는 주문 상태 조회나 실제 상담 도구 연결 여부를 별도…",
+          "evidence_ids": [
+            "s40",
+            "s41",
+            "s45"
+          ]
+        },
+        {
+          "participant": "서연",
+          "perspective": "수강생에게 실제 회사 회의를 가져오라고 하면 안 됩니다. 오늘 만든 합성 회의와 음성 파일을 공통 입력으로 쓰고, 본인 업무는 회사명과 고객정보를 뺀 한 문장 수준으로만 적게 하겠습니다. 운영 완료 기준은 상담원이 초안을 실제로 검토할 수 있고, 수정과 거절 이유를 남길 수 있는 것입니다. 승인 버튼만 있고 원문 근거를…",
+          "evidence_ids": [
+            "s35",
+            "s39",
+            "s44"
+          ]
+        },
+        {
+          "participant": "준호",
+          "perspective": "장애 시 fallback도 정해야 합니다. 로컬 LLM이 없거나 JSON parsing이 실패하면 미리 준비한 fixture로 다음 단계를 계속하고, fallback_used와 원래 오류 코드를 결과에 남기겠습니다. 개발 완료 기준은 unit test와 CI 통과, 작은 diff, 재실행 명령, 실패 결과 캡처입니다. …",
+          "evidence_ids": [
+            "s33",
+            "s37",
+            "s42"
+          ]
+        },
+        {
+          "participant": "현우",
+          "perspective": "STT 입력은 첫날 마지막 차시에 선택 경로로만 다루겠습니다. 이미 회의 transcript가 있는 조직은 그것을 사용하고, 음성 파일이 있는 경우에만 faster-whisper로 segment와 timestamp를 생성하면 됩니다. 평가 완료 기준은 Golden Dataset에서 baseline과 candidate를 …",
+          "evidence_ids": [
+            "s34",
+            "s38",
+            "s43"
+          ]
+        }
+      ],
+      "todos": [
+        {
+          "task": "제 일정은 8월 27일 목요일 오후 5시까지 합성 문의 50건과 FAQ 30건 초안을 올리는 것으로 하겠습니다. 공개 저장소에는 원문 출처와 합성 여부를 Dataset Card에 같이 적겠습니다.",
+          "owner": "서연",
+          "due_date": "2026-08-27",
+          "evidence_ids": [
+            "s27"
+          ]
+        },
+        {
+          "task": "저는 8월 28일 금요일 정오까지 Tool schema, path guard, 정상 한 건과 실패 네 건의 unit test를 만들겠습니다. PR은 draft로 먼저 열고 CI가 통과하면 리뷰를 요청하겠습니다.",
+          "owner": "준호",
+          "due_date": "2026-08-28",
+          "evidence_ids": [
+            "s28"
+          ]
+        },
+        {
+          "task": "저는 Golden JSON 다섯 건과 evidence evaluator를 8월 28일 금요일 오후 4시까지 준비하겠습니다. 날짜 모호성, 근거 누락, FAQ에 없는 정책, 무음 입력을 실패 사례로 넣겠습니다.",
+          "owner": "현우",
+          "due_date": "2026-08-28",
+          "evidence_ids": [
+            "s29"
+          ]
+        },
+        {
+          "task": "저는 승인 정책과 화면 흐름을 8월 29일 토요일 오전까지 정리하겠습니다. 다만 화면 문구는 운영팀 검토가 필요하니 최종 확정 일정은 다음 주 중으로 두겠습니다.",
+          "owner": "민지",
+          "due_date": "2026-08-29",
+          "evidence_ids": [
+            "s30"
+          ]
+        },
+        {
+          "task": "맞습니다. 그 문장은 일부러 모호한 사례로 남기겠습니다. 그리고 아까 제가 8월 29일 오전이라고 했는데, 승인 정책 초안 자체는 8월 29일 오후 2시까지로 정정하겠습니다. 화면 문구 최종 확정만 일정 미정입니다.",
+          "owner": "민지",
+          "due_date": "2026-08-29",
+          "evidence_ids": [
+            "s32"
+          ]
+        }
+      ],
+      "insights": {
+        "short_term": [
+          "담당자·기한이 비어 있는 실행 항목을 먼저 확정하고 근거가 있는 담당자별 To Do 초안을 준비"
+        ],
+        "medium_term": [
+          "반복되는 회의 입력을 동일 계약으로 정규화하고 품질 기준을 수치화"
+        ],
+        "long_term": [
+          "이커머스 고객경험 맥락·근거·승인 이력을 조직 지식으로 축적"
+        ]
+      },
+      "wellbeing_risks": [
+        {
+          "signal": "Tool Calling 쪽은 read_public_text와 search_faq 두 개만 허용하면 어떨까요? 첫날에는 read_public_text 하나로 시작하고, search_faq는 fixture로 보여주는 편이 구현 부담이 적습니다.",
+          "risk": "업무 지속 가능성 저하 가능성",
+          "severity": "MEDIUM",
+          "mitigation": "담당 범위·기한을 다시 확인하고 필요한 경우 업무량을 조정",
+          "evidence_ids": [
+            "s16"
+          ]
+        }
+      ],
+      "evidence_segment_count": 45,
+      "status": "EDITED",
+      "human_review_required": true,
+      "external_write": false
+    }
+  }
+}
