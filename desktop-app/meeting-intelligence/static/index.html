@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>나의 회의 기록 도우미</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead-copy">
+        <p class="eyebrow">회의가 끝난 뒤 바로 쓰는 기록</p>
+        <h1>나의 회의 기록 도우미</h1>
+        <p class="lead">전사 파일이나 녹음 파일을 넣고, 근거가 연결된 요약·할 일·인사이트를 만듭니다.</p>
+      </div>
+      <div id="health" class="health">내 컴퓨터의 준비 상태 확인 중</div>
+    </header>
+
+    <main>
+      <section class="promise-grid" aria-label="처리 원칙">
+        <div><span>1</span><b>회의 입력</b><p>텍스트 또는 음성</p></div>
+        <div><span>2</span><b>업무 맥락</b><p>산업·이전 논의</p></div>
+        <div><span>3</span><b>원하는 결과</b><p>요약·관점·할 일·인사이트</p></div>
+        <div><span>4</span><b>사람 확인</b><p>저장·발송 전 최종 검토</p></div>
+      </section>
+
+      <form id="meeting-form" class="panel form-panel">
+        <section class="form-section">
+          <div class="section-title">
+            <span>01</span>
+            <div>
+              <h2>회의 입력 선택</h2>
+              <p>지금 가지고 있는 자료와 가장 가까운 항목을 고르세요.</p>
+            </div>
+          </div>
+
+          <div class="source-grid">
+            <label class="source-card selected">
+              <input type="radio" name="source_mode" value="google_meet" checked />
+              <span class="source-number">A</span>
+              <strong>Google Meet 또는 전사 파일</strong>
+              <small>화자와 대화가 적힌 TXT</small>
+            </label>
+            <label class="source-card">
+              <input type="radio" name="source_mode" value="clova_note" />
+              <span class="source-number">B</span>
+              <strong>ClovaNote 내보내기</strong>
+              <small>참석자 번호와 시간이 적힌 TXT</small>
+            </label>
+            <label class="source-card">
+              <input type="radio" name="source_mode" value="audio" />
+              <span class="source-number">C</span>
+              <strong>회의 녹음</strong>
+              <small>내 컴퓨터에서 음성을 글로 변환</small>
+            </label>
+          </div>
+
+          <div id="text-upload-wrap" class="upload-block">
+            <label class="drop-zone" id="text-drop-zone">
+              <input id="transcript-file" name="transcript_file" type="file" accept=".txt,text/plain" />
+              <strong id="text-file-label">전사 TXT 파일 선택</strong>
+              <span>UTF-8 또는 한글 Windows 인코딩 · 최대 2MB</span>
+            </label>
+            <div class="sample-links">
+              <span>입력 형식이 궁금하다면</span>
+              <a href="/api/samples/google-meet">Google Meet 예시</a>
+              <a href="/api/samples/clova-note">ClovaNote 예시</a>
+            </div>
+          </div>
+
+          <div id="audio-upload-wrap" class="upload-block hidden">
+            <label class="drop-zone" id="audio-drop-zone">
+              <input id="audio-file" name="audio" type="file" accept=".wav,.mp3,.m4a,.ogg,.webm" />
+              <strong id="audio-file-label">회의 녹음 파일 선택</strong>
+              <span>WAV · MP3 · M4A · OGG · WEBM / 최대 100MB</span>
+            </label>
+            <div class="plain-notice">
+              첫 음성 변환은 모델을 내려받느라 시간이 걸릴 수 있습니다. 음성 변환에 실패하면 다른 예시 전사로 바꾸지 않고 멈춥니다.
+            </div>
+          </div>
+
+          <label class="field-label" for="participants">참석자 정보 <em>선택</em></label>
+          <textarea
+            id="participants"
+            name="participants"
+            rows="4"
+            placeholder="김민지 | 제품 책임자 | 제품팀 | minji@company.com&#10;박준호 | 서비스 기획 | 제품팀 | junho@company.com"
+          ></textarea>
+          <div class="field-help">
+            한 줄에 한 명씩 이름 · 역할 · 팀 · 이메일 순으로 적습니다. 이메일은 초안의 받는 사람에만 쓰며 자동 발송하지 않습니다.
+            <a href="/api/samples/participants">참석자 예시</a>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title">
+            <span>02</span>
+            <div>
+              <h2>회의 맥락 입력</h2>
+              <p>전문 용어와 이전 결정을 알려주면 같은 문장도 업무에 맞게 해석할 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="context-grid">
+            <label>
+              <span class="field-label">산업·업무 맥락</span>
+              <textarea
+                name="domain_context"
+                rows="6"
+                placeholder="예: B2B 고객 상담 SaaS. QA는 Quality Assurance를 뜻하며, 고객 개인정보는 결과에 그대로 노출하지 않는다."
+              ></textarea>
+            </label>
+            <label>
+              <span class="field-label">회의 전 기존 맥락</span>
+              <textarea
+                name="prior_context"
+                rows="6"
+                placeholder="예: 지난 회의에서 1차 출시는 자동 발송 없이 상담사가 확인한 뒤 저장하기로 논의했다."
+              ></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title">
+            <span>03</span>
+            <div>
+              <h2>원하는 결과 선택</h2>
+              <p>필요한 결과만 선택하세요. 모든 문장은 원문 근거 번호와 함께 만들어집니다.</p>
+            </div>
+          </div>
+          <div class="output-grid">
+            <label><input type="checkbox" name="output_kind" value="summary" checked /><span><b>회의 요약</b><small>핵심 논의와 결정</small></span></label>
+            <label><input type="checkbox" name="output_kind" value="participant_perspectives" checked /><span><b>참석자별 관점</b><small>누가 무엇을 중요하게 봤는지</small></span></label>
+            <label><input type="checkbox" name="output_kind" value="todos" checked /><span><b>할 일 목록</b><small>담당자와 기한 확인</small></span></label>
+            <label><input type="checkbox" name="output_kind" value="insights" checked /><span><b>단기·중기·장기 인사이트</b><small>다음 판단에 필요한 관찰</small></span></label>
+          </div>
+
+          <label class="field-label" for="adaptive-request">추가로 바라는 일 <em>선택</em></label>
+          <textarea
+            id="adaptive-request"
+            name="adaptive_request"
+            rows="3"
+            placeholder="예: 기존 Notion 기록도 필요한지 판단하고, 외부 고객용 이메일 초안을 준비할 계획을 세워 주세요."
+          ></textarea>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title">
+            <span>04</span>
+            <div>
+              <h2>일하는 방식</h2>
+              <p>같은 AI라도 요청의 성격에 따라 한 번의 답변, 고정 순서, 상황 판단으로 나눕니다.</p>
+            </div>
+          </div>
+          <div class="mode-grid">
+            <label class="mode-card selected">
+              <input type="radio" name="execution_mode" value="auto" checked />
+              <b>알아서 선택</b>
+              <span>아래 기준으로 가장 단순하고 안전한 방식을 고릅니다.</span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="execution_mode" value="llm" />
+              <b>한 번에 정리 · LLM</b>
+              <span>텍스트 하나를 요약하는 단순 요청</span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="execution_mode" value="workflow" />
+              <b>정해진 순서 · Workflow</b>
+              <span>변환→요약→근거 확인을 매번 같은 순서로 실행</span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="execution_mode" value="agent" />
+              <b>상황 판단 · Agent</b>
+              <span>필요한 정보와 도구 후보를 판단하고 승인 전 계획만 작성</span>
+            </label>
+          </div>
+          <div class="router-note">
+            <b>자동 선택 기준</b>
+            <span>단순 요약은 LLM · 여러 단계가 고정되면 Workflow · 외부 기록이나 전달 판단이 필요하면 Agent</span>
+          </div>
+        </section>
+
+        <section class="form-section compact-section">
+          <div class="section-title">
+            <span>05</span>
+            <div>
+              <h2>AI 선택</h2>
+              <p>연결이 없어도 흐름을 익힐 수 있고, 준비된 서비스가 있다면 실제 모델로 바꿀 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="provider-row">
+            <label>
+              <span class="field-label">결과를 만들 AI</span>
+              <select id="provider" name="provider">
+                <option value="fixture">인터넷 없이 연습용 결과</option>
+                <option value="ollama">내 컴퓨터의 Ollama · qwen3:4b</option>
+                <option value="codex">로그인된 Codex 프로그램</option>
+                <option value="claude">로그인된 Claude Code 프로그램</option>
+                <option value="openai">OpenAI API · 환경 변수 사용</option>
+              </select>
+            </label>
+            <label id="model-field" class="hidden">
+              <span class="field-label">OpenAI 모델</span>
+              <input id="model" name="model" value="gpt-5.6-luna" autocomplete="off" />
+            </label>
+          </div>
+          <label class="fallback">
+            <input type="checkbox" name="allow_fixture_fallback" checked />
+            <span><b>AI 연결이 안 되면 연습용 결과로 화면 흐름 이어가기</b><small>화면에 실제 사용된 AI와 전환 이유가 표시됩니다.</small></span>
+          </label>
+          <div class="secret-note">API 키는 이 화면에 입력하지 않습니다. 앱을 실행할 때 설정된 환경 변수만 사용합니다.</div>
+        </section>
+
+        <div id="form-error" class="form-error hidden" role="alert"></div>
+        <button id="run-button" type="submit">회의 기록 만들기</button>
+      </form>
+
+      <section class="panel result-panel" aria-live="polite">
+        <div class="section-title">
+          <span>06</span>
+          <div>
+            <h2>검토할 결과</h2>
+            <p>원문과 담당자·기한을 확인한 뒤에만 저장하거나 보내세요.</p>
+          </div>
+        </div>
+
+        <div id="empty-result" class="empty-result">
+          <b>아직 만든 기록이 없습니다.</b>
+          <span>위에서 회의 자료와 원하는 결과를 선택한 뒤 시작하세요.</span>
+        </div>
+
+        <div id="result" class="hidden">
+          <div class="result-head">
+            <div id="status-badge" class="status-badge">검토 준비</div>
+            <div>
+              <h3 id="result-title">회의 기록 초안</h3>
+              <p id="result-meta"></p>
+            </div>
+            <div class="download-actions">
+              <button id="download-markdown" type="button" class="secondary">문서 저장</button>
+              <button id="download-json" type="button" class="secondary">전체 결과 저장</button>
+            </div>
+          </div>
+
+          <div id="alerts"></div>
+          <div id="route-card" class="route-card"></div>
+          <div class="metrics" id="metrics"></div>
+
+          <div class="tabs" role="tablist">
+            <button type="button" class="tab active" data-tab="record">회의 기록</button>
+            <button type="button" class="tab" data-tab="markdown">문서 미리보기</button>
+            <button type="button" class="tab" data-tab="email">이메일 초안</button>
+            <button type="button" class="tab" data-tab="integrations">연결 계획</button>
+            <button type="button" class="tab" data-tab="evidence">원문 근거</button>
+          </div>
+          <div id="tab-record" class="tab-panel"></div>
+          <div id="tab-markdown" class="tab-panel hidden"></div>
+          <div id="tab-email" class="tab-panel hidden"></div>
+          <div id="tab-integrations" class="tab-panel hidden"></div>
+          <div id="tab-evidence" class="tab-panel hidden"></div>
+        </div>
+      </section>
+
+      <section class="safety-strip">
+        <div><b>원본 비저장</b><span>처리 뒤 파일을 남기지 않음</span></div>
+        <div><b>원문 근거</b><span>결과에서 발화로 되돌아가기</span></div>
+        <div><b>사람 확인</b><span>준비 완료도 최종 확정 아님</span></div>
+        <div><b>외부 작업 보류</b><span>Notion·Confluence·메일은 계획만</span></div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

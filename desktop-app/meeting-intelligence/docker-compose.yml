@@ -1,0 +1,39 @@
+name: meeting-intelligence
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8766:8000"
+    environment:
+      WHISPER_MODEL: "${WHISPER_MODEL:-small}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3:4b}"
+      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_MODEL: "${OPENAI_MODEL:-gpt-5.6-luna}"
+      OPENAI_BASE_URL: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+      HOST_BRIDGE_URL: "${HOST_BRIDGE_URL:-http://host.docker.internal:8765}"
+      HOST_BRIDGE_TOKEN: "${HOST_BRIDGE_TOKEN:-disabled}"
+      HF_HOME: /models
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - whisper-models:/models
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  whisper-models:

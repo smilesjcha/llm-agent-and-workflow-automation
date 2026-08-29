@@ -1,0 +1,7 @@
+{
+  "participants": [
+    {"name": "김민지", "role": "제품 책임자", "team": "제품팀", "email": "minji@example.invalid"},
+    {"name": "박준호", "role": "서비스 기획", "team": "제품팀", "email": "junho@example.invalid"},
+    {"name": "이서연", "role": "개인정보 담당", "team": "보안팀", "email": "seoyeon@example.invalid"}
+  ]
+}
