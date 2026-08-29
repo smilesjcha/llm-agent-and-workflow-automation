@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#F7F7F7"/>
+  <rect x="0" y="0" width="1280" height="92" fill="#0B0B0B"/>
+  <text x="54" y="58" font-family="NanumGothic,Arial" font-size="30" font-weight="700" fill="#FFFFFF">회의기록 Agent · 전체 구조</text>
+  <text x="1010" y="58" font-family="NanumGothic,Arial" font-size="16" fill="#C9D9FF">INPUT → SYSTEM → REVIEW</text>
+  <g font-family="NanumGothic,Arial">
+    <text x="52" y="140" font-size="16" font-weight="700" fill="#555">입력 3가지</text>
+    <rect x="52" y="164" width="224" height="104" rx="8" fill="#FFFFFF" stroke="#B9B9B9"/>
+    <text x="76" y="200" font-size="20" font-weight="700" fill="#111">Google Meet</text><text x="76" y="232" font-size="16" fill="#555">전사 + 화자</text>
+    <rect x="52" y="286" width="224" height="104" rx="8" fill="#FFFFFF" stroke="#B9B9B9"/>
+    <text x="76" y="322" font-size="20" font-weight="700" fill="#111">ClovaNote</text><text x="76" y="354" font-size="16" fill="#555">TXT 저장본</text>
+    <rect x="52" y="408" width="224" height="104" rx="8" fill="#FFFFFF" stroke="#B9B9B9"/>
+    <text x="76" y="444" font-size="20" font-weight="700" fill="#111">녹음 파일</text><text x="76" y="476" font-size="16" fill="#555">로컬 STT 필요</text>
+    <path d="M292 216 H350 M292 338 H350 M292 460 H350" stroke="#111" stroke-width="3"/>
+    <path d="M340 207 L354 216 L340 225 M340 329 L354 338 L340 347 M340 451 L354 460 L340 469" fill="none" stroke="#111" stroke-width="3"/>
+    <rect x="370" y="164" width="530" height="348" rx="10" fill="#FFFFFF" stroke="#0B0B0B" stroke-width="2"/>
+    <text x="404" y="207" font-size="24" font-weight="700" fill="#111">소프트웨어 Workflow</text>
+    <g font-size="17" fill="#111">
+      <rect x="404" y="240" width="174" height="54" rx="6" fill="#EAF1FF"/><text x="430" y="274">입력 정규화</text>
+      <rect x="604" y="240" width="260" height="54" rx="6" fill="#EAF1FF"/><text x="628" y="274">텍스트만 사용 / STT</text>
+      <rect x="404" y="320" width="174" height="54" rx="6" fill="#F0F0F0"/><text x="424" y="354">맥락 정책</text>
+      <rect x="604" y="320" width="260" height="54" rx="6" fill="#F0F0F0"/><text x="630" y="354">MCP 읽기 계획</text>
+      <rect x="404" y="400" width="174" height="54" rx="6" fill="#EAF1FF"/><text x="432" y="434">LLM 해석</text>
+      <rect x="604" y="400" width="260" height="54" rx="6" fill="#EAF1FF"/><text x="630" y="434">Schema · Evidence</text>
+    </g>
+    <path d="M578 267 H604 M578 347 H604 M578 427 H604" stroke="#111" stroke-width="2"/>
+    <rect x="934" y="164" width="294" height="348" rx="10" fill="#0B0B0B"/>
+    <text x="968" y="207" font-size="24" font-weight="700" fill="#FFF">사람 검증</text>
+    <text x="968" y="260" font-size="18" fill="#FFF">· 원문 근거</text><text x="968" y="302" font-size="18" fill="#FFF">· 담당자·기한</text>
+    <text x="968" y="344" font-size="18" fill="#FFF">· approve / edit / reject</text><text x="968" y="386" font-size="18" fill="#FFF">· 외부 쓰기 승인</text>
+    <rect x="968" y="424" width="222" height="50" rx="6" fill="#2F6BFF"/><text x="1002" y="456" font-size="17" font-weight="700" fill="#FFF">external_write=false</text>
+    <path d="M900 338 H934" stroke="#111" stroke-width="3"/><path d="M922 329 L936 338 L922 347" fill="none" stroke="#111" stroke-width="3"/>
+    <rect x="52" y="566" width="1176" height="94" rx="8" fill="#FFFFFF" stroke="#B9B9B9"/>
+    <text x="82" y="606" font-size="21" font-weight="700" fill="#111">Agent = 상황에 맞는 경로를 고르는 부분 + 결과를 안전하게 만드는 대부분의 소프트웨어</text>
+    <text x="82" y="638" font-size="16" fill="#555">요약·통찰은 LLM, 경로·검증·승인·저장은 Workflow와 정책이 담당</text>
+  </g>
+</svg>

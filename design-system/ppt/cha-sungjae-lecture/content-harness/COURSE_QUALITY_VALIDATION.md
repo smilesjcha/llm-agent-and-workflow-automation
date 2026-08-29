@@ -15,12 +15,11 @@
 | 시간 | 구간 | 학습 기능 |
 |---|---|---|
 | 09:00~11:30 | 1~3차시 | 입력·문제·품질 경계 구현 |
-| 11:30~12:00 | 쉬는 시간 | 3개 차시 연강 뒤 30분 |
-| 12:00~13:40 | 4~5차시 | Schema·State·Contract 확장 |
-| 13:40~14:00 | 쉬는 시간 | 2개 차시 연강 뒤 20분 |
-| 14:00~15:00 | 점심시간 | 수업과 분리 |
+| 11:30~13:00 | 쉬는 시간·점심시간 | 1~3차시 이후 휴식과 점심을 연속 운영 |
+| 13:00~14:40 | 4~5차시 | Schema·State·Contract 확장 |
+| 14:40~15:00 | 쉬는 시간 | 2개 차시 연강 뒤 20분 |
 | 15:00~17:30 | 6~8차시 | Provider·Workflow·평가·운영 통합 |
-| 17:30~18:00 | 쉬는 시간·복구 | 질문·미완료 실행 복구 포함 |
+| 17:30~18:00 | 쉬는 시간·Q&A | 질문·미완료 실행 복구 포함 |
 
 ### 2.2 한 차시 50분의 역할
 
@@ -180,6 +179,43 @@ Day 2 영상은 audio→transcript→evidence→READY, Day 3은 diff→three fin
 - 마지막 셀에서 focused test와 artifact 존재를 확인한다.
 - `.executed.ipynb`는 현재 코드로 처음부터 끝까지 다시 실행한 결과다.
 
+### 7.1 Day 2 공개 회의 음성
+
+- 실제 회의 음성은 원본 URL·저작자·license·가공 구간·SHA256을 함께 기록한다.
+- 상업적 이용 금지 또는 재배포 금지 자료는 저장소에 포함하지 않고 강사용 선택 링크로만 둔다.
+- Notebook `Run All`이 네트워크 다운로드를 자동 실행하지 않는다. 강사가 사전에 내려받은 CC 허용 자료가 없으면 합성 fixture로 같은 계약을 실행한다.
+- 공개 원본과 합성 fixture의 결과를 섞지 않는다. 결과 JSON에 `source_mode`, `source_id`, `fallback_reason`을 남긴다.
+- 실명·정치·민감 주제가 있는 공개회의는 STT 성능 실험에만 사용하며, 인물·입장 평가를 수업 과제로 만들지 않는다.
+
+### 7.2 Day 2 로컬 앱
+
+- Docker 앱은 macOS·Windows에서 동일한 API와 결과 schema를 반환한다.
+- 로그인 연동은 공식 `codex login` 또는 Claude Code 로그인 상태를 사용하는 localhost CLI bridge로 한정한다.
+- ChatGPT·Claude 웹 쿠키, 브라우저 profile, credential 저장 파일을 읽거나 container에 mount하지 않는다.
+- CLI가 없거나 로그인되지 않은 컴퓨터는 Ollama 또는 deterministic fixture로 완주한다.
+- Windows launcher와 macOS package는 설치 파일 생성, SHA256, fixture smoke test를 각각 남긴다.
+- code signing·notarization이 없는 교육용 package는 unsigned 상태와 OS 경고를 README에 명시한다.
+
+### 7.3 Day 2 일반인 제품 시나리오
+
+- 1차시에서 `LLM 한 번 호출`, `고정 Workflow`, `상황별 경로를 고르는 Agent`를 일반인 용어로 구분한다.
+- Google Meet 전사, ClovaNote TXT, 녹음 파일은 서로 다른 입력 경로를 쓰되 하나의 `TranscriptEnvelope`로 합류한다.
+- 이미 텍스트가 있으면 STT를 다시 실행하지 않는다. 녹음만 있을 때만 로컬 STT를 선택한다.
+- 도메인 맥락과 기존 사내 자료는 사용자가 조회 범위·기간·출처를 먼저 정한 뒤 읽기 계획만 생성한다.
+- MCP는 외부 서비스를 자동으로 많이 읽는 기능이 아니라, 필요한 정보만 출처와 함께 가져오는 정책 경계로 가르친다.
+- MeetingRecord는 목적·이전 맥락·요약·참석자 관점·To Do·단중장기 통찰·미해결을 포함하되, 개인 성향·감정·의도를 진단하지 않는다.
+- 담당자·기한·결정·통찰은 evidence ID를 요구하고, 확실하지 않으면 `null`·`CONFIRM_REQUIRED`로 남긴다.
+- Notion·Confluence·사내 이메일은 본일 실습에서 직접 쓰지 않고, 사람 검토 후 실행할 `integration_plan`과 draft만 만든다.
+- `READY_FOR_REVIEW`는 사람 승인이 아니다. approve·edit·reject 결과와 `external_write=false`를 각각 검증한다.
+
+### 7.4 Day 2 Codex·Claude 대화 증거
+
+- 대화 예시는 `상황 → 한 번에 한 책임 → 정상·경계 test → diff 리뷰 → 사람 merge`를 보여준다.
+- 상위 모델을 쓰더라도 모델 가용성·비용·호출 횟수를 명시하고, 모델명을 성공 증거로 쓰지 않는다.
+- OpenAI API는 사용자가 opt-in했을 때만 env의 key를 읽고, Notebook·PPT·로그·Git에 key를 표시하지 않는다.
+- `gpt-5.6-luna`·`5.6 Sol ultra`는 요청 모델로 기록하되 실제 계정의 가용성을 진단하고, 미지원은 `MODEL_NOT_AVAILABLE`로 분리한다.
+- Codex·Claude Code는 공식 CLI 로그인으로만 연결하고 웹 쿠키·credential 파일을 앱이 읽지 않는다.
+
 ## 8. Codex·Claude Code Harness
 
 ### 8.1 공통 작업 계약
@@ -247,7 +283,9 @@ Claude Code Desktop의 parallel session, Git isolation, integrated terminal, vis
 
 1. PPT 240장·speaker notes 240개
 2. PPT overflow 0건
-3. PDF 240쪽·깨진 한글 glyph 0건
+3. PDF 240쪽·깨진 한글 glyph 0건, 본문 고딕체 embed 확인
+   - 번들 LibreOffice에서 `NanumGothic`이 다른 언어 글꼴로 대체되는지 샘플 페이지를 먼저 렌더링한다.
+   - 현재 강사 Mac에서는 `AppleGothic` embed와 전 페이지 contact sheet를 확인한 뒤 배포한다.
 4. Exact headline duplicate 0건
 5. Repeated narrative line 0건
 6. Notebook 8개 차시 heading·Run All 성공

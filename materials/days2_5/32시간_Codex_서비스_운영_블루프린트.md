@@ -5,8 +5,8 @@
 Day 2에서 한국어 회의 음성을 구조화하고, Day 3에서 코드 변경을 검토하며, Day 4에서 GitHub 외부 쓰기를 사람 승인으로 보호하고, Day 5에서 두 서비스를 라우팅·관측·평가·배포한다.
 
 ```text
-Day 2 Meeting Intelligence
-  audio → STT → quality gate → chunk → MeetingBrief → evidence → human review
+Day 2 Well-being Meeting Record
+  Meet/Clova/audio → TranscriptEnvelope → domain context → MeetingRecord → evidence → human review → drafts
 
 Day 3 Review Intelligence
   unified diff → line mapping → context pack → finding → static/test evidence → evaluation
@@ -42,51 +42,54 @@ Codex는 모든 코드를 한 번에 생성하는 도구로 쓰지 않는다. �
 | 09:00-09:50 | 1차시 | 강의 12분 · 강사 시연 10분 · Codex 소프트웨어 제작 23분 · 확인 5분 |
 | 09:50-10:40 | 2차시 | 같은 구성으로 앞 차시 결과를 이어서 실행 |
 | 10:40-11:30 | 3차시 | 오전 통합 결과 저장 |
-| 11:30-12:00 | 쉬는 시간 | 3개 차시 연강의 휴식 30분을 블록 후반부에 합산 |
-| 12:00-12:50 | 4차시 | schema·state·평가 등 두 번째 구현 블록 시작 |
-| 12:50-13:40 | 5차시 | software contract 확장과 결과 저장 |
-| 13:40-14:00 | 쉬는 시간 | 2개 차시 연강의 휴식 20분을 블록 후반부에 합산 |
-| 14:00-15:00 | 점심시간 | 14:55까지 복귀 |
+| 11:30-13:00 | 쉬는 시간·점심시간 | 오전 3개 차시 종료 후 휴식과 점심을 연속 운영 |
+| 13:00-13:50 | 4차시 | schema·state·평가 등 두 번째 구현 구간 시작 |
+| 13:50-14:40 | 5차시 | software contract 확장과 결과 저장 |
+| 14:40-15:00 | 쉬는 시간 | 2개 차시 연강 후 20분 휴식 |
 | 15:00-15:50 | 6차시 | 실제 provider·Graph·관측 연결 |
 | 15:50-16:40 | 7차시 | 사람 승인·평가·운영 gate 구현 |
 | 16:40-17:30 | 8차시 | 차시 통합, focused/full test, 결과 저장 |
-| 17:30-18:00 | 쉬는 시간 | 마지막 3개 차시 연강의 휴식 30분을 블록 후반부에 합산 |
+| 17:30-18:00 | 쉬는 시간·Q&A | 마지막 3개 차시 종료 후 휴식·질문·미완료 실행 복구 |
 
 자료 탐색·문제 정의·사례 비교는 `자료 수집`, `Ideation`, `설계`로 표현한다. IDE·Notebook·Terminal·Codex에서 실제 코드를 생성·수정·실행하고 결과 파일 또는 test 증거를 남길 때만 `소프트웨어 실습`으로 표현한다. 홈페이지·공식 문서 확인은 `참고 화면` 또는 `자료 확인`으로만 분류한다.
 
-## 4. Day 2 · Meeting Intelligence Service
+## 4. Day 2 · Well-being Meeting Record
 
 ### 강사가 먼저 보여줄 전체 흐름
 
-1. `data/demo_meeting.wav`의 길이·sample rate·channel을 확인한다.
-2. `faster-whisper`의 `small`, CPU, int8 경로로 STT를 실행한다.
-3. `transcript.json`에서 timestamp·segment·quality flag를 확인한다.
-4. 낮은 품질이면 LangGraph의 transcript review에서 accept·edit·reject를 보여준다.
-5. Qwen `qwen3:4b` 또는 fixture로 MeetingBrief를 만든다.
-6. Action Item의 `evidence_ids`가 실제 segment에 존재하는지 검증한다.
-7. summary review에서 approve·edit·reject 후 local JSON만 저장한다.
+1. 완성된 Desktop 화면에서 Google Meet TXT를 넣고 회의록·근거·외부 연결 계획을 먼저 보여 준다.
+2. Google Meet 전사, ClovaNote TXT, 녹음 파일 중 하나를 받아 공통 `TranscriptEnvelope`로 바꾼다.
+3. 텍스트 입력은 STT를 건너뛰고, 녹음 파일만 local `faster-whisper`를 거친다.
+4. 산업 용어·이전 결정과 read-only MCP retrieval policy를 입력한다.
+5. 단일 LLM·고정 Workflow·bounded Agent의 선택 기준과 비용을 비교한다.
+6. 목적·참석자 관점·To-do·단중장기 인사이트가 있는 `MeetingRecord`를 만들고 evidence를 검증한다.
+7. LangGraph에서 approve·edit·reject·HOLD를 실행한다.
+8. 승인된 결과를 Markdown·email draft·Notion/Confluence/email `PLAN_ONLY`로 만들고 외부 쓰기 없이 끝낸다.
 
 ### 수강생 실행 파일
 
 - Notebook: `materials/day2/day2_service_lab.ipynb`
-- 핵심 코드: `src/meeting_demo.py`, `src/course_services/meeting_service.py`, `src/meeting_agent_workflow.py`
-- 입력: `data/demo_meeting.wav`, `data/demo_meeting_transcript.txt`
-- test: `tests/test_meeting_agent_workflow.py`, `tests/test_course_services.py`
-- 실행 결과: `output/course-labs/day2/01_audio_metadata.json`~`08_day2_scorecard.json`
+- 핵심 코드: `src/course_services/day2_meeting_workflow.py`, `desktop-app/meeting-intelligence/app/`
+- 입력: `desktop-app/meeting-intelligence/fixtures/`와 `data/day2_public_audio/meeting_ko_ccby_excerpt_10m.mp3`
+- 출처 계약: `data/day2_public_audio/sources.json`, `data/day2_public_audio/SHA256SUMS`
+- test: `tests/test_day2_meeting_workflow.py`, `tests/test_day2_notebook.py`, `desktop-app/meeting-intelligence/tests/`
+- 실행 결과: `output/course-labs/day2-v2/01_architecture.json`~`08_export_drafts.json`, 세 시나리오 Markdown, email draft JSON
 - 오프닝 teaser: `assets/demo-videos/day2_service_teaser.gif`
 
 ```bash
-.venv312/bin/python -m pytest -q tests/test_meeting_agent_workflow.py
-.venv312/bin/python -m pytest -q tests/test_course_services.py -k meeting_chunks
+.venv312/bin/python scripts/build_days2_5_notebooks.py --day 2 --execute --timeout-seconds 900
+.venv312/bin/python -m pytest -q tests/test_day2_meeting_workflow.py tests/test_day2_notebook.py
+cd desktop-app/meeting-intelligence && ./scripts/test.sh
 ```
 
 ### 운영 가능한 서비스로 가기 위해 남기는 증거
 
 - `provider_requested`, `provider_used`, `fallback_reason`
-- segment별 `start`, `end`, `quality_flags`
-- `READY/HOLD`, 사람 decision, reviewer, reason
+- `source_mode`, `stt_skipped`, segment별 `start`, `end`, `evidence_id`
+- `execution_mode_requested`, `execution_mode_used`, `route_reason`
+- `READY/HOLD`, approve·edit·reject, reviewer, reason
 - evidence가 없는 담당자·기한은 추측하지 않고 `null`
-- `automatic_email=false`, `external_write=false`
+- `human_review_required=true`, `external_write=false`, integration `PLAN_ONLY`
 
 ## 5. Day 3 · Review Intelligence Service
 
