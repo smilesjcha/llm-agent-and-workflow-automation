@@ -84,9 +84,10 @@ python -m pip install -r requirements-day2.txt
 python scripts/run_day2_preflight.py --full-suite
 python scripts/build_day2_student_bundle.py
 jupyter lab materials/day2/day2_service_lab.ipynb
+python scripts/run_day2_local_app.py
 ```
 
-Notebook의 기본 실행은 강사가 검토한 음성·전사 fixture를 사용한다. `faster-whisper`, Ollama, OpenAI는 필요한 의존성과 opt-in을 준비한 경우만 실행한다. 기준 결과는 `output/course-labs/day2-v2/`에서 읽고, 자신의 결과는 `output/course-labs/day2-v2/student-run/`과 `run_manifest.json`에서 확인한다.
+Notebook의 기본 실행은 강사가 검토한 음성·전사 fixture를 사용한다. 8차시는 Docker 없는 localhost App이 기본이며 macOS `run-local.command`, Windows `run-local.cmd`, 공통 `run_day2_local_app.py` 중 하나로 실행한다. 화면의 `예시로 바로 시작`을 누르면 파일 선택 없이 전체 흐름을 확인할 수 있다. `faster-whisper`, Ollama, OpenAI는 필요한 의존성과 opt-in을 준비한 경우만 실행한다. 기준 결과는 `output/course-labs/day2-v2/`에서 읽고, 자신의 결과는 `output/course-labs/day2-v2/student-run/`과 `run_manifest.json`에서 확인한다.
 
 Ollama용 adapter가 필요할 때만 기본 설치 뒤에 다음 명령을 추가한다.
 
@@ -100,12 +101,12 @@ GPT API 비교는 공개된 키를 폐기·재발급한 뒤 로컬에서만 설�
 ```bash
 python -m pip install -r requirements-openai-optional.txt
 cp .env.sample .env
-# .env의 placeholder를 새 키로 교체. Notebook Run All 비교 시 RUN_OPENAI_LIVE=1
+# .env의 placeholder를 새 키로 교체. Notebook 비교 시 OPENAI_LIVE_OPT_IN=1
 python -m src.ollama_tool_agent --provider openai
 python -m src.langchain_lab --provider openai
 ```
 
-모델 ID는 `gpt-5.6-luna`다. Tool Calling은 Responses API function calling, 회의 구조화는 `responses.parse`와 `MeetingBrief` Structured Outputs를 사용한다. 직접 `provider="openai"`를 지정하면 API 실행을 명시적으로 선택한 것으로 처리한다. Notebook Run All은 기본 `RUN_OPENAI_LIVE=0`에서 OpenAI 셀을 fixture로 복구한다. `.env`는 Git에서 제외되고 `.env.sample`만 배포된다. [OpenAI 모델 문서](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [Structured Outputs 문서](https://developers.openai.com/api/docs/guides/structured-outputs)
+모델 ID는 `gpt-5.6-luna`다. Tool Calling은 Responses API function calling, 회의 구조화는 `responses.parse`와 `MeetingBrief` Structured Outputs를 사용한다. 직접 `provider="openai"`를 지정하면 API 실행을 명시적으로 선택한 것으로 처리한다. Notebook Run All은 기본 `OPENAI_LIVE_OPT_IN=0`에서 OpenAI 셀을 fixture로 복구한다. `.env`는 Git에서 제외되고 `.env.sample`만 배포된다. [OpenAI 모델 문서](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [Structured Outputs 문서](https://developers.openai.com/api/docs/guides/structured-outputs)
 
 LangSmith 웹에는 합성 또는 비식별 데이터의 실행 요약만 명시적으로 업로드한다. `.env`에 `LANGSMITH_API_KEY`와 `LANGSMITH_PROJECT`를 설정하고, 자동 추적으로 원문이 전송되지 않도록 `LANGSMITH_TRACING=false`를 유지한다.
 

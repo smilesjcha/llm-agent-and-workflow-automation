@@ -23,7 +23,7 @@ const RESULT_FILES = [
   "05_codex_task_reference.json",
   "06_provider_diagnostics.json",
   "07_human_review.json",
-  "08_export_drafts.json",
+  "08_localhost_launch.json",
 ];
 
 const C = makeCoursePalette();
@@ -276,14 +276,16 @@ async function resultPreview(periodIndex) {
       resume: parsed.graph.resume,
       learner_decision: parsed.learner_decision_resume.decision,
       learner_status: parsed.learner_decision_resume.status,
-      regression_paths: Object.keys(parsed.automated_regression_evidence),
+      regression_paths: Object.keys(parsed.automated_regression_evidence).join("/"),
     }),
     () => ({
-      markdown_files: Object.keys(parsed.markdown_files).length,
-      email_drafts: Object.keys(parsed.email_drafts).length,
-      email_send_allowed: Object.values(parsed.email_drafts).some(({ send }) => send === true),
-      human_review_required: parsed.desktop_delivery.human_review_required,
-      external_write: parsed.desktop_delivery.external_write,
+      status: parsed.status,
+      service_version: parsed.service_version,
+      delivery_mode: parsed.delivery_mode,
+      stage: parsed.stage,
+      email_status: parsed.email_status,
+      integration_plan_only: parsed.integration_plan_only,
+      external_write: parsed.external_write,
     }),
   ][periodIndex]();
   const lines = JSON.stringify(compact, null, 2)
@@ -338,6 +340,10 @@ function labPath(value) {
 
 function terminalCommand(value) {
   return String(value)
+    .replace(
+      " --smoke-and-exit --port 0",
+      " \\\n  --smoke-and-exit --port 0",
+    )
     .split("\n")
     .map((line) => line.replace(" -k ", " \\\n  -k "))
     .join("\n");
@@ -818,34 +824,20 @@ async function addDemoScreen(period) {
     return;
   }
   if (period.classNumber === 8) {
-    addText(slide, "Local Preview", { left: 72, top: 142, width: 300, height: 30 }, { size: S.label, bold: true, color: C.muted });
+    addText(slide, "실제 localhost 화면 · 이메일 초안", { left: 72, top: 142, width: 600, height: 30 }, { size: S.label, bold: true, color: C.muted });
     slide.images.add({
       blob: image, contentType: "image/png", alt: "Local App Workflow와 Email Draft 화면",
-      fit: "contain",
-      position: { left: 72, top: 176, width: 650, height: 446 }, geometry: "rect",
+      fit: "cover",
+      position: { left: 72, top: 176, width: 1136, height: 424 }, geometry: "rect",
     });
-    addText(slide, "실행 확인", { left: 762, top: 142, width: 300, height: 30 }, { size: S.label, bold: true, color: C.muted });
-    addShape(slide, "rect", { left: 762, top: 176, width: 446, height: 446 }, C.black);
-    const checks = [
-      ["Local URL", "127.0.0.1:8766"],
-      ["사람 검토", "필수"],
-      ["받는 사람", "공란"],
-      ["이메일 발송", "false"],
-      ["외부 저장", "false"],
-      ["Focused Test", "PASS"],
-    ];
-    checks.forEach(([label, value], index) => {
-      const top = 194 + (index * 66);
-      addText(slide, label, { left: 786, top, width: 170, height: 30 }, { size: S.label, bold: true, color: C.gray300 });
-      addText(slide, value, { left: 956, top, width: 228, height: 30 }, { size: S.label, bold: true, color: C.white, align: "right" });
-      if (index < checks.length - 1) {
-        addShape(slide, "line", { left: 786, top: top + 46, width: 398, height: 0 }, "none", C.gray700, 1);
-      }
+    addShape(slide, "rect", { left: 72, top: 600, width: 1136, height: 42 }, C.black);
+    addText(slide, "받는 사람 직접 입력 · 자동 발송 없음 · 외부 저장 없음", { left: 96, top: 607, width: 1088, height: 28 }, {
+      size: S.label, bold: true, color: C.white, align: "center",
     });
     addNotes(slide, {
       minutes: 2,
-      talk: "Local Preview와 실행 상태를 한 화면에서 확인합니다. 앱은 검토 대기와 초안만 보여주며 실제 승인 상태 전이는 7차시 Notebook에서 실행합니다.",
-      activity: "human review 상태·받는 사람 공란·send=false 확인",
+      talk: "실제 Localhost 화면에서 이메일 초안과 자동 발송 없음 문구를 크게 확인합니다. 실행 상태 값은 161쪽 결과 파일에서 다시 검증합니다.",
+      activity: "이메일 초안·자동 발송 없음·사람 확인 문구 확인",
       sources: [`local:assets/screenshots/${period.image}`, ...period.sources],
     });
     return;
@@ -900,12 +892,20 @@ async function addDemoScreen(period) {
 function addDemoSteps(period) {
   const slide = deck.slides.add();
   addHeader(slide, `${period.label} Demo Steps`, period, "INPUT · RUN · OUTPUT");
-  addNumberedRows(slide, [
-    `입력\n${period.fileRoles[1][1]}`,
-    `실행\n${terminalCommand(period.demoCommand ?? period.command)}`,
-    `확인\n${period.success}`,
-    `예상 오류\n${period.expectedError}`,
-  ], { top: 162, rowHeight: 112, bodySize: S.table });
+  const rows = period.classNumber === 8
+    ? [
+      "Launcher\nmacOS run-local.command · Windows run-local.cmd",
+      "브라우저\n표시된 Local URL 열기",
+      "처리\n예시로 바로 시작 · 회의 기록 만들기",
+      "확인·종료\nhuman_review · DRAFT_ONLY 확인 · Terminal Ctrl+C",
+    ]
+    : [
+      `입력\n${period.fileRoles[1][1]}`,
+      `실행\n${terminalCommand(period.demoCommand ?? period.command)}`,
+      `확인\n${period.success}`,
+      `예상 오류\n${period.expectedError}`,
+    ];
+  addNumberedRows(slide, rows, { top: 162, rowHeight: 112, bodySize: S.table });
   addNotes(slide, {
     minutes: 2,
     talk: "Demo는 입력, 실행, 기대 결과, 예상 오류의 네 화면만 봅니다. 이후 같은 경로를 직접 재현합니다.",
@@ -923,7 +923,7 @@ function addCommand(period) {
   addManualTable(slide, {
     top: 466,
     headers: ["실행 위치", "보안 확인", "Test 뒤 확인"],
-    rows: [["Repository root", ".env · Key 출력 없음", period.artifact]],
+    rows: [["Repository root", ".env · Key 출력 없음", labArtifact(period.artifact)]],
     widths: [360, 360, 432],
     rowHeight: 86,
     fontSize: S.table,
@@ -947,10 +947,10 @@ async function addResult(period, periodIndex) {
     top: 230,
     rowHeight: 82,
     bodySize: S.table,
-    numberLeft: 790,
-    lineLeft: 842,
-    bodyLeft: 880,
-    bodyWidth: 328,
+    numberLeft: 780,
+    lineLeft: 828,
+    bodyLeft: 850,
+    bodyWidth: 358,
   });
   addNotes(slide, {
     minutes: 2,
@@ -965,7 +965,7 @@ function addNotebook(period, periodIndex) {
   addHeader(slide, `${period.label} Notebook`, period, "HANDS-ON");
   addText(slide, "materials/day2/day2_service_lab.ipynb", { left: 72, top: 136, width: 1136, height: 30 }, { size: S.label, bold: true, color: C.muted, typeface: MONO });
   addShape(slide, "rect", { left: 72, top: 174, width: 1136, height: 432 }, C.black);
-  addText(slide, notebookCode(periodIndex), { left: 100, top: 196, width: 1080, height: 390 }, { size: S.code, allowSmall: true, color: C.white, typeface: MONO, lineSpacing: 0.98 });
+  addText(slide, notebookCode(periodIndex), { left: 100, top: 196, width: 1080, height: 390 }, { size: period.classNumber === 1 ? 21 : S.code, allowSmall: true, color: C.white, typeface: MONO, lineSpacing: 0.98 });
   addText(slide, `결과 저장 · ${period.saveLine}`, { left: 90, top: 614, width: 1100, height: 32 }, { size: S.label, bold: true, color: C.ink, typeface: MONO, align: "center" });
   addNotes(slide, {
     minutes: 2,
@@ -1197,7 +1197,7 @@ function addFullReplay() {
     "1~8차시 Cell 순서 실행",
     "output/course-labs/day2-v2/student-run 결과·run_manifest 확인",
     "python scripts/run_day2_preflight.py --full-suite",
-    "Desktop Source Smoke · 선택 8766 화면 확인",
+    "Localhost Smoke · 8766 화면 · 예시 입력 확인",
     "Codex Starter Patch · Test · Diff · 사람 판단",
   ], { top: 148, rowHeight: 80, bodySize: S.table });
   addNotes(slide, {
