@@ -40,6 +40,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: desktop-app/meeting-intelligence/go.mod
+          cache: false
 
       - name: Run desktop launcher tests
         working-directory: desktop-app/meeting-intelligence
