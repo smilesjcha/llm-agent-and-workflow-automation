@@ -1,0 +1,4 @@
+# Day 2 core, Notebook, LangGraph, and Desktop App test dependencies.
+# Optional Ollama, OpenAI, and STT providers remain in their separate files.
+-r requirements-day1.txt
+-r desktop-app/meeting-intelligence/requirements.txt

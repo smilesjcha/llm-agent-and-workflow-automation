@@ -21,6 +21,8 @@ tmp/
 output/day1-demo/
 output/day1-demo-*/
 output/day1-preflight/
+output/day2-preflight/
+output/course-labs/day2-v2/student-run/
 output/day1-ollama-tool/
 output/day1-openai-tool/
 output/day1-langchain/

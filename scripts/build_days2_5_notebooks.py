@@ -101,7 +101,8 @@ def notebook(title: str, day: int, cells: list[dict]) -> dict:
             code(
                 """
                 from pathlib import Path
-                import importlib.util, json, subprocess, sys
+                from datetime import datetime, timezone
+                import importlib.util, json, os, subprocess, sys
 
                 def find_workspace(start):
                     for candidate in [start, *start.parents]:
@@ -118,20 +119,86 @@ def notebook(title: str, day: int, cells: list[dict]) -> dict:
             code(installation_cell),
             code(
                 f"""
-                OUT = ROOT / {('"output/course-labs/day2-v2"' if day == 2 else f'"output/course-labs/day{day}"')}
+                REFERENCE_OUT = ROOT / {('"output/course-labs/day2-v2"' if day == 2 else f'"output/course-labs/day{day}"')}
+                OUT = {('REFERENCE_OUT / "student-run"' if day == 2 else 'REFERENCE_OUT')}
                 OUT.mkdir(parents=True, exist_ok=True)
+
+                TRACK_RUN_MANIFEST = {str(day == 2)}
+                RUN_STARTED_AT_UTC = datetime.now(timezone.utc).isoformat()
+                RUN_RESULT_FILES = []
+                RUN_TEST_EVIDENCE = []
+
+                def write_run_manifest():
+                    live_opt_ins = {{
+                        "openai": os.getenv("OPENAI_LIVE_OPT_IN", "0") == "1",
+                        "ollama": os.getenv("OLLAMA_LIVE_OPT_IN", "0") == "1",
+                        "faster_whisper": os.getenv("FASTER_WHISPER_LIVE_OPT_IN", "0") == "1",
+                    }}
+                    completed_periods = sorted({{
+                        name.split("_", 1)[0]
+                        for name in RUN_RESULT_FILES
+                        if len(name) >= 3 and name[:2].isdigit() and name[2] == "_"
+                    }})
+                    manifest = {{
+                        "run_started_at_utc": RUN_STARTED_AT_UTC,
+                        "python_version": sys.version.split()[0],
+                        "reference_outputs_read_only": str(REFERENCE_OUT.relative_to(ROOT)),
+                        "student_run_directory": str(OUT.relative_to(ROOT)),
+                        "completed_periods": completed_periods,
+                        "result_files": [str((OUT / name).relative_to(ROOT)) for name in RUN_RESULT_FILES],
+                        "tests": RUN_TEST_EVIDENCE,
+                        "safety": {{
+                            "default_lane_network_free": True,
+                            "this_run_network_free": not any(live_opt_ins.values()),
+                            "live_opt_ins": live_opt_ins,
+                            "external_write": False,
+                            "automatic_email_send": False,
+                        }},
+                    }}
+                    path = OUT / "run_manifest.json"
+                    path.write_text(
+                        json.dumps(manifest, ensure_ascii=False, indent=2) + "\\n",
+                        encoding="utf-8",
+                    )
+                    return path
+
+                def record_test_evidence(name, result):
+                    evidence = {{
+                        "name": name,
+                        "command": result["command"],
+                        "return_code": result["returncode"],
+                        "status": "PASS" if result["returncode"] == 0 else "FAIL",
+                    }}
+                    RUN_TEST_EVIDENCE[:] = [
+                        item for item in RUN_TEST_EVIDENCE if item["name"] != name
+                    ]
+                    RUN_TEST_EVIDENCE.append(evidence)
+                    if TRACK_RUN_MANIFEST:
+                        write_run_manifest()
+                    return evidence
 
                 def save_json(name, payload):
                     path = OUT / name
                     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+                    if TRACK_RUN_MANIFEST:
+                        if name not in RUN_RESULT_FILES:
+                            RUN_RESULT_FILES.append(name)
+                        write_run_manifest()
                     print({{"saved": str(path.relative_to(ROOT))}})
                     return path
 
                 def save_text(name, text):
                     path = OUT / name
                     path.write_text(text.rstrip() + "\\n", encoding="utf-8")
+                    if TRACK_RUN_MANIFEST:
+                        if name not in RUN_RESULT_FILES:
+                            RUN_RESULT_FILES.append(name)
+                        write_run_manifest()
                     print({{"saved": str(path.relative_to(ROOT))}})
                     return path
+
+                if TRACK_RUN_MANIFEST:
+                    write_run_manifest()
 
                 def run_command(*args, cwd=ROOT):
                     completed = subprocess.run(args, cwd=cwd, text=True, capture_output=True)
@@ -649,11 +716,12 @@ NOTEBOOKS[2] = notebook(
             build_interruptible_meeting_graph,
             compact_workflow_result, compare_execution_strategies,
             diagnose_provider_options, normalize_source, render_email_draft,
+            external_action_approval_gate, run_optional_local_stt_smoke,
             resume_interruptible_meeting_review, route_execution_strategy,
             run_meeting_workflow, start_interruptible_meeting_review,
             run_optional_cli_prompt, run_optional_openai_prompt, run_optional_openai_record,
             source_mixing_error_example,
-            validate_record_evidence,
+            validate_model_record_output, validate_record_evidence,
         )
 
         architecture = {
@@ -681,7 +749,36 @@ NOTEBOOKS[2] = notebook(
                 "run_all_network_calls": 0,
             },
         }
+        route_cases = {
+            "single_llm": route_execution_strategy(
+                requested_actions=["rewrite_as_podcast_script"]
+            ),
+            "deterministic_workflow": route_execution_strategy(
+                requested_actions=["normalize", "summarize", "todos", "draft"]
+            ),
+            "agent_router": route_execution_strategy(
+                requested_actions=["summarize", "todos"],
+                external_context_sources=["notion", "slack"],
+            ),
+        }
+        external_action_gate = {
+            "without_human_approval": external_action_approval_gate(
+                "send_meeting_email", human_approved=False
+            ),
+            "approved_dry_run": external_action_approval_gate(
+                "send_meeting_email", human_approved=True
+            ),
+        }
+        architecture["three_route_cases"] = route_cases
+        architecture["external_action_approval_gate"] = external_action_gate
         assert architecture["invariants"]["external_write"] is False
+        assert {item["strategy"] for item in route_cases.values()} == {
+            "single_llm", "deterministic_workflow", "agent_router",
+        }
+        assert external_action_gate["without_human_approval"]["error_code"] == (
+            "EXTERNAL_ACTION_HUMAN_APPROVAL_REQUIRED"
+        )
+        assert external_action_gate["approved_dry_run"]["executed"] is False
         save_json("01_architecture.json", architecture)
         architecture
         """),
@@ -691,7 +788,9 @@ NOTEBOOKS[2] = notebook(
         Google Meet 텍스트, ClovaNote TXT, 로컬 음성은 출발점만 다릅니다. 텍스트가 이미 있으면 STT를 건너뛰고, 음성만 있을 때 로컬 STT를 실행합니다. 한 요청에 입력을 섞지 않고 모두 `TranscriptEnvelope`로 바꾼 뒤 같은 Workflow에 넣습니다.
         """),
         code("""
+        import os
         from src.meeting_demo import parse_transcript
+        from scripts.day2_public_audio import load_catalog, resolve, select_source
 
         meet_text = "\\n".join([
             "[00:00] 민지: 오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다.",
@@ -736,7 +835,9 @@ NOTEBOOKS[2] = notebook(
             text = (ROOT / "data/meeting_sample_ko_12min.txt").read_text(encoding="utf-8")
             segments = parse_transcript(text)
             return text, segments, {
-                "provider": "reviewed_fixture_stt", "language": "ko",
+                "provider": "reviewed_transcript_fixture", "language": "ko",
+                "lane": "deterministic_run_all_not_live_stt",
+                "review_status": "instructor_reviewed_audio_transcript_pair",
                 "network_used": False, "matched_audio_transcript_pair": True,
             }
 
@@ -747,7 +848,32 @@ NOTEBOOKS[2] = notebook(
                 sources["audio_stt"], transcriber=reviewed_fixture_stt
             ),
         }
+        public_audio_catalog = load_catalog()
+        public_audio_source = select_source(public_audio_catalog, None)
+        public_audio_resolution = resolve(public_audio_catalog, public_audio_source)
+        resolved_public_audio = ROOT / public_audio_resolution["path"]
+        faster_whisper_live_opt_in = (
+            os.getenv("FASTER_WHISPER_LIVE_OPT_IN", "0") == "1"
+        )
+        local_stt_smoke = run_optional_local_stt_smoke(
+            resolved_public_audio,
+            workspace_root=ROOT,
+            live_opt_in=faster_whisper_live_opt_in,
+            model_size=os.getenv("FASTER_WHISPER_MODEL", "small"),
+        )
         input_result = {
+            "reviewed_fixture_lane": {
+                "label": "검토 완료 Transcript Fixture · 기본 Run All",
+                "audio_path": str(audio_path.relative_to(ROOT)),
+                "transcript_path": "data/meeting_sample_ko_12min.txt",
+                "live_stt": False,
+                "silent_transcript_substitution": False,
+            },
+            "optional_local_faster_whisper_smoke": {
+                "opt_in_environment": "FASTER_WHISPER_LIVE_OPT_IN=1",
+                "resolved_public_audio": public_audio_resolution,
+                "result": local_stt_smoke,
+            },
             "contracts": {
                 name: {
                     "source_mode": envelope.source_mode,
@@ -762,6 +888,10 @@ NOTEBOOKS[2] = notebook(
         }
         assert {item["source_count"] for item in input_result["contracts"].values()} == {1}
         assert input_result["boundary"]["error_code"] == "SOURCE_MODE_MIXING_FORBIDDEN"
+        assert envelopes["audio_stt"].stt_metadata["provider"] == "reviewed_transcript_fixture"
+        assert local_stt_smoke["transcript_substituted"] is False
+        if not faster_whisper_live_opt_in:
+            assert local_stt_smoke["error_code"] == "LOCAL_STT_LIVE_OPT_IN_REQUIRED"
         save_json("02_inputs.json", input_result)
         input_result
         """),
@@ -819,6 +949,8 @@ NOTEBOOKS[2] = notebook(
         먼저 모든 실행 방식이 반환해야 할 `MeetingRecord`를 고정합니다. 그 다음 한 번의 생성이면 단일 LLM, 고정 순서면 Workflow, 정보원과 다음 행동이 요청마다 달라지면 Agent Router를 선택합니다. 알려진 경로를 고르는 데 LLM을 쓰지 않으면 비용과 오작동 지점을 줄일 수 있습니다.
         """),
         code("""
+        from pydantic import ValidationError
+
         record_contract_run = run_meeting_workflow(
             sources["google_meet_text"],
             domain_context,
@@ -840,6 +972,44 @@ NOTEBOOKS[2] = notebook(
                 requested_actions=["rewrite_as_podcast_script"]
             ),
         }
+        unknown_evidence_payload = actual_record.model_dump(mode="json")
+        unknown_evidence_payload["todos"][0]["evidence_ids"] = ["s999"]
+        unknown_evidence_errors = validate_record_evidence(
+            MeetingRecord.model_validate(unknown_evidence_payload), actual_envelope
+        )
+
+        owner_due_run = run_meeting_workflow(
+            SourceInput(
+                source_mode="google_meet_text",
+                source_ref="meet://boundary/owner-due-unknown",
+                meet_transcript="민지: 다음 회의에서 후속 조치를 논의해 봅시다.",
+            ),
+            domain_context,
+            review_decision="approve",
+        )
+        owner_due_todo = owner_due_run["record"]["todos"][0]
+
+        invalid_due_payload = actual_record.model_dump(mode="json")
+        invalid_due_payload["todos"][0]["due_date"] = "2026-02-30"
+        try:
+            MeetingRecord.model_validate(invalid_due_payload)
+            invalid_due_boundary = {"status": "UNEXPECTED_SUCCESS"}
+        except ValidationError:
+            invalid_due_boundary = {
+                "status": "EXPECTED_FAILURE",
+                "error_code": "TODO_DUE_DATE_INVALID",
+            }
+
+        additional_field_payload = actual_record.model_dump(mode="json")
+        additional_field_payload["automatic_send"] = True
+        try:
+            MeetingRecord.model_validate(additional_field_payload)
+            additional_field_boundary = {"status": "UNEXPECTED_SUCCESS"}
+        except ValidationError:
+            additional_field_boundary = {
+                "status": "EXPECTED_FAILURE",
+                "error_code": "MEETING_RECORD_ADDITIONAL_FIELD_FORBIDDEN",
+            }
         record_contract_result = {
             "schema": {
                 "name": "MeetingRecord",
@@ -854,6 +1024,16 @@ NOTEBOOKS[2] = notebook(
             },
             "execution_strategy_comparison": compare_execution_strategies(),
             "rule_router_examples": routing_cases,
+            "boundary_evidence": {
+                "unknown_evidence_s999": unknown_evidence_errors,
+                "owner_due_not_in_source": {
+                    "owner": owner_due_todo["owner"],
+                    "due_date": owner_due_todo["due_date"],
+                    "rule": "원문에 없으면 null 유지",
+                },
+                "invalid_due_date": invalid_due_boundary,
+                "additional_field": additional_field_boundary,
+            },
             "delivery_policy": {
                 "human_review_required": actual_record.human_review_required,
                 "external_write": actual_record.external_write,
@@ -863,6 +1043,12 @@ NOTEBOOKS[2] = notebook(
         assert set(record_contract_result["actual_record"]) == set(MeetingRecord.model_fields)
         assert record_contract_result["evidence_validation"]["errors"] == []
         assert record_contract_result["delivery_policy"]["external_write"] is False
+        assert unknown_evidence_errors == ["TODO_1_UNKNOWN_EVIDENCE:s999"]
+        assert owner_due_todo["owner"] is None and owner_due_todo["due_date"] is None
+        assert invalid_due_boundary["error_code"] == "TODO_DUE_DATE_INVALID"
+        assert additional_field_boundary["error_code"] == (
+            "MEETING_RECORD_ADDITIONAL_FIELD_FORBIDDEN"
+        )
         assert routing_cases["fixed_meeting_record"]["strategy"] == "deterministic_workflow"
         assert routing_cases["context_retrieval_needed"]["strategy"] == "agent_router"
         assert routing_cases["one_off_unmodeled_request"]["strategy"] == "single_llm"
@@ -932,24 +1118,68 @@ NOTEBOOKS[2] = notebook(
         markdown("""
         ## 6차시 · LLM Provider · Cost Guardrail
 
-        기본 `Run All`은 API와 CLI를 호출하지 않습니다. OpenAI는 `OPENAI_LIVE_OPT_IN=1`과 환경변수 key가 모두 있을 때만 선택하며, 모델 접근 불가를 fixture 성공으로 위장하지 않고 `MODEL_NOT_AVAILABLE`로 남깁니다.
+        기본 `Run All`은 API와 CLI를 호출하지 않습니다. `.env`를 읽되 OpenAI는 `OPENAI_LIVE_OPT_IN=1`, Ollama는 `OLLAMA_LIVE_OPT_IN=1`일 때만 실행합니다. OpenAI 모델 접근 불가를 fixture 성공으로 위장하지 않고, Ollama 출력도 Schema와 evidence를 통과해야 성공입니다.
         """),
         code("""
-        import os
         from types import SimpleNamespace
+        from dotenv import load_dotenv
+
+        dotenv_loaded = load_dotenv(dotenv_path=ROOT / ".env", override=False)
+        openai_live_opt_in = os.getenv("OPENAI_LIVE_OPT_IN", "0") == "1"
+        ollama_live_opt_in = os.getenv("OLLAMA_LIVE_OPT_IN", "0") == "1"
 
         provider_options = diagnose_provider_options()
         cli_dry_runs = {
             name: run_optional_cli_prompt(name, "현재 회의 기록을 검토해 주세요.")
             for name in ("ollama", "codex", "claude_code")
         }
-        RUN_OPENAI_LIVE = False
         openai_result = run_optional_openai_record(
             envelopes["google_meet_text"], domain_context,
-            env=os.environ if RUN_OPENAI_LIVE else {},
+            env=os.environ if openai_live_opt_in else {},
             model=os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL),
             allow_fixture_fallback=True,
         )
+
+        ollama_prompt = "\\n".join([
+            "다음 MeetingRecord JSON Schema에 맞는 JSON object만 반환하세요.",
+            "원문에 없는 owner와 due_date는 null, evidence ID는 제공된 값만 사용하세요.",
+            "evidence_ids의 각 값은 ALLOWED_EVIDENCE_IDS의 문자열과 정확히 같아야 합니다.",
+            "human_review_required=true, external_write=false를 유지하세요.",
+            "ALLOWED_EVIDENCE_IDS=" + json.dumps(
+                [item.id for item in envelopes["google_meet_text"].segments],
+                ensure_ascii=False,
+            ),
+            "SCHEMA=" + json.dumps(MeetingRecord.model_json_schema(), ensure_ascii=False),
+            "TRANSCRIPT=" + envelopes["google_meet_text"].transcript_text,
+        ])
+        ollama_call = run_optional_cli_prompt(
+            "ollama",
+            ollama_prompt,
+            live_opt_in=ollama_live_opt_in,
+            model=os.getenv("OLLAMA_MODEL", "qwen3:4b"),
+        )
+        if ollama_call["status"] == "SUCCESS":
+            ollama_validation = {
+                "provider_status": "SUCCESS",
+                **validate_model_record_output(
+                    ollama_call["output_text"], envelopes["google_meet_text"]
+                ),
+            }
+        else:
+            ollama_validation = {
+                "status": ollama_call["status"],
+                "provider_status": ollama_call["status"],
+                "error_code": (
+                    "OLLAMA_LIVE_OPT_IN_REQUIRED"
+                    if ollama_call["error_code"] == "CLI_LIVE_OPT_IN_REQUIRED"
+                    else ollama_call["error_code"]
+                ),
+                "command_executed": ollama_call["command_executed"],
+                "schema_valid": False,
+                "evidence_valid": False,
+                "fallback_used": False,
+                "external_write": False,
+            }
 
         class LocalModelNotFound(Exception):
             status_code = 404
@@ -969,15 +1199,26 @@ NOTEBOOKS[2] = notebook(
             "options": provider_options,
             "cli_default_run_all": cli_dry_runs,
             "openai_default_run_all": openai_result,
+            "ollama_optional_schema_evidence_validation": ollama_validation,
             "model_not_available_boundary": model_boundary,
+            "dotenv": {
+                "loaded_without_override": bool(dotenv_loaded),
+                "credential_values_exposed": False,
+            },
             "live_flags": {
-                "openai": RUN_OPENAI_LIVE,
-                "ollama": False, "codex_cli": False, "claude_code_cli": False,
+                "openai": openai_live_opt_in,
+                "ollama": ollama_live_opt_in,
+                "faster_whisper": faster_whisper_live_opt_in,
+                "codex_cli": False, "claude_code_cli": False,
             },
         }
-        assert openai_result["provider_used"] == "fixture"
-        assert openai_result["fallback_reason"] == "OPENAI_LIVE_OPT_IN_REQUIRED"
-        assert openai_result["schema_valid"] is True
+        if not openai_live_opt_in:
+            assert openai_result["provider_used"] == "fixture"
+            assert openai_result["fallback_reason"] == "OPENAI_LIVE_OPT_IN_REQUIRED"
+            assert openai_result["schema_valid"] is True
+        if not ollama_live_opt_in:
+            assert ollama_validation["error_code"] == "OLLAMA_LIVE_OPT_IN_REQUIRED"
+            assert ollama_validation["command_executed"] is False
         assert model_boundary["fallback_reason"] == "MODEL_NOT_AVAILABLE"
         assert all(item["error_code"] == "CLI_LIVE_OPT_IN_REQUIRED" for item in cli_dry_runs.values())
         assert all(
@@ -991,9 +1232,37 @@ NOTEBOOKS[2] = notebook(
         markdown("""
         ## 7차시 · LangGraph · Human Review
 
-        승인·수정·거절은 각각 다른 상태와 산출물을 만듭니다. 존재하지 않는 evidence ID는 사람이 승인하기 전 `HOLD`하며, 수정은 허용된 필드만 다시 검증합니다.
+        먼저 `interrupt()`에서 멈춘 상태를 확인하고, 수강생이 결정값을 정한 뒤 같은 thread를 `Command(resume=...)`로 재개합니다. 마지막 자동 회귀 검증은 승인·수정·거절 세 경로가 계속 안전한지 별도로 확인합니다.
         """),
         code("""
+        # 1단계 · interrupt 시작: 아직 승인 결정도, 초안 export도 없습니다.
+        learner_graph = build_interruptible_meeting_graph()
+        learner_thread_id = "day2-learner-review"
+        learner_start = start_interruptible_meeting_review(
+            learner_graph,
+            sources["google_meet_text"],
+            domain_context,
+            thread_id=learner_thread_id,
+            retrieval_policy=retrieval_policy,
+        )
+        assert learner_start["status"] == "WAITING_FOR_HUMAN_REVIEW"
+        assert "exports" not in learner_start
+
+        # 2단계 · 수강생 결정/재개: 아래 두 값을 바꾼 뒤 이 셀을 다시 실행합니다.
+        LEARNER_REVIEW_DECISION = "edit"  # approve | edit | reject
+        LEARNER_REVIEW_EDITS = {
+            "meeting_summary": "사람이 근거를 확인하고 배송 지연 기록 범위를 수정했습니다.",
+            "todo_updates": {"0": {"owner": "민지", "due_date": "2026-09-05"}},
+        }
+        learner_resume = resume_interruptible_meeting_review(
+            learner_graph,
+            thread_id=learner_thread_id,
+            decision=LEARNER_REVIEW_DECISION,
+            edits=LEARNER_REVIEW_EDITS if LEARNER_REVIEW_DECISION == "edit" else {},
+        )
+        assert learner_resume["external_write"] is False
+
+        # 3단계 · 자동 회귀 evidence: 학습자 선택과 별도로 세 경로를 모두 검사합니다.
         review_inputs = {
             "approve": {},
             "edit": {
@@ -1002,49 +1271,40 @@ NOTEBOOKS[2] = notebook(
             },
             "reject": {},
         }
-        interruptible_runs = {}
+        regression_runs = {}
         for decision, edits in review_inputs.items():
-            review_graph = build_interruptible_meeting_graph()
-            thread_id = f"day2-{decision}-review"
-            started = start_interruptible_meeting_review(
-                review_graph,
+            regression_graph = build_interruptible_meeting_graph()
+            regression_thread_id = f"day2-regression-{decision}"
+            regression_start = start_interruptible_meeting_review(
+                regression_graph,
                 sources["google_meet_text"],
                 domain_context,
-                thread_id=thread_id,
+                thread_id=regression_thread_id,
                 retrieval_policy=retrieval_policy,
             )
-            resumed = resume_interruptible_meeting_review(
-                review_graph,
-                thread_id=thread_id,
+            regression_resume = resume_interruptible_meeting_review(
+                regression_graph,
+                thread_id=regression_thread_id,
                 decision=decision,
                 edits=edits,
             )
-            interruptible_runs[decision] = {
+            regression_runs[decision] = {
                 "start": {
-                    "status": started["status"],
-                    "thread_id": started["thread_id"],
-                    "checkpointer": started["checkpointer"],
-                    "interrupt": started["interrupts"][0],
-                    "external_write": started["external_write"],
+                    "status": regression_start["status"],
+                    "thread_id": regression_start["thread_id"],
+                    "checkpointer": regression_start["checkpointer"],
+                    "interrupt": regression_start["interrupts"][0],
+                    "external_write": regression_start["external_write"],
                 },
                 "resume": {
-                    "status": resumed["status"],
-                    "review": resumed["review"],
-                    "export_status": resumed["exports"]["status"],
-                    "trace": resumed["trace"],
-                    "external_write": resumed["external_write"],
+                    "status": regression_resume["status"],
+                    "review": regression_resume["review"],
+                    "export_status": regression_resume["exports"]["status"],
+                    "trace": regression_resume["trace"],
+                    "external_write": regression_resume["external_write"],
                 },
             }
 
-        boundary_record = MeetingRecord.model_validate(
-            record_contract_result["actual_record"]
-        )
-        boundary_payload = boundary_record.model_dump(mode="json")
-        boundary_payload["todos"][0]["evidence_ids"] = ["s999"]
-        evidence_boundary = validate_record_evidence(
-            MeetingRecord.model_validate(boundary_payload),
-            envelopes["google_meet_text"],
-        )
         human_review_result = {
             "graph": {
                 "framework": "LangGraph",
@@ -1056,22 +1316,39 @@ NOTEBOOKS[2] = notebook(
                     "human_review → export_draft | review_rejected",
                 ],
             },
-            "decisions": interruptible_runs,
-            "unknown_evidence_boundary": evidence_boundary,
+            "learner_interrupt_start": {
+                "status": learner_start["status"],
+                "thread_id": learner_start["thread_id"],
+                "interrupt": learner_start["interrupts"][0],
+                "external_write": learner_start["external_write"],
+            },
+            "learner_decision_resume": {
+                "decision": LEARNER_REVIEW_DECISION,
+                "status": learner_resume["status"],
+                "review": learner_resume["review"],
+                "export_status": learner_resume["exports"]["status"],
+                "external_write": learner_resume["external_write"],
+            },
+            "automated_regression_evidence": regression_runs,
+            "unknown_evidence_boundary_from_4th_period": (
+                record_contract_result["boundary_evidence"]["unknown_evidence_s999"]
+            ),
         }
         assert all(
             item["start"]["status"] == "WAITING_FOR_HUMAN_REVIEW"
-            for item in interruptible_runs.values()
+            for item in regression_runs.values()
         )
-        assert interruptible_runs["approve"]["resume"]["status"] == "DRAFT_READY"
-        assert interruptible_runs["edit"]["resume"]["status"] == "DRAFT_READY"
-        assert interruptible_runs["reject"]["resume"]["status"] == "REJECTED"
-        assert interruptible_runs["reject"]["resume"]["export_status"] == "SKIPPED_NOT_APPROVED"
+        assert regression_runs["approve"]["resume"]["status"] == "DRAFT_READY"
+        assert regression_runs["edit"]["resume"]["status"] == "DRAFT_READY"
+        assert regression_runs["reject"]["resume"]["status"] == "REJECTED"
+        assert regression_runs["reject"]["resume"]["export_status"] == "SKIPPED_NOT_APPROVED"
         assert all(
             item["resume"]["external_write"] is False
-            for item in interruptible_runs.values()
+            for item in regression_runs.values()
         )
-        assert evidence_boundary == ["TODO_1_UNKNOWN_EVIDENCE:s999"]
+        assert human_review_result["unknown_evidence_boundary_from_4th_period"] == [
+            "TODO_1_UNKNOWN_EVIDENCE:s999"
+        ]
         save_json("07_human_review.json", human_review_result)
         human_review_result
         """),
@@ -1111,10 +1388,13 @@ NOTEBOOKS[2] = notebook(
             "tests/test_openai_provider.py",
             "tests/test_ollama_tool_agent.py",
         )
+        focused_test_evidence = record_test_evidence("day2_focused", focused_test)
+        day1_test_evidence = record_test_evidence("day1_regression", day1_suite)
         export_result = {
             "markdown_files": markdown_files,
             "email_drafts": email_drafts,
             "desktop_delivery": desktop_delivery,
+            "test_evidence": [focused_test_evidence, day1_test_evidence],
             "checks": {
                 "all_emails_unsent": all(item["send"] is False for item in email_drafts.values()),
                 "all_external_write_false": all(item["external_write"] is False for item in email_drafts.values()),

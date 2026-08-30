@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-08-30T03:27:58.846608+00:00",
+  "status": "PASS",
+  "module": "solution.review_policy",
+  "cases": [
+    {
+      "name": "local_draft",
+      "expected": false,
+      "observed": false,
+      "status": "PASS"
+    },
+    {
+      "name": "email_requires_review",
+      "expected": true,
+      "observed": true,
+      "status": "PASS"
+    },
+    {
+      "name": "notion_requires_review",
+      "expected": true,
+      "observed": true,
+      "status": "PASS"
+    },
+    {
+      "name": "evidence_error",
+      "expected": true,
+      "observed": true,
+      "status": "PASS"
+    }
+  ],
+  "human_review_required_for_external_action": true,
+  "external_write": false,
+  "role": "INSTRUCTOR_REFERENCE_SOLUTION"
+}

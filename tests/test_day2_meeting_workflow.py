@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -21,15 +22,18 @@ from src.course_services.day2_meeting_workflow import (
     build_interruptible_meeting_graph,
     build_mcp_retrieval_plan,
     compare_execution_strategies,
+    external_action_approval_gate,
     render_email_draft,
     resume_interruptible_meeting_review,
     route_execution_strategy,
     run_meeting_workflow,
+    run_optional_local_stt_smoke,
     run_optional_cli_prompt,
     run_optional_openai_record,
     run_optional_openai_prompt,
     source_mixing_error_example,
     start_interruptible_meeting_review,
+    validate_model_record_output,
     validate_record_evidence,
 )
 
@@ -127,6 +131,61 @@ def test_source_mode_mixing_and_silent_stt_fallback_are_blocked(tmp_path: Path) 
         )
 
 
+def test_optional_local_stt_is_opt_in_and_never_substitutes_transcript(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "resolved-public-audio.mp3"
+    audio_path.write_bytes(b"audio-fixture")
+    calls: list[Path] = []
+
+    def fake_transcriber(path: Path):
+        calls.append(path)
+        return (
+            "",
+            [{"text": "공개 음성에서 직접 생성한 STT smoke 결과", "start": 0.0}],
+            {"provider": "injected_faster_whisper_smoke", "language": "ko"},
+        )
+
+    skipped = run_optional_local_stt_smoke(
+        audio_path,
+        workspace_root=tmp_path,
+        live_opt_in=False,
+        transcriber=fake_transcriber,
+    )
+    assert skipped == {
+        "audio_path": "resolved-public-audio.mp3",
+        "source_mode": "audio_stt",
+        "transcript_substituted": False,
+        "external_write": False,
+        "status": "EXPECTED_SKIP",
+        "error_code": "LOCAL_STT_LIVE_OPT_IN_REQUIRED",
+        "live_attempted": False,
+    }
+    assert calls == []
+
+    completed = run_optional_local_stt_smoke(
+        audio_path,
+        workspace_root=tmp_path,
+        live_opt_in=True,
+        transcriber=fake_transcriber,
+    )
+    assert calls == [audio_path.resolve()]
+    assert completed["status"] == "SUCCESS"
+    assert completed["segment_count"] == 1
+    assert completed["transcript_substituted"] is False
+    assert completed["stt_metadata"]["fallback_transcript_substituted"] is False
+    assert completed["external_write"] is False
+
+    blocked = run_optional_local_stt_smoke(
+        audio_path,
+        workspace_root=tmp_path / "different-workspace",
+        live_opt_in=True,
+        transcriber=fake_transcriber,
+    )
+    assert blocked["error_code"] == "WORKSPACE_PATH_BLOCKED"
+    assert calls == [audio_path.resolve()]
+
+
 def test_mcp_retrieval_plan_is_read_only_bounded_and_requires_scope() -> None:
     envelope = adapt_google_meet(
         SourceInput(
@@ -201,6 +260,47 @@ def test_meeting_record_matches_the_actual_schema_and_evidence_contract() -> Non
     assert record.insights.short_term
     assert record.insights.medium_term
     assert record.insights.long_term
+
+
+def test_provider_record_validation_rejects_unknown_evidence_and_extra_fields() -> None:
+    result = run_meeting_workflow(
+        SourceInput(
+            source_mode="google_meet_text",
+            source_ref="meet://fixture/provider-validation",
+            meet_transcript=MEET_TEXT,
+        ),
+        DOMAIN,
+        review_decision="approve",
+    )
+    envelope = TranscriptEnvelope.model_validate(result["envelope"])
+    record = MeetingRecord.model_validate(result["record"])
+
+    valid = validate_model_record_output(record.model_dump_json(), envelope)
+    assert valid["status"] == "SUCCESS"
+    assert valid["schema_valid"] is True
+    assert valid["evidence_valid"] is True
+    assert valid["fallback_used"] is False
+    assert valid["external_write"] is False
+
+    unknown_evidence = record.model_dump(mode="json")
+    unknown_evidence["todos"][0]["evidence_ids"] = ["s999"]
+    invalid_evidence = validate_model_record_output(
+        json.dumps(unknown_evidence, ensure_ascii=False), envelope
+    )
+    assert invalid_evidence["error_code"] == "MODEL_EVIDENCE_INVALID"
+    assert invalid_evidence["schema_valid"] is True
+    assert invalid_evidence["evidence_valid"] is False
+    assert invalid_evidence["evidence_errors"] == ["TODO_1_UNKNOWN_EVIDENCE:s999"]
+    assert invalid_evidence["fallback_used"] is False
+
+    extra_field = record.model_dump(mode="json")
+    extra_field["automatic_send"] = True
+    invalid_schema = validate_model_record_output(
+        json.dumps(extra_field, ensure_ascii=False), envelope
+    )
+    assert invalid_schema["error_code"] == "MODEL_SCHEMA_INVALID"
+    assert invalid_schema["schema_valid"] is False
+    assert invalid_schema["fallback_used"] is False
 
 
 @pytest.mark.parametrize(
@@ -353,6 +453,28 @@ def test_rule_router_distinguishes_fixed_workflow_agent_and_one_off_llm() -> Non
     }
 
 
+def test_external_action_requires_human_approval_and_stays_dry_run() -> None:
+    blocked = external_action_approval_gate(
+        "send_meeting_email", human_approved=False
+    )
+    assert blocked == {
+        "status": "POLICY_HOLD",
+        "error_code": "EXTERNAL_ACTION_HUMAN_APPROVAL_REQUIRED",
+        "action": "send_meeting_email",
+        "human_approved": False,
+        "executed": False,
+        "external_write": False,
+    }
+
+    approved = external_action_approval_gate(
+        "send_meeting_email", human_approved=True
+    )
+    assert approved["status"] == "APPROVED_DRY_RUN"
+    assert approved["next_boundary"] == "SEPARATE_PUBLISHER_EXECUTION_REQUIRED"
+    assert approved["executed"] is False
+    assert approved["external_write"] is False
+
+
 def test_openai_adapter_defaults_off_and_model_unavailable_is_stable() -> None:
     default = run_optional_openai_prompt("회의를 구조화해 주세요.", env={})
     assert default == {
@@ -447,6 +569,27 @@ def test_cli_providers_are_opt_in_and_use_constrained_argument_lists() -> None:
         assert result["external_write"] is False
 
     assert "read-only" in run_optional_cli_prompt("codex", "x")["command"]
+    ollama_command = run_optional_cli_prompt("ollama", "x")["command"]
+    assert ["--format", "json"] == ollama_command[3:5]
+    assert "--think=false" in ollama_command
+    assert "--hidethinking" in ollama_command
+    assert "--nowordwrap" in ollama_command
     assert "--no-session-persistence" in run_optional_cli_prompt("claude_code", "x")[
         "command"
     ]
+
+
+def test_ollama_cli_output_removes_terminal_control_sequences() -> None:
+    class Completed:
+        returncode = 0
+        stdout = '\x1b[?2026h{"status":"ok"}\x1b[0m\r\n'
+
+    result = run_optional_cli_prompt(
+        "ollama",
+        "x",
+        live_opt_in=True,
+        runner=lambda *_args, **_kwargs: Completed(),
+    )
+
+    assert result["status"] == "SUCCESS"
+    assert result["output_text"] == '{"status":"ok"}'

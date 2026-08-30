@@ -226,6 +226,7 @@ _BRACKETED_TIMESTAMP_SPEAKER = re.compile(
 _SPEAKER_ONLY = re.compile(r"^(?P<speaker>[^:：]{1,40})[:：]\s*(?P<text>.+)$")
 _DATE_ISO = re.compile(r"\b(?P<year>20\d{2})-(?P<month>\d{1,2})-(?P<day>\d{1,2})\b")
 _DATE_KO = re.compile(r"(?P<month>\d{1,2})월\s*(?P<day>\d{1,2})일")
+_ANSI_ESCAPE = re.compile(r"\x1B(?:\[[0-?]*[ -/]*[@-~]|[@-_])")
 _ACTION_WORDS = (
     "제가 ",
     "저는 ",
@@ -415,6 +416,112 @@ def normalize_source(
     return adapt_audio_stt(source, transcriber=transcriber)
 
 
+def run_optional_local_stt_smoke(
+    audio_path: Path,
+    *,
+    workspace_root: Path,
+    live_opt_in: bool = False,
+    transcriber: STTCallable | None = None,
+    model_size: str = "small",
+) -> dict[str, Any]:
+    """Run a local faster-whisper smoke test only after an explicit opt-in.
+
+    The resolved audio must remain under ``workspace_root``.  The default path
+    is a deterministic skip, and the live path never substitutes a checked-in
+    transcript when transcription fails.
+    """
+
+    root = workspace_root.expanduser().resolve()
+    resolved_audio = audio_path.expanduser().resolve()
+    try:
+        display_path = resolved_audio.relative_to(root).as_posix()
+    except ValueError:
+        return {
+            "status": "EXPECTED_FAILURE",
+            "error_code": "WORKSPACE_PATH_BLOCKED",
+            "live_attempted": False,
+            "transcript_substituted": False,
+            "external_write": False,
+        }
+
+    base = {
+        "audio_path": display_path,
+        "source_mode": "audio_stt",
+        "transcript_substituted": False,
+        "external_write": False,
+    }
+    if not live_opt_in:
+        return {
+            **base,
+            "status": "EXPECTED_SKIP",
+            "error_code": "LOCAL_STT_LIVE_OPT_IN_REQUIRED",
+            "live_attempted": False,
+        }
+    if not resolved_audio.is_file():
+        return {
+            **base,
+            "status": "EXPECTED_FAILURE",
+            "error_code": "AUDIO_FILE_NOT_FOUND",
+            "live_attempted": False,
+        }
+
+    selected_transcriber = transcriber
+    if selected_transcriber is None:
+        try:
+            from src.meeting_demo import transcribe_with_faster_whisper
+        except (ImportError, ModuleNotFoundError):
+            return {
+                **base,
+                "status": "EXPECTED_FAILURE",
+                "error_code": "LOCAL_STT_DEPENDENCY_MISSING",
+                "live_attempted": False,
+            }
+
+        def selected_transcriber(path: Path):  # type: ignore[no-redef]
+            return transcribe_with_faster_whisper(
+                path,
+                model_size=model_size,
+                device="cpu",
+                compute_type="int8",
+                language="ko",
+                local_files_only=True,
+                compare_reference=False,
+            )
+
+    try:
+        envelope = adapt_audio_stt(
+            SourceInput(
+                source_mode="audio_stt",
+                source_ref=f"resolved-public-audio:{display_path}",
+                audio_path=str(resolved_audio),
+            ),
+            transcriber=selected_transcriber,
+        )
+    except (ImportError, ModuleNotFoundError):
+        return {
+            **base,
+            "status": "EXPECTED_FAILURE",
+            "error_code": "LOCAL_STT_DEPENDENCY_MISSING",
+            "live_attempted": True,
+        }
+    except Exception:
+        return {
+            **base,
+            "status": "EXPECTED_FAILURE",
+            "error_code": "LOCAL_STT_MODEL_OR_RUNTIME_UNAVAILABLE",
+            "live_attempted": True,
+        }
+    return {
+        **base,
+        "status": "SUCCESS",
+        "error_code": None,
+        "live_attempted": True,
+        "segment_count": len(envelope.segments),
+        "first_segment": envelope.segments[0].model_dump(mode="json"),
+        "stt_metadata": envelope.stt_metadata,
+    }
+
+
 def _parse_due_date(text: str, *, reference_year: int = 2026) -> date | None:
     iso = _DATE_ISO.search(text)
     if iso:
@@ -582,6 +689,57 @@ def validate_record_evidence(
     return errors
 
 
+def validate_model_record_output(
+    output_text: str | None,
+    envelope: TranscriptEnvelope,
+) -> dict[str, Any]:
+    """Validate provider text without replacing a failed response with a fixture."""
+
+    base = {
+        "schema_valid": False,
+        "evidence_valid": False,
+        "fallback_used": False,
+        "external_write": False,
+    }
+    normalized = str(output_text or "").strip()
+    if not normalized:
+        return {
+            **base,
+            "status": "EXPECTED_FAILURE",
+            "error_code": "MODEL_OUTPUT_EMPTY",
+            "evidence_errors": [],
+        }
+    if normalized.startswith("```"):
+        normalized = re.sub(r"^```(?:json)?\s*|\s*```$", "", normalized, flags=re.I)
+    try:
+        record = MeetingRecord.model_validate_json(normalized)
+    except (ValidationError, json.JSONDecodeError):
+        return {
+            **base,
+            "status": "EXPECTED_FAILURE",
+            "error_code": "MODEL_SCHEMA_INVALID",
+            "evidence_errors": [],
+        }
+    evidence_errors = validate_record_evidence(record, envelope)
+    if evidence_errors:
+        return {
+            **base,
+            "status": "EXPECTED_FAILURE",
+            "error_code": "MODEL_EVIDENCE_INVALID",
+            "schema_valid": True,
+            "evidence_errors": evidence_errors,
+        }
+    return {
+        **base,
+        "status": "SUCCESS",
+        "error_code": None,
+        "schema_valid": True,
+        "evidence_valid": True,
+        "evidence_errors": [],
+        "record": record.model_dump(mode="json"),
+    }
+
+
 def compare_execution_strategies() -> list[dict[str, Any]]:
     """Explain trade-offs as data that can be shown directly in the notebook."""
 
@@ -640,6 +798,43 @@ def route_execution_strategy(
         "external_context_sources": external_context_sources,
         "router_provider": "rule_based",
         "llm_router_call": False,
+    }
+
+
+def external_action_approval_gate(
+    action: str,
+    *,
+    human_approved: bool,
+) -> dict[str, Any]:
+    """Record approval for an external action without executing that action."""
+
+    normalized_action = action.strip()
+    if not normalized_action:
+        return {
+            "status": "EXPECTED_FAILURE",
+            "error_code": "EXTERNAL_ACTION_REQUIRED",
+            "action": None,
+            "human_approved": human_approved,
+            "executed": False,
+            "external_write": False,
+        }
+    if not human_approved:
+        return {
+            "status": "POLICY_HOLD",
+            "error_code": "EXTERNAL_ACTION_HUMAN_APPROVAL_REQUIRED",
+            "action": normalized_action,
+            "human_approved": False,
+            "executed": False,
+            "external_write": False,
+        }
+    return {
+        "status": "APPROVED_DRY_RUN",
+        "error_code": None,
+        "action": normalized_action,
+        "human_approved": True,
+        "next_boundary": "SEPARATE_PUBLISHER_EXECUTION_REQUIRED",
+        "executed": False,
+        "external_write": False,
     }
 
 
@@ -1578,7 +1773,17 @@ def run_optional_cli_prompt(
     """
 
     definitions = {
-        "ollama": ["ollama", "run", model, prompt],
+        "ollama": [
+            "ollama",
+            "run",
+            model,
+            prompt,
+            "--format",
+            "json",
+            "--think=false",
+            "--hidethinking",
+            "--nowordwrap",
+        ],
         "codex": [
             "codex",
             "exec",
@@ -1598,9 +1803,17 @@ def run_optional_cli_prompt(
         ],
     }
     args = definitions[provider]
+    safe_commands = {
+        "ollama": [
+            "ollama", "run", model, "--format", "json",
+            "--think=false", "--hidethinking", "--nowordwrap", "<PROMPT>",
+        ],
+        "codex": [*definitions["codex"][:-1], "<PROMPT>"],
+        "claude_code": [*definitions["claude_code"][:-1], "<PROMPT>"],
+    }
     safe_plan = {
         "provider_requested": provider,
-        "command": [*args[:-1], "<PROMPT>"],
+        "command": safe_commands[provider],
         "shell": False,
         "external_write": False,
         "credential_value_read": False,
@@ -1649,7 +1862,7 @@ def run_optional_cli_prompt(
             "command_executed": True,
             "output_text": None,
         }
-    output_text = str(completed.stdout).strip()
+    output_text = _ANSI_ESCAPE.sub("", str(completed.stdout)).replace("\r", "").strip()
     return {
         **safe_plan,
         "status": "SUCCESS",

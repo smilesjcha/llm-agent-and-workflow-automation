@@ -1,0 +1,21 @@
+{
+  "role": "INSTRUCTOR_VERIFIED_OLLAMA_REFERENCE",
+  "verified_at": "2026-08-30",
+  "provider_requested": "ollama",
+  "provider_used": "ollama",
+  "model": "qwen3:4b",
+  "command_status": "SUCCESS",
+  "command_executed": true,
+  "json_mode": true,
+  "thinking_disabled": true,
+  "word_wrap_disabled": true,
+  "schema_valid": true,
+  "evidence_valid": true,
+  "validation_status": "SUCCESS",
+  "error_code": null,
+  "evidence_errors": [],
+  "fallback_used": false,
+  "external_write": false,
+  "output_chars": 1858,
+  "note": "명령 성공만으로 완료 처리하지 않고 MeetingRecord Schema와 원문 evidence ID를 모두 검증한 강사 PC 실측 결과다."
+}
