@@ -14,13 +14,13 @@ const OUT = path.join(
   ROOT,
   "slides/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pptx",
 );
-const LAB_OUT = path.join(ROOT, "output/course-labs/day2-v2");
+const LAB_OUT = path.join(ROOT, "output/course-labs/day2-v2/student-run");
 const RESULT_FILES = [
   "01_architecture.json",
   "02_inputs.json",
   "03_domain_context.json",
   "04_meeting_record_contract.json",
-  "05_workflow_runs.json",
+  "05_codex_task_reference.json",
   "06_provider_diagnostics.json",
   "07_human_review.json",
   "08_export_drafts.json",
@@ -31,6 +31,15 @@ const FONT = "AppleGothic";
 const MONO = "Menlo";
 const deck = Presentation.create({ slideSize: MUSINSA_PPT.slide });
 const assetCache = new Map();
+
+// 09:00-17:30 teaching blocks are 400 minutes and Q&A is 30 minutes.
+// Slides 4-11 are pre-class reference screens. Slides 1-3 use the first six
+// minutes of period 1, so slides 12-17 give those six minutes back.
+const NOTE_MINUTE_OVERRIDES = new Map([
+  ...Array.from({ length: 8 }, (_, index) => [index + 4, 0]),
+  [12, 0], [13, 1], [14, 2], [15, 2], [16, 2], [17, 1],
+  [176, 22],
+]);
 
 const S = Object.freeze({
   deckTitle: 72,
@@ -118,9 +127,14 @@ function addHeader(slide, title, period, eyebrow = "") {
 
 function addNotes(slide, { minutes, talk, activity = "", sources = [] }) {
   const uniqueSources = [...new Set([MUSINSA_REFERENCE, ...sources])];
+  const page = deck.slides.items.length;
+  const effectiveMinutes = NOTE_MINUTE_OVERRIDES.get(page) ?? minutes;
+  const timeLabel = effectiveMinutes === 0
+    ? "- 권장 시간: 수업 전 확인(본 수업 시간 미산정)"
+    : `- 권장 시간: ${effectiveMinutes}분`;
   slide.speakerNotes.textFrame.setText([
     "[강사용 진행]",
-    `- 권장 시간: ${minutes}분`,
+    timeLabel,
     `- 핵심 발화: ${talk}`,
     activity ? `- 수강생 활동: ${activity}` : "- 수강생 활동: 화면의 핵심 항목 확인",
     "",
@@ -131,8 +145,7 @@ function addNotes(slide, { minutes, talk, activity = "", sources = [] }) {
   slide.speakerNotes.setVisible(true);
 }
 
-function addManualTable(slide, { top, headers, rows, widths, rowHeight = 86, headerHeight = 54, fontSize = S.table }) {
-  const left = 64;
+function addManualTable(slide, { left = 64, top, headers, rows, widths, rowHeight = 86, headerHeight = 54, fontSize = S.table }) {
   let x = left;
   headers.forEach((header, index) => {
     addShape(slide, "rect", { left: x, top, width: widths[index], height: headerHeight }, C.black, C.black, 1);
@@ -185,25 +198,37 @@ function notebookCode(periodIndex) {
 
 async function resultPreview(periodIndex) {
   const fileName = RESULT_FILES[periodIndex];
-  const filePath = path.join(LAB_OUT, fileName);
+  const studentPath = path.join(LAB_OUT, fileName);
+  const referencePath = path.join(ROOT, "output/course-labs/day2-v2", fileName);
+  const filePath = await fs.access(studentPath).then(
+    () => studentPath,
+    () => referencePath,
+  );
   const raw = await fs.readFile(filePath, "utf8");
   const parsed = JSON.parse(raw);
-  const compact = [
+  const compact = await [
     () => ({
       layer_count: parsed.layers.length,
       fixed_graph: parsed.fixed_graph.length,
-      agent_views: Object.keys(parsed.two_meanings_of_agent).length,
+      route_case_count: Object.keys(parsed.three_route_cases).length,
+      blocked_action: parsed.external_action_approval_gate.without_human_approval.error_code,
       human_review_required: parsed.invariants.human_review_required,
       external_write: parsed.invariants.external_write,
     }),
-    () => ({
-      source_mode_count: Object.keys(parsed.contracts).length,
-      segment_ids_preserved: Object.values(parsed.contracts).every(
-        ({ first_segment }) => Boolean(first_segment.id),
-      ),
-      stt_metadata: parsed.contracts.audio_stt.stt_metadata.provider,
-      mixed_input_error: parsed.boundary.error_code,
-    }),
+    async () => {
+      const live = JSON.parse(await fs.readFile(
+        path.join(ROOT, "output/course-labs/day2-v2/02_local_stt_75s_reference.json"),
+        "utf8",
+      ));
+      return {
+        run_all_lane: "reviewed transcript fixture",
+        source_mode_count: Object.keys(parsed.contracts).length,
+        live_stt_status: live.status,
+        live_model: `${live.provider} ${live.model}`,
+        live_segments_75s: live.segment_count,
+        transcript_substituted: live.transcript_substituted,
+      };
+    },
     () => ({
       status: parsed.mcp_retrieval_plan.status,
       connector_count: parsed.mcp_retrieval_plan.operations.length,
@@ -223,31 +248,35 @@ async function resultPreview(periodIndex) {
       external_write: parsed.delivery_policy.external_write,
     }),
     () => ({
-      acceptance_tests: parsed.coding_agent_brief.acceptance_tests.length,
-      scenario_count: Object.keys(parsed.scenarios).length,
-      all_draft_ready: Object.values(parsed.scenarios).every(
-        ({ status }) => status === "DRAFT_READY",
-      ),
-      all_external_write_false: Object.values(parsed.scenarios).every(
-        ({ external_write }) => external_write === false,
-      ),
+      task_status: parsed.status,
+      case_count: parsed.cases.length,
+      all_cases_pass: parsed.cases.every(({ status }) => status === "PASS"),
+      external_action_review: parsed.human_review_required_for_external_action,
+      external_write: parsed.external_write,
     }),
-    () => ({
-      provider_requested: parsed.openai_default_run_all.provider_requested,
-      provider_used: parsed.openai_default_run_all.provider_used,
-      model: parsed.openai_default_run_all.model,
-      fallback_reason: parsed.openai_default_run_all.fallback_reason,
-      live_opt_in: parsed.live_flags.openai,
-    }),
+    async () => {
+      const live = JSON.parse(await fs.readFile(
+        path.join(ROOT, "output/course-labs/day2-v2/06_ollama_qwen3_4b_reference.json"),
+        "utf8",
+      ));
+      return {
+        default_openai_used: parsed.openai_default_run_all.provider_used,
+        default_reason: parsed.openai_default_run_all.fallback_reason,
+        live_provider: `${live.provider_used} ${live.model}`,
+        schema_valid: live.schema_valid,
+        evidence_valid: live.evidence_valid,
+        external_write: live.external_write,
+      };
+    },
     () => ({
       graph: parsed.graph.framework,
       checkpointer: parsed.graph.checkpointer,
       pause: parsed.graph.pause,
-      thread_id: parsed.decisions.approve.start.thread_id,
+      thread_id: parsed.learner_interrupt_start.thread_id,
       resume: parsed.graph.resume,
-      approve: parsed.decisions.approve.resume.status,
-      edit: parsed.decisions.edit.resume.status,
-      reject: parsed.decisions.reject.resume.status,
+      learner_decision: parsed.learner_decision_resume.decision,
+      learner_status: parsed.learner_decision_resume.status,
+      regression_paths: Object.keys(parsed.automated_regression_evidence),
     }),
     () => ({
       markdown_files: Object.keys(parsed.markdown_files).length,
@@ -420,12 +449,13 @@ function addSchedule(title, rows) {
 function addSetup(title, eyebrow, rows, talk) {
   const slide = deck.slides.add();
   addHeader(slide, title, null, eyebrow);
+  const isRequiredLane = eyebrow === "FIXTURE LANE";
   addManualTable(slide, {
-    top: 156,
+    top: isRequiredLane ? 132 : 146,
     headers: ["구분", "Program · 설정", "사용 시점"],
     rows,
     widths: [170, 690, 292],
-    rowHeight: 104,
+    rowHeight: isRequiredLane ? 92 : 110,
     fontSize: S.table,
   });
   addNotes(slide, {
@@ -627,6 +657,44 @@ async function addDemoScreen(period) {
     });
     return;
   }
+  if (period.classNumber === 2) {
+    addShape(slide, "rect", { left: 72, top: 154, width: 596, height: 456 }, C.black);
+    addText(slide, `$ FASTER_WHISPER_LIVE_OPT_IN=1
+  # 공개 음성 75초 Demo
+
+{
+  "status": "SUCCESS",
+  "provider": "faster-whisper",
+  "model": "small",
+  "duration_seconds": 75.0,
+  "segment_count": 13,
+  "first_segment_id": "s01",
+  "word_timestamps": true,
+  "transcript_substituted": false
+}`, { left: 98, top: 180, width: 544, height: 408 }, {
+      size: S.code, allowSmall: true, color: C.white, typeface: MONO, lineSpacing: 1.0,
+    });
+    addManualTable(slide, {
+      left: 708,
+      top: 176,
+      headers: ["실행 경로", "사용 시점"],
+      rows: [
+        ["Reviewed Fixture", "기본 Run All\nNetwork 0회 · 재현 우선"],
+        ["Live faster-whisper", "명시적 Opt-in\n실제 음질·오인식 검토"],
+      ],
+      widths: [248, 252],
+      rowHeight: 138,
+      fontSize: S.label,
+    });
+    addText(slide, "첫 문장의 오인식 가능성도 성공 결과에 포함해 사람이 확인", { left: 738, top: 520, width: 440, height: 74 }, { size: S.label, bold: true, color: C.ink, align: "center", valign: "middle" });
+    addNotes(slide, {
+      minutes: 2,
+      talk: "왼쪽은 강사 PC에서 공개 음성 75초를 실제 faster-whisper small로 처리한 결과입니다. 실행 성공과 전사 정확도는 별개이므로 첫 Segment도 함께 검토합니다.",
+      activity: "Fixture와 Live STT의 목적·성공 기준 비교",
+      sources: ["local:output/course-labs/day2-v2/02_local_stt_75s_reference.json", ...period.sources],
+    });
+    return;
+  }
   if (period.classNumber === 3) {
     addManualTable(slide, {
       top: 154,
@@ -689,9 +757,13 @@ async function addDemoScreen(period) {
     });
     addNotes(slide, {
       minutes: 2,
-      talk: "Provider 이름보다 현재 설치·Opt-in·Fallback 상태를 먼저 확인합니다. 표는 강사 PC의 Preflight 결과입니다.",
+      talk: period.classNumber === 6
+        ? "기본 Run All은 Fixture로 재현하고, 강사 PC의 qwen3:4b Live 실행은 JSON·Thinking·줄바꿈 옵션을 고정한 뒤 Schema와 Evidence를 모두 통과했습니다."
+        : "Provider 이름보다 현재 설치·Opt-in·Fallback 상태를 먼저 확인합니다. 표는 강사 PC의 Preflight 결과입니다.",
       activity: "자신의 Fixture·Local·Live 경로 선택",
-      sources: period.sources,
+      sources: period.classNumber === 6
+        ? ["local:output/course-labs/day2-v2/06_ollama_qwen3_4b_reference.json", ...period.sources]
+        : period.sources,
     });
     return;
   }
@@ -746,15 +818,34 @@ async function addDemoScreen(period) {
     return;
   }
   if (period.classNumber === 8) {
+    addText(slide, "Local Preview", { left: 72, top: 142, width: 300, height: 30 }, { size: S.label, bold: true, color: C.muted });
     slide.images.add({
-      blob: image, contentType: "image/png", alt: "Local App Workflow와 Email Draft 실제 실행 화면",
-      fit: "cover",
-      position: { left: 72, top: 154, width: 1136, height: 496 }, geometry: "rect",
+      blob: image, contentType: "image/png", alt: "Local App Workflow와 Email Draft 화면",
+      fit: "contain",
+      position: { left: 72, top: 176, width: 650, height: 446 }, geometry: "rect",
+    });
+    addText(slide, "실행 확인", { left: 762, top: 142, width: 300, height: 30 }, { size: S.label, bold: true, color: C.muted });
+    addShape(slide, "rect", { left: 762, top: 176, width: 446, height: 446 }, C.black);
+    const checks = [
+      ["Local URL", "127.0.0.1:8766"],
+      ["사람 검토", "필수"],
+      ["받는 사람", "공란"],
+      ["이메일 발송", "false"],
+      ["외부 저장", "false"],
+      ["Focused Test", "PASS"],
+    ];
+    checks.forEach(([label, value], index) => {
+      const top = 194 + (index * 66);
+      addText(slide, label, { left: 786, top, width: 170, height: 30 }, { size: S.label, bold: true, color: C.gray300 });
+      addText(slide, value, { left: 956, top, width: 228, height: 30 }, { size: S.label, bold: true, color: C.white, align: "right" });
+      if (index < checks.length - 1) {
+        addShape(slide, "line", { left: 786, top: top + 46, width: 398, height: 0 }, "none", C.gray700, 1);
+      }
     });
     addNotes(slide, {
       minutes: 2,
-      talk: "고정 Workflow, 사람 검토 대기, 수신자가 비어 있는 Local Email Draft를 한 화면에서 확인합니다.",
-      activity: "human review 상태와 send=false 확인",
+      talk: "Local Preview와 실행 상태를 한 화면에서 확인합니다. 앱은 검토 대기와 초안만 보여주며 실제 승인 상태 전이는 7차시 Notebook에서 실행합니다.",
+      activity: "human review 상태·받는 사람 공란·send=false 확인",
       sources: [`local:assets/screenshots/${period.image}`, ...period.sources],
     });
     return;
@@ -1104,10 +1195,10 @@ function addFullReplay() {
   addNumberedRows(slide, [
     "Repository root · .venv312 · Notebook Kernel",
     "1~8차시 Cell 순서 실행",
-    "output/course-labs/day2-v2 결과 파일 확인",
-    "Focused Test와 전체 Test 실행",
-    "Desktop App · 8766 화면 확인",
-    "Codex Task · Diff Review · Human Merge Decision",
+    "output/course-labs/day2-v2/student-run 결과·run_manifest 확인",
+    "python scripts/run_day2_preflight.py --full-suite",
+    "Desktop Source Smoke · 선택 8766 화면 확인",
+    "Codex Starter Patch · Test · Diff · 사람 판단",
   ], { top: 148, rowHeight: 80, bodySize: S.table });
   addNotes(slide, {
     minutes: 2,

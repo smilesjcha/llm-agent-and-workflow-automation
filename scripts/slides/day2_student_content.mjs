@@ -77,22 +77,23 @@ const DETAILS = [
       "필수: Happy Path와 승인 없는 발송 차단 Test",
       "금지: .env·외부 API·자동 게시 변경",
     ],
-    notebookSnippet: `architecture = {
-    "layers": ["policy", "input_adapter", "domain_context",
-               "workflow", "human_review", "draft_export"],
-    "two_meanings_of_agent": {
-        "user_view": "여러 단계를 이어 주는 서비스",
-        "engineering_view": "상태·도구·정책을 가진 시스템",
-    },
-    "fixed_graph": ["policy", "input_normalize", "stt_optional",
-                    "structure", "evidence", "human_review",
-                    "export_draft"],
-    "invariants": {"human_review_required": True,
-                   "external_write": False},
+    notebookSnippet: `route_cases = {
+    "single_llm": route_execution_strategy(
+        requested_actions=["rewrite_as_podcast_script"]),
+    "workflow": route_execution_strategy(
+        requested_actions=["normalize", "summarize", "todos"]),
+    "agent": route_execution_strategy(
+        requested_actions=["summarize", "todos"],
+        external_context_sources=["notion", "slack"]),
 }
-assert len(architecture["layers"]) == 6`,
+gate = external_action_approval_gate(
+    "send_meeting_email", human_approved=False)
+architecture["three_route_cases"] = route_cases
+architecture["external_action_approval_gate"] = gate
+assert gate["error_code"] == \
+       "EXTERNAL_ACTION_HUMAN_APPROVAL_REQUIRED"`,
     success: "요청 유형·선택 방식·선택 이유가 함께 반환",
-    expectedError: "승인 없는 게시·발송 요청은 APPROVAL_REQUIRED",
+    expectedError: "승인 없는 외부 행동은 EXTERNAL_ACTION_HUMAN_APPROVAL_REQUIRED",
     externalRule: "저장·발송 요청은 Human Review 대기",
     externalState: "APPROVAL_REQUIRED",
     recovery: ["요청 문장 확인", "Router 규칙 확인", "Test 이름 확인", "Diff 검토"],
@@ -130,6 +131,12 @@ assert len(architecture["layers"]) == 6`,
       "텍스트 편집기 · Notebook 2차시 Cell",
     ],
     optional: ["faster-whisper small", "CPU int8", "모델 사전 다운로드"],
+    terms: [
+      ["Input Adapter", "Meet TXT·ClovaNote TXT·음성을 같은 입력 규격으로 변환"],
+      ["TranscriptEnvelope", "출처·발화 ID·시간·화자·STT 정보를 묶은 공통 그릇"],
+      ["Reviewed Fixture", "강사가 음성과 전사를 미리 맞춰 본 기본 재현 경로"],
+      ["Live STT Opt-in", "사용자가 켰을 때만 실제 faster-whisper를 실행하는 선택 경로"],
+    ],
     fileRoles: [
       ["출처", "data/day2_public_audio/sources.json"],
       ["입력", "meeting_ko_ccby_excerpt_10m.mp3 · Sample TXT"],
@@ -160,9 +167,9 @@ assert len(architecture["layers"]) == 6`,
     ],
     mapCheck: "세 Input Adapter\n입력 혼합 오류 차단",
     labA: [
-      "python scripts/day2_public_audio.py resolve 실행",
-      "선택된 입력 경로와 SHA-256 확인",
-      "라이선스·출처 표기 위치 확인",
+      "기본 Run All의 Reviewed Fixture Label 확인",
+      "공개 10분 MP3 경로·SHA-256·출처 확인",
+      "강사 Demo: 75초 Live STT Segment·Timestamp 확인",
     ],
     labB: [
       "Notebook 2차시 Cell 실행",
@@ -175,18 +182,20 @@ assert len(architecture["layers"]) == 6`,
       "Test: 빈 TXT·손상 음성·입력 혼합·무음 대체 금지",
       "금지: 다른 회의 전사 대체·외부 API 자동 실행",
     ],
-    notebookSnippet: `# Notebook 앞부분: sources → envelopes
-input_result = {
-    "contracts": {
-        name: {"source_mode": item.source_mode,
-               "first_segment": item.segments[0].model_dump(),
-               "stt_metadata": item.stt_metadata}
-        for name, item in envelopes.items()},
-    "boundary": source_mixing_error_example(),
+    notebookSnippet: `# 기본: 검토 완료 Fixture / 선택: 실제 Local STT
+fixture_lane = {
+    "label": "Reviewed Transcript Fixture",
+    "live_stt": False,
+    "silent_substitution": False,
 }
-assert len(input_result["contracts"]) == 3
-assert input_result["boundary"]["error_code"] == \
-       "SOURCE_MODE_MIXING_FORBIDDEN"`,
+live_stt = run_optional_local_stt_smoke(
+    resolved_public_audio,
+    workspace_root=ROOT,
+    live_opt_in=os.getenv(
+        "FASTER_WHISPER_LIVE_OPT_IN", "0") == "1",
+)
+assert fixture_lane["silent_substitution"] is False
+assert live_stt["transcript_substituted"] is False`,
     success: "각 입력의 출처 유형과 발화 구간 ID 보존",
     expectedError: "Live STT 실패 시 다른 음성의 전사로 대체 없음",
     externalRule: "Input Adapter 단계의 외부 서비스 호출 없음",
@@ -229,6 +238,12 @@ assert input_result["boundary"]["error_code"] == \
       "Notebook 3차시 Cell",
     ],
     optional: ["MCP Connector", "회사 Sandbox", "실제 Write 권한 사용 안 함"],
+    terms: [
+      ["MCP", "AI가 허용된 외부 정보원·도구를 공통 방식으로 연결하는 규약"],
+      ["Read-only", "조회만 허용하고 문서 작성·메시지 발송은 막은 권한"],
+      ["Scope", "읽을 수 있는 Project·Page·Channel의 허용 범위"],
+      ["PLAN_ONLY", "실제 Connector를 부르지 않고 승인용 실행 계획만 만든 상태"],
+    ],
     fileRoles: [
       ["가이드", "materials/day2/Codex_Claude_대화_시나리오.md"],
       ["실행", "materials/day2/day2_service_lab.ipynb · 3차시"],
@@ -328,6 +343,12 @@ assert context_result["external_write"] is False`,
       "세 입력 중 하나의 TranscriptEnvelope",
     ],
     optional: ["Ollama", "OpenAI API", "Provider 없이 Fixture 실행 가능"],
+    terms: [
+      ["MeetingRecord", "요약·관점·할 일·인사이트·근거를 묶은 최종 결과 규격"],
+      ["TodoItem", "할 일·담당자·기한·근거 ID를 가진 실행 항목"],
+      ["HorizonInsights", "단기·중기·장기 관점으로 나눈 회의 인사이트"],
+      ["Evidence Validation", "결과의 근거 ID가 실제 발화 Segment에 있는지 확인"],
+    ],
     fileRoles: [
       ["Schema", "MeetingRecord · TodoItem · HorizonInsights"],
       ["실행", "materials/day2/day2_service_lab.ipynb · 4차시"],
@@ -403,8 +424,9 @@ record_contract_result = record.model_dump(mode="json")`,
     sources: ["local:src/course_services/day2_meeting_workflow.py"],
   },
   {
-    shortTitle: "Coding Agent Workflow",
-    label: "Coding Agent",
+    shortTitle: "Coding Agent Patch",
+    label: "Codex Patch",
+    artifact: "05_codex_run.json",
     subtitle: "Scenario Tree · Task Spec · Test · Diff Review",
     focusTitle: "Coding Agent와 작업 계약",
     conceptTitle: "Scenario Tree · Harness",
@@ -413,26 +435,26 @@ record_contract_result = record.model_dump(mode="json")`,
     filesTitle: "Coding Agent 작업 파일",
     demoTitle: "Codex Task 진행 화면",
     resultTitle: "Coding Agent 결과",
-    codexTitle: "Codex Task · 세 Scenario 구현",
-    labATitle: "Task Spec 작성",
+    codexTitle: "Codex Task · Human Review Policy",
+    labATitle: "Starter 실패 재현",
     labBTitle: "Patch·Test·Diff Review",
     completionTitle: "5차시 완료 기준",
     phaseTimes: ["0-10분", "10-20분", "20-45분", "45-50분"],
     focus: "상위 모델에게 목표·허용 파일·Test·금지 행동을 함께 전달하는 개발 Workflow",
     setup: [
       "Codex App 또는 CLI Login",
-      "Git Repository · 현재 Diff 확인",
-      "API Key·실제 회의 데이터 제거",
+      "labs/day2/codex-task/TASK.md",
+      "작업 전 git status · Starter 실패 확인",
     ],
     optional: ["Claude Code /login", "독립 Review Session", "OpenAI API 불필요"],
     fileRoles: [
-      ["대화 예시", "materials/day2/Codex_Claude_대화_시나리오.md"],
-      ["구현", "src/course_services/day2_meeting_workflow.py"],
-      ["Test", "tests/test_day2_meeting_workflow.py"],
-      ["Diff", "git diff -- src/course_services/day2_meeting_workflow.py tests/test_day2_meeting_workflow.py"],
+      ["Task", "labs/day2/codex-task/TASK.md"],
+      ["Starter", "labs/day2/codex-task/starter/review_policy.py"],
+      ["검증", "labs/day2/codex-task/task_check.py"],
+      ["Diff", "git diff -- labs/day2/codex-task/starter/review_policy.py"],
     ],
     conceptFiles: [
-      "Codex_Claude_대화_시나리오.md",
+      "labs/day2/codex-task/TASK.md",
       "AGENTS.md",
       "Codex Task",
       "git diff · Cross-Review",
@@ -449,48 +471,45 @@ record_contract_result = record.model_dump(mode="json")`,
       ["Task Spec", "목표·범위·Test·금지", "반복·Review 적합"],
     ],
     demo: [
-      "세 입력 Scenario와 완료 기준 전달",
-      "Focused Test를 먼저 요청",
+      "수정 전 네 Case 중 실패 확인",
+      "허용 파일·완료 Test를 Codex에 전달",
       "Patch·Test 결과·Diff를 사람이 검토",
     ],
     resultChecks: [
-      "acceptance_tests",
-      "scenario_count",
-      "all_draft_ready",
-      "all_external_write_false",
+      "task_status=PASS",
+      "case_count=4",
+      "external_action_review=true",
+      "external_write=false",
     ],
-    mapCheck: "세 Scenario Test\n외부 저장 모두 차단",
+    mapCheck: "Starter 실패 → Patch\n4개 Case PASS",
     labA: [
-      "목표·허용 파일·완료 기준 작성",
-      "금지 행동과 Expected Error 지정",
+      "task_check.py 실행 후 실패 Case 확인",
+      "TASK.md의 Goal·Allowed·Test·Do not 확인",
       "Codex에 계획과 영향 파일 요청",
     ],
     labB: [
-      "Patch 생성 후 Focused Test 실행",
-      "git diff로 의도 밖 변경 확인",
-      "Claude 또는 새 Session의 독립 Review",
+      "Starter 1개 파일 Patch 후 task_check 재실행",
+      "05_codex_run.json의 4개 PASS 확인",
+      "git diff와 독립 Review 후 사람 판단",
     ],
     codexPrompt: [
-      "목표: 세 입력을 MeetingRecord로 변환하는 최소 변경",
-      "허용: Workflow Source·해당 Test·비식별 Fixture",
-      "Test: 세 Input Route·Unknown Evidence·Review 상태",
-      "금지: 외부 저장·메일 발송·.env 변경·자동 Merge",
+      "목표: requires_human_review Policy 완성",
+      "허용: starter/review_policy.py 한 파일",
+      "Test: local draft·email·Notion·evidence error 4건",
+      "금지: task_check·solution·.env·외부 서비스 변경",
     ],
-    notebookSnippet: `coding_agent_brief = {
-    "goal": "세 입력 → MeetingRecord",
-    "allowed": ["workflow.py", "test_day2_meeting_workflow.py"],
-    "tests": ["three source", "unknown evidence", "human review"],
-    "do_not": ["external write", ".env change", "auto merge"],
-}
-workflow_runs = {
-    name: run_meeting_workflow(source, domain_context)
-    for name, source in sources.items()
-}
-assert all(result["external_write"] is False
-           for result in workflow_runs.values())
-workflow_result = workflow_runs`,
-    success: "세 Scenario가 같은 결과 형식과 각기 다른 Input Route 사용",
-    expectedError: "Test 미실행·Secret 변경·외부 게시 추가는 Review Hold",
+    notebookSnippet: `# Terminal · 수정 전 FAIL, Codex Patch 뒤 PASS
+python labs/day2/codex-task/task_check.py \\
+  --report output/course-labs/day2-v2/\\
+student-run/05_codex_run.json
+
+# 수정 허용 파일 1개
+labs/day2/codex-task/starter/review_policy.py
+
+# 사람 확인
+git diff -- labs/day2/codex-task/starter/review_policy.py`,
+    success: "네 Policy Case PASS와 external_write=false",
+    expectedError: "수정 전 email·Notion·evidence error Case는 의도적으로 FAIL",
     externalRule: "자동 Commit·Merge 없이 Diff만 제안",
     externalState: "Human Merge",
     recovery: ["git status 확인", "Task 범위 축소", "Focused Test", "Diff 재검토"],
@@ -498,10 +517,10 @@ workflow_result = workflow_runs`,
       ["재직자", "회사 Policy가 포함된 반복 개발 Task Spec"],
       ["구직자", "Prompt가 아닌 Test·Diff 기반 AI 협업 기록"],
     ],
-    completion: ["Task Spec 작성", "Focused Test 통과", "사람 Diff Review"],
-    command: "python -m pytest -q tests/test_day2_meeting_workflow.py",
-    demoCommand: "codex",
-    saveLine: 'save_json("05_workflow_runs.json", workflow_result)',
+    completion: ["Starter 실패 재현", "4개 Case PASS", "사람 Diff Review"],
+    command: "python labs/day2/codex-task/task_check.py --report output/course-labs/day2-v2/student-run/05_codex_run.json",
+    demoCommand: "python labs/day2/codex-task/task_check.py",
+    saveLine: "student-run/05_codex_run.json",
     image: "codex-conversation-day2-local.png",
     fullScreenDemo: true,
     sources: [
@@ -532,16 +551,22 @@ workflow_result = workflow_runs`,
       ".env.example 확인 · Key 화면 노출 금지",
     ],
     optional: ["OPENAI_API_KEY", "OPENAI_LIVE_OPT_IN=1", "Codex·Claude CLI"],
+    terms: [
+      ["Provider Adapter", "모델마다 다른 호출 방식을 같은 입력·결과 계약 뒤에 숨기는 Code"],
+      ["Fixture", "네트워크·비용 없이 항상 같은 결과를 내는 수업·Test용 응답"],
+      ["Opt-in", "환경 변수 1로 명시한 경우에만 실제 Provider를 호출하는 경계"],
+      ["Fallback Reason", "요청 모델 대신 다른 경로를 썼을 때 반드시 남기는 이유"],
+    ],
     fileRoles: [
-      ["설정", ".env.example · OPENAI_MODEL"],
-      ["Adapter", "run_optional_openai_record()"],
-      ["Local", "Ollama qwen3:4b"],
+      ["설정", ".env.sample · *_LIVE_OPT_IN"],
+      ["Adapter", "run_optional_cli_prompt() · run_optional_openai_record()"],
+      ["검증", "validate_model_record_output() · Ollama qwen3:4b"],
       ["결과", "06_provider_diagnostics.json"],
     ],
     conceptFiles: [
       "diagnose_provider_options()",
-      "run_optional_openai_record()",
-      "fallback_reason",
+      "run_optional_cli_prompt()",
+      "validate_model_record_output()",
       "06_provider_diagnostics.json",
     ],
     decisions: [
@@ -557,21 +582,21 @@ workflow_result = workflow_runs`,
     ],
     statusDemoRows: [
       ["Fixture", "READY", "기본 완주 · Network 0회"],
-      ["Ollama qwen3:4b", "INSTALLED", "Local 실행 · 사용자 선택"],
-      ["OpenAI API", "OPT-IN OFF", "Fixture Fallback"],
+      ["Ollama qwen3:4b", "LIVE PASS", "Schema · Evidence 실측 통과"],
+      ["OpenAI API", "DEFAULT OFF", "Opt-in 없으면 Fixture와 이유 표시"],
       ["Codex · Claude", "LOGIN 선택", "코드 제작 · Review"],
     ],
     resultChecks: [
-      "provider_requested",
-      "provider_used · model",
-      "fallback_reason",
-      "live_opt_in",
+      "default_openai_used=fixture",
+      "live_provider=ollama qwen3:4b",
+      "schema_valid=true",
+      "evidence_valid=true",
     ],
     mapCheck: "Ollama·OpenAI 진단\nFallback 이유 확인",
     labA: [
       "ollama list로 qwen3:4b 확인",
-      "Provider를 ollama로 선택",
-      "MeetingRecord Schema 검증",
+      "OLLAMA_LIVE_OPT_IN=1로 Notebook 6차시 실행",
+      "MeetingRecord Schema·Evidence 검증",
     ],
     labB: [
       "기본 Opt-in false 결과 확인",
@@ -584,19 +609,20 @@ workflow_result = workflow_runs`,
       "Test: 미설정·미지원 Model·Timeout·Fallback Reason",
       "금지: Key·Raw Error·Credential 경로 출력",
     ],
-    notebookSnippet: `RUN_OPENAI_LIVE = False
+    notebookSnippet: `load_dotenv(ROOT / ".env", override=False)
+openai_live = os.getenv("OPENAI_LIVE_OPT_IN", "0") == "1"
+ollama_live = os.getenv("OLLAMA_LIVE_OPT_IN", "0") == "1"
 openai_result = run_optional_openai_record(
     envelopes["google_meet_text"], domain_context,
-    env=os.environ if RUN_OPENAI_LIVE else {},
+    env=os.environ if openai_live else {},
     allow_fixture_fallback=True,
 )
-assert openai_result["provider_used"] == "fixture"
-assert openai_result["fallback_reason"] == \
-       "OPENAI_LIVE_OPT_IN_REQUIRED"
-provider_result = {
-    "openai_default_run_all": openai_result,
-    "live_flags": {"openai": RUN_OPENAI_LIVE},
-}`,
+ollama_call = run_optional_cli_prompt(
+    "ollama", ollama_prompt, live_opt_in=ollama_live,
+    model="qwen3:4b")
+ollama_check = validate_model_record_output(
+    ollama_call["output_text"], envelopes["google_meet_text"])
+assert ollama_check["fallback_used"] is False`,
     success: "선택 Provider와 실제 사용 Provider·Model이 명확히 표시",
     expectedError: "Key 미설정·Model 미지원·Timeout은 일관된 Error Code",
     externalRule: "Live Provider는 사용자 Opt-in 범위에서만 호출",
@@ -612,9 +638,9 @@ provider_result = {
       ["구직자", "Provider Adapter와 Deterministic Fallback Test"],
     ],
     completion: ["Ollama 실행", "Opt-in 차이 설명", "06 JSON 확인"],
-    command: "python -m pytest -q tests/test_day2_meeting_workflow.py -k openai_adapter\npython -m pytest -q tests/test_day2_meeting_workflow.py -k cli_providers",
+    command: "python -m pytest -q tests/test_day2_meeting_workflow.py -k 'openai_adapter or cli_providers'",
     replayCommand: "python -m pytest -q tests/test_day2_meeting_workflow.py -k openai_adapter",
-    demoCommand: "ollama list\njupyter lab materials/day2/day2_service_lab.ipynb",
+    demoCommand: "ollama list\nOLLAMA_LIVE_OPT_IN=1 jupyter lab materials/day2/day2_service_lab.ipynb",
     saveLine: 'save_json("06_provider_diagnostics.json", provider_result)',
     image: "meeting-intelligence-provider-status-local.png",
     sources: ["https://developers.openai.com/api/docs/models/gpt-5.6-luna", "https://ollama.com/library/qwen3"],
@@ -656,9 +682,9 @@ provider_result = {
     ],
     terms: [
       ["State", "각 단계가 함께 사용하는 현재 결과"],
-      ["Node", "한 가지 Role을 실행하는 단계"],
-      ["Interrupt", "Reviewer Decision을 기다리는 중단 지점"],
-      ["Draft", "승인 전 외부에 반영되지 않은 결과"],
+      ["Conditional Edge", "검증·사람 결정에 따라 다음 Node를 고르는 분기"],
+      ["Checkpointer", "중단된 State와 thread_id를 저장해 같은 지점에서 재개"],
+      ["Interrupt · Resume", "사람 결정을 기다렸다가 같은 Thread로 실행을 이어가는 한 쌍"],
     ],
     pipeline: ["입력 검증", "Graph 실행", "Evidence 검사", "Interrupt", "Resume·분기"],
     decisions: [
@@ -694,20 +720,21 @@ provider_result = {
       "Test: Interrupt 전 Export 없음·세 Decision·완료 Thread",
       "금지: 승인 전 외부 저장·발송·Thread ID 변경",
     ],
-    notebookSnippet: `decisions = {
-    name: {"start": run["start"], "resume": run["resume"]}
-    for name, run in interruptible_runs.items()
-}
-human_review_result = {
-    "graph": {"framework": "LangGraph",
-              "checkpointer": "InMemorySaver",
-              "pause": "interrupt()",
-              "resume": "Command(resume=...)"},
-    "decisions": decisions,
-}
-statuses = [decisions[name]["resume"]["status"]
-            for name in ("approve", "edit", "reject")]
-assert statuses == ["DRAFT_READY", "DRAFT_READY", "REJECTED"]`,
+    notebookSnippet: `# Cell A · Interrupt
+graph = build_interruptible_meeting_graph()
+start = start_interruptible_meeting_review(
+    graph, sources["google_meet_text"], domain_context,
+    thread_id="day2-learner-review")
+assert start["status"] == "WAITING_FOR_HUMAN_REVIEW"
+
+# Cell B · 수강생 결정
+REVIEW_DECISION = "edit"  # approve · edit · reject
+
+# Cell C · 같은 thread_id로 Resume
+resumed = resume_interruptible_meeting_review(
+    graph, thread_id="day2-learner-review",
+    decision=REVIEW_DECISION, edits=REVIEW_EDITS)
+assert resumed["external_write"] is False`,
     success: "검토 전 Interrupt, 승인 후에만 Local Draft 생성",
     expectedError: "Unknown Evidence·Policy 위반은 Human Review 전 Hold",
     externalRule: "Approve·Edit 뒤에도 Local Draft만 생성",
@@ -733,7 +760,7 @@ assert statuses == ["DRAFT_READY", "DRAFT_READY", "REJECTED"]`,
   {
     shortTitle: "Desktop App Package",
     label: "Desktop App",
-    subtitle: "Local GUI · Docker · Windows EXE · macOS PKG",
+    subtitle: "Source App · Local GUI · Docker · Windows EXE · macOS PKG",
     focusTitle: "일반 사용자용 실행 화면",
     conceptTitle: "Desktop App 패키지 용어",
     processTitle: "입력부터 Local Draft까지",
@@ -742,20 +769,26 @@ assert statuses == ["DRAFT_READY", "DRAFT_READY", "REJECTED"]`,
     demoTitle: "회의 기록 도우미 Demo",
     resultTitle: "Local App 결과",
     codexTitle: "Codex Task · App 통합 Test",
-    labATitle: "Docker App 첫 실행",
+    labATitle: "Source App Smoke",
     labBTitle: "세 입력과 Local Draft",
     completionTitle: "8차시 완료 기준",
     phaseTimes: ["0-8분", "8-18분", "18-48분", "48-50분"],
     focus: "개발 환경을 모르는 사용자도 파일을 넣고 결과를 검토할 수 있는 로컬 GUI와 설치 패키지",
     setup: [
-      "Docker Desktop 또는 Colima",
-      "desktop-app/meeting-intelligence",
-      "Browser · http://127.0.0.1:8766",
+      "requirements-day2.txt 설치",
+      "desktop-app/meeting-intelligence Source",
+      "Browser · http://127.0.0.1:8766 또는 Python Smoke",
     ],
     optional: ["Ollama", "Codex·Claude Login", "Unsigned Package는 교육용"],
+    terms: [
+      ["Source Run", "Python으로 FastAPI App을 직접 실행하는 OS 공통 기본 경로"],
+      ["Smoke Test", "Health·처리 API·안전 경계를 짧게 확인하는 실제 실행 검사"],
+      ["Docker", "같은 실행 환경을 Container로 묶는 선택 경로"],
+      ["Package", "사전 제작한 EXE·PKG Launcher; 수강생은 직접 Build하지 않아도 됨"],
+    ],
     fileRoles: [
       ["가이드", "desktop-app/meeting-intelligence/README.md"],
-      ["실행", "docker-compose.yml · Makefile"],
+      ["실행", "scripts/day2_desktop_smoke.py · app/main.py"],
       ["UI", "static/index.html · app.js"],
       ["Package", "Windows EXE · macOS PKG"],
     ],
@@ -767,12 +800,12 @@ assert statuses == ["DRAFT_READY", "DRAFT_READY", "REJECTED"]`,
     ],
     pipeline: ["파일 입력", "Domain Context", "Workflow", "Human Review", "Local Draft"],
     decisions: [
-      ["Docker", "OS 공통", "첫 Build에 Download 필요"],
-      ["Docker Launcher EXE", "Windows", "Docker 설치 필요"],
-      ["Docker Launcher PKG", "macOS", "미서명 경고 가능"],
+      ["Source Run", "OS 공통 기본", "Docker 없이 실제 API 검증"],
+      ["Docker", "선택", "Image 준비 완료 PC에서 실행"],
+      ["사전 제작 EXE·PKG", "Windows·macOS", "Checksum·OS 경고 확인"],
     ],
     demo: [
-      "Docker App 실행과 Health Check",
+      "Source App Smoke와 Health Check",
       "Meet TXT·Domain Context 입력",
       "MeetingRecord·MD·Email Draft 확인",
     ],
@@ -784,14 +817,14 @@ assert statuses == ["DRAFT_READY", "DRAFT_READY", "REJECTED"]`,
     ],
     mapCheck: "Local App 실행\nMD·Email Draft",
     labA: [
-      "make run 또는 docker compose up --build",
-      "8766 화면과 Provider 상태 확인",
-      "Sample Meet TXT 선택",
+      "python scripts/day2_desktop_smoke.py 실행",
+      "Health·Fixture API·Review Boundary 확인",
+      "08_desktop_smoke.json PASS 확인",
     ],
     labB: [
+      "Source App 또는 준비된 Package 실행",
       "Meet Fixture와 Domain Context 입력",
-      "MeetingRecord·MD·Email Draft 검증",
-      "선택: cd desktop-app/meeting-intelligence && ./scripts/build-packages.sh",
+      "MeetingRecord·MD·Email Draft Preview 검증",
     ],
     codexPrompt: [
       "목표: API·UI·Docker의 동일 Schema와 Port",
@@ -800,8 +833,8 @@ assert statuses == ["DRAFT_READY", "DRAFT_READY", "REJECTED"]`,
       "금지: 자동 메일·Notion·Confluence 반영",
     ],
     notebookSnippet: `desktop_delivery = {
-    "docker_run": "cd desktop-app/meeting-intelligence "
-                  "&& docker compose up --build",
+    "source_smoke": "python scripts/day2_desktop_smoke.py",
+    "docker_optional": "docker compose up --build",
     "browser": "http://127.0.0.1:8766",
     "human_review_required": True,
     "external_write": False,
@@ -827,9 +860,9 @@ export_result = {
       ["재직자", "팀원이 설치해 쓰는 로컬 회의 기록 도구"],
       ["구직자", "Source·Docker·Package·Test가 있는 Portfolio"],
     ],
-    completion: ["App 실행", "세 입력 중 하나 처리", "Draft와 Test 확인"],
-    command: "cd desktop-app/meeting-intelligence && ./scripts/test.sh",
-    demoCommand: "cd desktop-app/meeting-intelligence && docker compose up --build",
+    completion: ["Source Smoke PASS", "세 입력 중 하나 처리", "Draft Preview와 Test 확인"],
+    command: "python scripts/day2_desktop_smoke.py",
+    demoCommand: "python scripts/day2_desktop_smoke.py\ncd desktop-app/meeting-intelligence && python -m uvicorn app.main:app --host 127.0.0.1 --port 8766",
     saveLine: 'save_json("08_export_drafts.json", export_result)',
     image: "meeting-intelligence-desktop-local.png",
     fullScreenDemo: true,
@@ -874,16 +907,17 @@ export const DAY2_GLOBAL = {
     ["17:30-18:00", "Q&A", "실습 복구 · 질문", "Error 첫 줄 · 기대 결과"],
   ],
   requiredSetup: [
-    ["필수", "Git · Python 3.12 · VS Code", "모든 차시"],
-    ["필수", "Repository clone · Jupyter Kernel", "Notebook 실습"],
-    ["필수", "Docker Desktop 또는 Colima", "8차시 Desktop App"],
-    ["권장", "ffmpeg · ffprobe", "2차시 공개 음성"],
+    ["Clone", "git clone <repository URL>\ncd llm-agent-and-workflow-automation", "최초 1회"],
+    ["macOS", "python3.12 -m venv .venv312\nsource .venv312/bin/activate", "환경 생성"],
+    ["Windows", "py -3.12 -m venv .venv312\n.venv312\\Scripts\\Activate.ps1", "환경 생성"],
+    ["Install", "python -m pip install -r requirements-day2.txt\npython -m ipykernel install --user --name ipa-day2", "Notebook·App"],
+    ["Preflight", "python scripts/run_day2_preflight.py --full-suite", "수업 전 PASS"],
   ],
   optionalSetup: [
-    ["Ollama", "qwen3:4b", "무료 Local LLM"],
-    ["Codex", "ChatGPT Login", "Coding Agent 실습"],
-    ["Claude Code", "/login", "독립 Code Review"],
-    ["OpenAI API", ".env + Live Opt-in", "선택 Live 실습"],
+    ["Audio", "ffmpeg · ffprobe · faster-whisper", "2차시 Live STT"],
+    ["Ollama", "ollama pull qwen3:4b", "6차시 무료 Local LLM"],
+    ["Coding Agent", "Codex ChatGPT Login · Claude Code /login", "5차시 Patch·Review"],
+    ["확장", "Docker Desktop · OpenAI API + 명시적 Opt-in", "8차시·선택 Live"],
   ],
   references: [
     ["Codex CLI", "https://developers.openai.com/codex/cli"],
