@@ -1,4 +1,4 @@
-name: day1-tests
+name: course-tests
 
 on:
   pull_request:
@@ -21,13 +21,26 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements-day1.txt
+          cache-dependency-path: |
+            requirements-day1.txt
+            desktop-app/meeting-intelligence/requirements.txt
 
-      - name: Install Day 1 dependencies
-        run: python -m pip install -r requirements-day1.txt
+      - name: Install course and desktop dependencies
+        run: |
+          python -m pip install -r requirements-day1.txt
+          python -m pip install -r desktop-app/meeting-intelligence/requirements.txt
 
       - name: Run unit tests
         run: python -m pytest -q
 
       - name: Check whitespace errors
         run: git diff --check
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: desktop-app/meeting-intelligence/go.mod
+
+      - name: Run desktop launcher tests
+        working-directory: desktop-app/meeting-intelligence
+        run: go test ./...
