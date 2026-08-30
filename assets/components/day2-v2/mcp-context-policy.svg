@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <rect width="1280" height="720" fill="#F7F7F7"/><rect x="0" width="1280" height="92" fill="#0B0B0B"/>
   <g font-family="NanumGothic,Arial"><text x="54" y="58" font-size="30" font-weight="700" fill="#FFF">맥락 수집은 검색이 아니라 정책</text>
-  <text x="54" y="140" font-size="17" font-weight="700" fill="#555">사용자가 먼저 정하는 범위</text>
+  <text x="54" y="140" font-size="21" font-weight="700" fill="#555">사용자가 먼저 정하는 범위</text>
   <rect x="54" y="166" width="300" height="430" rx="10" fill="#FFF" stroke="#B9B9B9"/>
-  <text x="84" y="208" font-size="23" font-weight="700" fill="#111">요청에서 받을 것</text>
-  <text x="84" y="258" font-size="18" fill="#111">회의명·프로젝트</text><text x="84" y="300" font-size="18" fill="#111">조회 기간</text><text x="84" y="342" font-size="18" fill="#111">참석자·팀</text><text x="84" y="384" font-size="18" fill="#111">필요한 출처</text><text x="84" y="426" font-size="18" fill="#111">민감정보 제외</text>
-  <rect x="84" y="490" width="240" height="60" rx="6" fill="#EAF1FF"/><text x="112" y="527" font-size="18" font-weight="700" fill="#111">읽기 계획만 생성</text>
+  <text x="84" y="208" font-size="27" font-weight="700" fill="#111">요청에서 받을 것</text>
+  <text x="84" y="258" font-size="23" fill="#111">회의명·프로젝트</text><text x="84" y="300" font-size="23" fill="#111">조회 기간</text><text x="84" y="342" font-size="23" fill="#111">참석자·팀</text><text x="84" y="384" font-size="23" fill="#111">필요한 출처</text><text x="84" y="426" font-size="23" fill="#111">민감정보 제외</text>
+  <rect x="84" y="490" width="240" height="60" rx="6" fill="#EAF1FF"/><text x="108" y="527" font-size="21" font-weight="700" fill="#111">읽기 계획만 생성</text>
   <path d="M374 382 H436" stroke="#111" stroke-width="3"/><path d="M424 373 L438 382 L424 391" fill="none" stroke="#111" stroke-width="3"/>
   <rect x="454" y="166" width="372" height="430" rx="10" fill="#0B0B0B"/>
-  <text x="488" y="208" font-size="23" font-weight="700" fill="#FFF">MCP 읽기 도구</text>
-  <rect x="488" y="248" width="304" height="64" rx="6" fill="#1F1F1F" stroke="#666"/><text x="516" y="287" font-size="19" fill="#FFF">Notion · 최근 14일</text>
-  <rect x="488" y="330" width="304" height="64" rx="6" fill="#1F1F1F" stroke="#666"/><text x="516" y="369" font-size="19" fill="#FFF">Confluence · 프로젝트</text>
-  <rect x="488" y="412" width="304" height="64" rx="6" fill="#1F1F1F" stroke="#666"/><text x="516" y="451" font-size="19" fill="#FFF">Slack · 지정 채널</text>
-  <text x="488" y="528" font-size="16" fill="#C9D9FF">source · date · reason · evidence</text>
+  <text x="488" y="208" font-size="27" font-weight="700" fill="#FFF">MCP 읽기 도구</text>
+  <rect x="488" y="248" width="304" height="64" rx="6" fill="#1F1F1F" stroke="#666"/><text x="516" y="287" font-size="23" fill="#FFF">Notion · 최근 14일</text>
+  <rect x="488" y="330" width="304" height="64" rx="6" fill="#1F1F1F" stroke="#666"/><text x="508" y="369" font-size="21" fill="#FFF">Confluence · Project</text>
+  <rect x="488" y="412" width="304" height="64" rx="6" fill="#1F1F1F" stroke="#666"/><text x="516" y="451" font-size="23" fill="#FFF">Slack · 지정 채널</text>
+  <text x="488" y="528" font-size="19" fill="#C9D9FF">source · date · reason</text>
   <path d="M846 382 H908" stroke="#111" stroke-width="3"/><path d="M896 373 L910 382 L896 391" fill="none" stroke="#111" stroke-width="3"/>
   <rect x="926" y="166" width="300" height="430" rx="10" fill="#FFF" stroke="#B9B9B9"/>
-  <text x="956" y="208" font-size="23" font-weight="700" fill="#111">회의록에 남길 것</text>
-  <text x="956" y="260" font-size="18" fill="#111">이전 결정</text><text x="956" y="302" font-size="18" fill="#111">변경된 조건</text><text x="956" y="344" font-size="18" fill="#111">남은 질문</text><text x="956" y="386" font-size="18" fill="#111">출처별 근거</text>
-  <rect x="956" y="458" width="240" height="92" rx="6" fill="#FFF" stroke="#2F6BFF" stroke-width="2"/><text x="980" y="493" font-size="17" font-weight="700" fill="#111">쓰기는 아직 금지</text><text x="980" y="526" font-size="15" fill="#555">승인 후 integration plan</text>
-  <text x="54" y="660" font-size="18" font-weight="700" fill="#111">자동 판단: 필요한 출처 선택 · 사람 통제: 조회 범위와 외부 쓰기</text></g>
+  <text x="956" y="208" font-size="27" font-weight="700" fill="#111">회의록에 남길 것</text>
+  <text x="956" y="260" font-size="23" fill="#111">이전 결정</text><text x="956" y="302" font-size="23" fill="#111">변경된 조건</text><text x="956" y="344" font-size="23" fill="#111">남은 질문</text><text x="956" y="386" font-size="23" fill="#111">출처별 근거</text>
+  <rect x="956" y="458" width="240" height="92" rx="6" fill="#FFF" stroke="#2F6BFF" stroke-width="2"/><text x="980" y="493" font-size="21" font-weight="700" fill="#111">아직 저장·발송 금지</text><text x="980" y="526" font-size="18" fill="#555">사람 승인 후 계획</text>
+  <text x="54" y="660" font-size="21" font-weight="700" fill="#111">자동 판단: 필요한 출처 선택 · 사람 승인: 검색 범위·외부 저장·발송</text></g>
 </svg>

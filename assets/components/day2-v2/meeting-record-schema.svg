@@ -1,13 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <rect width="1280" height="720" fill="#0B0B0B"/><g font-family="NanumGothic,Arial">
-  <text x="54" y="62" font-size="30" font-weight="700" fill="#FFF">MeetingRecord · 사람이 확인할 결과 계약</text>
+  <text x="54" y="62" font-size="30" font-weight="700" fill="#FFF">MeetingRecord · 원문 근거 기반 Result Schema</text>
   <rect x="54" y="112" width="1172" height="530" rx="10" fill="#151515" stroke="#555"/>
-  <text x="86" y="160" font-size="18" fill="#8FB3FF">{</text>
-  <g font-size="18" fill="#FFF"><text x="112" y="202">"purpose": "이 회의가 풀려는 문제",</text><text x="112" y="240">"prior_context": ["이전 결정 + source"],</text>
-  <text x="112" y="278">"summary": { "text": "...", "evidence_ids": ["s003"] },</text><text x="112" y="316">"participant_perspectives": [{ "speaker": "...", "evidence_ids": [...] }],</text>
-  <text x="112" y="354">"action_items": [{ "owner": null, "due": null, "status": "CONFIRM_REQUIRED" }],</text><text x="112" y="392">"insights": { "short": [...], "mid": [...], "long": [...] },</text>
-  <text x="112" y="430">"wellbeing_signals": [{ "observation": "...", "diagnosis": false }],</text><text x="112" y="468">"review": { "decision": "approve | edit | reject" },</text>
-  <text x="112" y="506">"external_write": false</text></g><text x="86" y="550" font-size="18" fill="#8FB3FF">}</text>
-  <rect x="780" y="526" width="390" height="76" rx="6" fill="#2F6BFF"/><text x="812" y="558" font-size="17" font-weight="700" fill="#FFF">근거 없으면 추측하지 않기</text><text x="812" y="584" font-size="15" fill="#FFF">null · CONFIRM_REQUIRED · HOLD</text>
-  <text x="54" y="688" font-size="16" fill="#BBB">톤은 부드럽게, 사실은 보수적으로, 외부 반영은 승인 후에만</text></g>
+  <text x="86" y="164" font-size="26" fill="#8FB3FF">{</text>
+  <g font-size="25" fill="#FFF">
+    <text x="112" y="212">"meeting_summary": "회의 핵심 합의",</text>
+    <text x="112" y="264">"summary_evidence_ids": ["s003"],</text>
+    <text x="112" y="316">"todos": [{ "owner": null, "due_date": null,</text>
+    <text x="248" y="354">"evidence_ids": ["s006"] }],</text>
+    <text x="112" y="406">"human_review_required": true,</text>
+    <text x="112" y="458">"external_write": false</text>
+  </g><text x="86" y="510" font-size="26" fill="#8FB3FF">}</text>
+  <rect x="720" y="526" width="450" height="76" rx="6" fill="#2F6BFF"/><text x="752" y="558" font-size="21" font-weight="700" fill="#FFF">Unknown Evidence → Validation 실패</text><text x="752" y="586" font-size="18" fill="#FFF">CONFIRM_REQUIRED · Human Review</text>
+  <text x="54" y="688" font-size="21" fill="#BBB">모르는 값은 null · 사실 Field는 실제 Segment ID와 연결</text></g>
 </svg>

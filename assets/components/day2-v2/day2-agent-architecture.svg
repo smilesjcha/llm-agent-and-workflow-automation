@@ -27,7 +27,7 @@
     <rect x="934" y="164" width="294" height="348" rx="10" fill="#0B0B0B"/>
     <text x="968" y="207" font-size="24" font-weight="700" fill="#FFF">사람 검증</text>
     <text x="968" y="260" font-size="18" fill="#FFF">· 원문 근거</text><text x="968" y="302" font-size="18" fill="#FFF">· 담당자·기한</text>
-    <text x="968" y="344" font-size="18" fill="#FFF">· approve / edit / reject</text><text x="968" y="386" font-size="18" fill="#FFF">· 외부 쓰기 승인</text>
+    <text x="968" y="344" font-size="18" fill="#FFF">· approve / edit / reject</text><text x="968" y="386" font-size="18" fill="#FFF">· 외부 저장·발송 승인</text>
     <rect x="968" y="424" width="222" height="50" rx="6" fill="#2F6BFF"/><text x="1002" y="456" font-size="17" font-weight="700" fill="#FFF">external_write=false</text>
     <path d="M900 338 H934" stroke="#111" stroke-width="3"/><path d="M922 329 L936 338 L922 347" fill="none" stroke="#111" stroke-width="3"/>
     <rect x="52" y="566" width="1176" height="94" rx="8" fill="#FFFFFF" stroke="#B9B9B9"/>

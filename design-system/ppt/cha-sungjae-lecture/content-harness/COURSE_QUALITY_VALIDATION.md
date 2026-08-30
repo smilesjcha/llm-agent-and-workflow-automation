@@ -62,14 +62,14 @@
 
 | 차시 | 소유 질문 | 새로 만드는 것 | 다음 차시 입력 |
 |---|---|---|---|
-| 1차시 | 이 음성을 처리해도 되는가 | 오디오 계약·metadata 검사 | 검증된 audio path |
-| 2차시 | 음성을 어떤 공통 형식으로 바꿀까 | STT adapter·timestamp segment | `transcript.json` |
-| 3차시 | 문자 생성과 사용 가능 상태는 어떻게 다른가 | STT quality gate | READY segment·HOLD flag |
-| 4차시 | 회의 결과의 필수 field는 무엇인가 | Pydantic `MeetingBrief` | validated schema |
-| 5차시 | 긴 회의에서 근거 ID를 어떻게 보존할까 | segment chunk·overlap | evidence-preserving chunks |
-| 6차시 | Provider를 바꿔도 계약을 어떻게 유지할까 | LangChain adapter pipeline | typed meeting brief |
-| 7차시 | Action Item이 실제 발화에 근거하는가 | evidence validator | validated action items |
-| 8차시 | 이 결과를 내보내도 되는가 | Golden Set·release decision | Day 2 scorecard |
+| 1차시 | 이 요청은 LLM·Workflow·Agent 중 무엇인가 | Request Router·외부 저장·발송 차단 | `01_architecture.json` |
+| 2차시 | Meet TXT·ClovaNote TXT·Audio를 어떻게 합칠까 | 세 Input Adapter·`TranscriptEnvelope` | `02_inputs.json` |
+| 3차시 | 어떤 업무 맥락을 어디까지 읽을까 | Domain Context·Read-only MCP Plan | `03_domain_context.json` |
+| 4차시 | 요약·관점·할 일의 공통 결과 형식은 무엇인가 | `MeetingRecord` Schema·Evidence Validator | `04_meeting_record_contract.json` |
+| 5차시 | Coding Agent에 어떤 작업 계약을 줄까 | Goal·Allowed·Test·Do not·Diff Review | `05_workflow_runs.json` |
+| 6차시 | Provider가 바뀌어도 결과를 어떻게 유지할까 | Fixture·Ollama·OpenAI Adapter·Cost Guardrail | `06_provider_diagnostics.json` |
+| 7차시 | 사람의 결정 전후를 실제로 어떻게 중단·재개할까 | LangGraph Interrupt·Checkpoint·Approve/Edit/Reject | `07_human_review.json` |
+| 8차시 | 비개발자가 같은 기능을 어떻게 실행할까 | Local GUI·Docker·Draft Export | `08_export_drafts.json` |
 
 ### Day 3 · Review Intelligence Service
 
@@ -126,14 +126,45 @@
 
 ### 5.2 사람이 제목만 읽는 Gate
 
-1. 1쪽부터 240쪽까지 제목만 읽어도 질문이 앞으로 전진하는가?
+1. 1쪽부터 마지막 장까지 제목만 읽어도 질문이 앞으로 전진하는가?
 2. 앞 장의 결론을 표현만 바꿔 다시 말하지 않는가?
 3. 개념→근거→코드→실패→복구→실행→test 순서가 보이는가?
 4. 같은 표·목록·카드 구조가 세 장 이상 이어지지 않는가?
 5. 차시 마지막은 요약이 아니라 다음 차시가 사용할 artifact를 확인하는가?
 6. 마지막 차시에서만 하루 전체의 결과와 판단을 회수하는가?
 
-정상·경계 acceptance condition은 `계약 → Codex task → 실행 → test`의 네 위치에서 같은 문구를 interface처럼 다시 사용할 수 있다. 이는 요약 반복이 아니라 동일 계약의 추적성이다. 네 위치를 넘거나 설명 문장까지 같은 경우에는 중복으로 판단한다.
+Expected Output·Boundary Test는 `결과 형식 → Codex Task → 실행 → Test`의 네 위치에서 같은 Interface로 추적할 수 있다. 이는 요약 반복이 아니라 동일 계약의 추적성이다. 네 위치를 넘거나 설명 문장까지 같으면 중복으로 판단한다.
+
+### 5.3 학생 언어·가독성 Gate
+
+| 항목 | 통과 기준 |
+|---|---|
+| 제목 | 2~8단어 명사형, 차시명·파일명·본문 결론의 기계적 반복 없음 |
+| 용어 | `정상·경계·외부 쓰기·기록·책임` 단독 Label 0건 |
+| 일반 제목 | 실제 PowerPoint 34pt 이상 |
+| 본문 | 실제 PowerPoint 18pt 이상 |
+| 표 Cell | 실제 PowerPoint 17pt 이상, 의미 단위 개행 |
+| Code | 실제 PowerPoint 15pt 이상, 실행 명령 생략 없음 |
+| Screenshot | 클릭 위치·입력·결과 중 최소 하나를 투사 화면에서 판독 가능 |
+| Auto fit | `shrinkText`로 Overflow를 숨긴 장표 0건 |
+
+`Role`, `Expected Output`, `Boundary Test`, `External Action`, `Execution Log`, `Audit Log`, `Human Review`, `Result Schema`는 영어가 더 정확한 경우 사용한다. 첫 등장에서는 한글 설명을 함께 둔다.
+
+### 5.4 PPT 단독 재실행 Gate
+
+각 차시에서 다음 정보를 학생용 화면만으로 찾을 수 있어야 한다.
+
+| 역할 | 필수 내용 |
+|---|---|
+| 준비 | Program·선택 Lane·정확한 File Path |
+| 입력 | 비식별 Sample·입력 형식·출처 |
+| 실행 | 완전한 Terminal 명령 또는 Notebook Section |
+| Codex | Goal·Allowed·Test·Do not이 포함된 Copy-ready Task |
+| 결과 | Result File·확인 Field·Expected Output |
+| 오류 | 대표 Error Code·복구 순서·계속 진행 조건 |
+| 안전 | Secret 비노출·External Action 기본 차단·Human Review 위치 |
+
+강사 Notes를 읽어야만 실행할 수 있거나, Website 열람만으로 소프트웨어 실습이 끝나면 실패다. 수강생은 발표·짝 활동 없이 개인 PC에서 같은 결과를 재현할 수 있어야 한다.
 
 ### 5.3 장표 수를 유지할 때의 대체 원칙
 
