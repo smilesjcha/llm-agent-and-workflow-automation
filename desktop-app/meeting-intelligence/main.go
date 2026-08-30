@@ -60,22 +60,29 @@ type bridge struct {
 func main() {
 	appDirFlag := flag.String("app-dir", "", "development Docker context; omitted in packaged builds")
 	bridgeOnly := flag.Bool("bridge-only", false, "run only the localhost CLI bridge")
+	enableCLIBridge := flag.Bool("enable-cli-bridge", false, "enable the synthetic-data-only Codex/Claude bridge")
 	noBrowser := flag.Bool("no-browser", false, "do not open the local UI")
 	flag.Parse()
 
-	token, err := randomToken()
-	if err != nil {
-		log.Fatalf("launcher initialization failed: %v", err)
+	token := "disabled"
+	bridgeRequested := *enableCLIBridge || *bridgeOnly
+	if bridgeRequested {
+		generatedToken, err := randomToken()
+		if err != nil {
+			log.Fatalf("launcher initialization failed: %v", err)
+		}
+		token = generatedToken
+		b := &bridge{token: token, runCLI: runOfficialCLI, semaphore: make(chan struct{}, 1)}
+		server, listener, err := startBridge(b)
+		if err != nil {
+			log.Fatalf("localhost bridge could not start: %v", err)
+		}
+		defer server.Shutdown(context.Background())
+		defer listener.Close()
+		fmt.Println("Meeting Intelligence host bridge: READY (synthetic-data instructor extension)")
+	} else {
+		fmt.Println("Meeting Intelligence host bridge: DISABLED (default safe mode)")
 	}
-
-	b := &bridge{token: token, runCLI: runOfficialCLI, semaphore: make(chan struct{}, 1)}
-	server, listener, err := startBridge(b)
-	if err != nil {
-		log.Fatalf("localhost bridge could not start: %v", err)
-	}
-	defer server.Shutdown(context.Background())
-	defer listener.Close()
-	fmt.Println("Meeting Intelligence host bridge: READY (localhost only)")
 
 	if *bridgeOnly {
 		fmt.Println("Bridge-only mode does not start Docker. No credential data was inspected.")
@@ -85,10 +92,11 @@ func main() {
 
 	appDir := *appDirFlag
 	if appDir == "" {
-		appDir, err = materializeDockerBundle()
-		if err != nil {
-			log.Fatalf("embedded application could not be prepared: %v", err)
+		materializedDir, materializeErr := materializeDockerBundle()
+		if materializeErr != nil {
+			log.Fatalf("embedded application could not be prepared: %v", materializeErr)
 		}
+		appDir = materializedDir
 	}
 	composePath := filepath.Join(appDir, "docker-compose.yml")
 	if _, err := os.Stat(composePath); err != nil {
@@ -101,6 +109,7 @@ func main() {
 		go openWhenReady(ctx, appURL)
 	}
 	if err := runDockerCompose(ctx, appDir, token); err != nil && !errors.Is(err, context.Canceled) {
+		showLaunchError("Docker 실행 경로를 확인하지 못했습니다. 수강생 기본 경로는 repository의 run-local.command 또는 run-local.cmd입니다.")
 		log.Fatalf("Docker application stopped: %v", err)
 	}
 }
@@ -302,13 +311,32 @@ func officialCLIPath(provider string) (string, error) {
 }
 
 func childEnvironment() []string {
-	blocked := map[string]bool{
-		"HOST_BRIDGE_TOKEN": true,
+	allowed := map[string]bool{
+		"PATH":          true,
+		"HOME":          true,
+		"USER":          true,
+		"LOGNAME":       true,
+		"USERPROFILE":   true,
+		"APPDATA":       true,
+		"LOCALAPPDATA":  true,
+		"SYSTEMROOT":    true,
+		"COMSPEC":       true,
+		"PATHEXT":       true,
+		"TMPDIR":        true,
+		"TMP":           true,
+		"TEMP":          true,
+		"LANG":          true,
+		"LC_ALL":        true,
+		"LC_CTYPE":      true,
+		"TERM":          true,
+		"SSL_CERT_FILE": true,
+		"SSL_CERT_DIR":  true,
 	}
 	filtered := make([]string, 0, len(os.Environ()))
 	for _, value := range os.Environ() {
 		name, _, _ := strings.Cut(value, "=")
-		if !blocked[name] {
+		upperName := strings.ToUpper(name)
+		if allowed[upperName] && !strings.Contains(upperName, "TOKEN") && !strings.Contains(upperName, "KEY") && !strings.Contains(upperName, "SECRET") && !strings.Contains(upperName, "PASSWORD") {
 			filtered = append(filtered, value)
 		}
 	}
@@ -372,11 +400,12 @@ func materializeDockerBundle() (string, error) {
 }
 
 func runDockerCompose(ctx context.Context, appDir, token string) error {
-	dockerPath, err := exec.LookPath("docker")
+	dockerPath, err := officialDockerPath()
 	if err != nil {
 		return fmt.Errorf("Docker Desktop is required: docker command not found")
 	}
-	command := exec.CommandContext(ctx, dockerPath, "compose", "--project-directory", appDir, "up", "--build", "--remove-orphans")
+	defer stopDockerCompose(dockerPath, appDir)
+	command := exec.CommandContext(ctx, dockerPath, dockerComposeArgs(appDir, "up")...)
 	command.Dir = appDir
 	command.Env = append(
 		os.Environ(),
@@ -388,6 +417,60 @@ func runDockerCompose(ctx context.Context, appDir, token string) error {
 	command.Stdin = os.Stdin
 	fmt.Printf("Local application: %s\n", appURL)
 	return command.Run()
+}
+
+func officialDockerPath() (string, error) {
+	if found, err := exec.LookPath("docker"); err == nil {
+		return found, nil
+	}
+	candidates := []string{
+		"/Applications/Docker.app/Contents/Resources/bin/docker",
+		"/opt/homebrew/bin/docker",
+		"/usr/local/bin/docker",
+	}
+	if runtime.GOOS == "windows" {
+		candidates = append(candidates, `C:\Program Files\Docker\Docker\resources\bin\docker.exe`)
+	}
+	for _, candidate := range candidates {
+		if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
+			return candidate, nil
+		}
+	}
+	return "", errors.New("docker command not found")
+}
+
+func showLaunchError(message string) {
+	if runtime.GOOS != "darwin" {
+		return
+	}
+	command := exec.Command(
+		"osascript",
+		"-e", "on run argv",
+		"-e", `display alert "Meeting Intelligence" message (item 1 of argv) as critical`,
+		"-e", "end run",
+		message,
+	)
+	_ = command.Run()
+}
+
+func dockerComposeArgs(appDir, action string) []string {
+	base := []string{"compose", "--project-directory", appDir}
+	if action == "down" {
+		return append(base, "down", "--remove-orphans")
+	}
+	return append(base, "up", "--build", "--remove-orphans")
+}
+
+func stopDockerCompose(dockerPath, appDir string) {
+	cleanupContext, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	command := exec.CommandContext(cleanupContext, dockerPath, dockerComposeArgs(appDir, "down")...)
+	command.Dir = appDir
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+	if err := command.Run(); err != nil && !errors.Is(cleanupContext.Err(), context.DeadlineExceeded) {
+		log.Printf("Docker cleanup failed: %v", err)
+	}
 }
 
 func openWhenReady(ctx context.Context, url string) {

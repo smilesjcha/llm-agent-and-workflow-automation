@@ -36,11 +36,14 @@ REQUIRED_FILES = (
     "slides/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pptx",
     "output/pdf/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pdf",
     "materials/day2/2026_Day2_수강생_실습가이드.md",
-    "materials/day2/2026_Day2_강사용_상세교안.md",
     "materials/day2/day2_service_lab.ipynb",
     "materials/day2/day2_service_lab.executed.ipynb",
     "src/course_services/day2_meeting_workflow.py",
     "desktop-app/meeting-intelligence/README.md",
+    "desktop-app/meeting-intelligence/requirements-localhost.txt",
+    "desktop-app/meeting-intelligence/scripts/run-local.command",
+    "desktop-app/meeting-intelligence/scripts/run-local.cmd",
+    "scripts/run_day2_local_app.py",
 )
 BLOCKED_TRUE_KEYS = frozenset({"external_write", "automatic_email", "send"})
 
@@ -104,9 +107,22 @@ def run_check(
             stdout_tail=_tail(exc.stdout or ""),
             stderr_tail=_tail(exc.stderr or ""),
         )
+    except FileNotFoundError:
+        return CheckResult(
+            name=name,
+            command=list(command),
+            status="MISSING_DEPENDENCY",
+            return_code=None,
+            stdout_tail="",
+            stderr_tail=f"{command[0]} was not found",
+        )
 
 
-def required_checks(*, include_full_suite: bool = False) -> list[tuple[str, list[str], Path]]:
+def required_checks(
+    *,
+    include_full_suite: bool = False,
+    include_package_suite: bool = False,
+) -> list[tuple[str, list[str], Path]]:
     python = sys.executable
     checks = [
         (
@@ -141,9 +157,24 @@ def required_checks(*, include_full_suite: bool = False) -> list[tuple[str, list
             ],
             ROOT,
         ),
+        (
+            "desktop_loopback_http_smoke",
+            [
+                python,
+                "scripts/run_day2_local_app.py",
+                "--smoke-and-exit",
+                "--port",
+                "0",
+                "--report",
+                "output/day2-preflight/localhost_smoke.json",
+            ],
+            ROOT,
+        ),
     ]
     if include_full_suite:
         checks.append(("full_repository_tests", [python, "-m", "pytest", "-q"], ROOT))
+    if include_package_suite:
+        checks.append(("desktop_go_launcher_tests", [shutil.which("go") or "go", "test", "./..."], ROOT / "desktop-app/meeting-intelligence"))
     return checks
 
 
@@ -210,6 +241,20 @@ def validate_package_checksums(
         return {"status": "NOT_BUILT", "checked": [], "errors": ["SHA256SUMS_MISSING"]}
     checked: list[str] = []
     errors: list[str] = []
+    release_status: dict[str, Any] | None = None
+    release_path = directory / "RELEASE_STATUS.json"
+    if not release_path.is_file():
+        errors.append("RELEASE_STATUS_MISSING")
+    else:
+        try:
+            release_status = json.loads(release_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            errors.append("RELEASE_STATUS_INVALID")
+        else:
+            if release_status.get("version") != "2.1.0":
+                errors.append("RELEASE_VERSION_MISMATCH")
+            if release_status.get("default_delivery") != "localhost":
+                errors.append("RELEASE_DEFAULT_DELIVERY_INVALID")
     for line in manifest.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
@@ -227,7 +272,12 @@ def validate_package_checksums(
             errors.append(f"PACKAGE_CHECKSUM_MISMATCH:{filename.strip()}")
             continue
         checked.append(filename.strip())
-    return {"status": "PASS" if checked and not errors else "FAIL", "checked": checked, "errors": errors}
+    return {
+        "status": "PASS" if checked and not errors else "FAIL",
+        "checked": checked,
+        "errors": errors,
+        "release": release_status,
+    }
 
 
 def optional_environment() -> dict[str, Any]:
@@ -251,19 +301,24 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("output/day2-preflight"))
     parser.add_argument("--full-suite", action="store_true")
+    parser.add_argument("--require-packages", action="store_true")
     args = parser.parse_args(argv)
 
     output_dir = safe_output_dir(ROOT, args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     checks = [
         run_check(name, command, cwd=cwd)
-        for name, command, cwd in required_checks(include_full_suite=args.full_suite)
+        for name, command, cwd in required_checks(
+            include_full_suite=args.full_suite,
+            include_package_suite=args.require_packages,
+        )
     ]
     files = validate_required_files()
     references = validate_reference_outputs()
     packages = validate_package_checksums()
     required_ok = all(check.status == "PASS" for check in checks)
-    status = "PASS" if required_ok and files["status"] == "PASS" and references["status"] == "PASS" else "FAIL"
+    package_ok = packages["status"] == "PASS" if args.require_packages else True
+    status = "PASS" if required_ok and files["status"] == "PASS" and references["status"] == "PASS" and package_ok else "FAIL"
     report = {
         "generated_at": datetime.now(UTC).isoformat(),
         "status": status,
@@ -275,6 +330,14 @@ def main(argv: list[str] | None = None) -> int:
         "required_files": files,
         "reference_outputs": references,
         "packages": packages,
+        "delivery": {
+            "primary": "localhost",
+            "start_command": "python scripts/run_day2_local_app.py",
+            "smoke_command": "python scripts/run_day2_local_app.py --smoke-and-exit --port 0",
+            "package_role": "OPTIONAL_UNSIGNED_EDUCATION_BUILD",
+            "package_requires_docker": True,
+            "package_required_for_this_run": args.require_packages,
+        },
         "optional_environment": optional_environment(),
         "learner_output_directory": "output/course-labs/day2-v2/student-run",
     }

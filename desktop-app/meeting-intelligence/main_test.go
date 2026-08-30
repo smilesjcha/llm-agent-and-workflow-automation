@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -80,10 +82,23 @@ func TestBridgeBlocksUnapprovedProvider(t *testing.T) {
 
 func TestChildEnvironmentRemovesBridgeToken(t *testing.T) {
 	t.Setenv("HOST_BRIDGE_TOKEN", "must-not-reach-cli")
+	t.Setenv("OPENAI_API_KEY", "example-secret-must-not-reach-cli")
+	t.Setenv("LANGSMITH_API_KEY", "example-secret-must-not-reach-cli")
+	t.Setenv("DAY2_PASSWORD", "example-secret-must-not-reach-cli")
+	t.Setenv("PATH", "/usr/bin:/bin")
+	seenPath := false
 	for _, entry := range childEnvironment() {
-		if len(entry) >= len("HOST_BRIDGE_TOKEN=") && entry[:len("HOST_BRIDGE_TOKEN=")] == "HOST_BRIDGE_TOKEN=" {
-			t.Fatal("bridge token leaked into CLI child environment")
+		name, _, _ := strings.Cut(entry, "=")
+		upperName := strings.ToUpper(name)
+		if strings.Contains(upperName, "TOKEN") || strings.Contains(upperName, "KEY") || strings.Contains(upperName, "SECRET") || strings.Contains(upperName, "PASSWORD") {
+			t.Fatalf("secret-like environment variable reached the CLI: %s", name)
 		}
+		if upperName == "PATH" {
+			seenPath = true
+		}
+	}
+	if !seenPath {
+		t.Fatal("safe PATH environment is required for the official CLI")
 	}
 }
 
@@ -100,5 +115,33 @@ func TestOfficialCLICommandsDisableUserToolsAndConfiguration(t *testing.T) {
 		if !slices.Contains(claude.Args, required) {
 			t.Fatalf("Claude argv missing %q: %v", required, claude.Args)
 		}
+	}
+}
+
+func TestDockerLauncherAlwaysDefinesCleanupCommand(t *testing.T) {
+	up := dockerComposeArgs("/tmp/meeting-app", "up")
+	down := dockerComposeArgs("/tmp/meeting-app", "down")
+
+	if !slices.Contains(up, "--build") || !slices.Contains(up, "--remove-orphans") {
+		t.Fatalf("unexpected compose up args: %v", up)
+	}
+	if !slices.Contains(down, "down") || !slices.Contains(down, "--remove-orphans") {
+		t.Fatalf("cleanup command is missing: %v", down)
+	}
+	if slices.Contains(down, "-v") {
+		t.Fatalf("normal cleanup must preserve the downloaded model volume: %v", down)
+	}
+}
+
+func TestDockerLauncherIncludesFinderSafeMacCandidate(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("macOS package path check")
+	}
+	path, err := officialDockerPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasSuffix(path, "/docker") {
+		t.Fatalf("unexpected Docker path: %s", path)
 	}
 }

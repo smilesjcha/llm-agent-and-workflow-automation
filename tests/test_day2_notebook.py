@@ -25,7 +25,7 @@ def test_day2_has_eight_code_periods_and_all_cells_compile() -> None:
         "5차시 · Coding Agent Workflow",
         "6차시 · LLM Provider · Cost Guardrail",
         "7차시 · LangGraph · Human Review",
-        "8차시 · Desktop App Package",
+        "8차시 · Localhost App · 선택 Package",
     ]
     for heading in headings:
         compile(_source_after_heading(heading), f"day2-{heading}", "exec")
@@ -36,7 +36,7 @@ def test_day2_run_all_is_network_and_external_write_free() -> None:
     architecture = _source_after_heading("1차시 · Meeting Agent Architecture")
     input_cell = _source_after_heading("2차시 · Input Route · STT")
     provider = _source_after_heading("6차시 · LLM Provider · Cost Guardrail")
-    export = _source_after_heading("8차시 · Desktop App Package")
+    export = _source_after_heading("8차시 · Localhost App · 선택 Package")
 
     assert '"run_all_network_calls": 0' in architecture
     assert '"external_write": False' in architecture
@@ -60,6 +60,10 @@ def test_day2_run_all_is_network_and_external_write_free() -> None:
     assert 'item["send"] is False' in export
     assert '"human_review_required": True' in export
     assert '"external_write": False' in export
+    assert '"scripts/run_day2_local_app.py"' in export
+    assert '"--smoke-and-exit"' in export
+    assert '"--port"' in export and '"0"' in export
+    assert 'save_json("08_localhost_launch.json", localhost_report)' in export
 
 
 def test_day2_outputs_use_the_v2_names_and_three_scenarios() -> None:
@@ -73,6 +77,7 @@ def test_day2_outputs_use_the_v2_names_and_three_scenarios() -> None:
         "06_provider_diagnostics.json",
         "07_human_review.json",
         "08_export_drafts.json",
+        "08_localhost_launch.json",
     ]
     assert all(name in all_source for name in expected)
     assert all(
@@ -90,6 +95,7 @@ def test_day2_outputs_use_the_v2_names_and_three_scenarios() -> None:
     assert '"return_code": result["returncode"]' in all_source
     assert '"status": "PASS" if result["returncode"] == 0 else "FAIL"' in all_source
     assert 'record_test_evidence("day2_focused", focused_test)' in all_source
+    assert 'record_test_evidence("localhost_http_smoke", localhost_smoke)' in all_source
     assert '"this_run_network_free"' in all_source
     assert '"live_opt_ins"' in all_source
 

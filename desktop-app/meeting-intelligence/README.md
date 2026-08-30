@@ -42,23 +42,37 @@
 | 처리 API | `POST http://127.0.0.1:8766/api/process` |
 | 예시 TXT | `GET http://127.0.0.1:8766/api/samples/google-meet` |
 
-가장 빠른 실행:
+수강생 기본 실행은 Docker가 필요 없는 localhost 경로입니다. 가장 짧은 경로는 운영체제별 실행 파일입니다.
+
+- macOS: `desktop-app/meeting-intelligence/scripts/run-local.command` 더블클릭
+- Windows: `desktop-app\meeting-intelligence\scripts\run-local.cmd` 더블클릭
+
+필수 Library가 없으면 실행 파일이 `requirements-localhost.txt`를 최초 1회 설치하고 브라우저를 엽니다. Terminal에서 직접 실행할 때는 4차시에서 만든 Python 환경을 활성화한 뒤 Repository root에서 다음을 실행합니다.
+
+```bash
+python -m pip install -r desktop-app/meeting-intelligence/requirements-localhost.txt
+python scripts/run_day2_local_app.py
+```
+
+브라우저에서 `http://127.0.0.1:8766`이 자동으로 열리며, `예시로 바로 시작`을 누르면 파일 다운로드 없이 Fixture Lane을 확인할 수 있습니다.
+
+Port 충돌과 실제 HTTP 검증:
+
+```bash
+python scripts/run_day2_local_app.py --port 0
+python scripts/run_day2_local_app.py --smoke-and-exit --port 0
+```
+
+`--port 0`은 사용 가능한 localhost port를 자동 선택합니다. 정상 종료는 실행 Terminal의 `Ctrl+C`이며, Smoke 명령은 실제 HTTP 처리 후 서버를 자동 종료하고 `08_localhost_launch.json`을 남깁니다.
+
+Docker와 설치 Package는 강사 PC의 선택 경로입니다.
 
 ```bash
 cd desktop-app/meeting-intelligence
 docker compose up --build
 ```
 
-브라우저에서 `http://127.0.0.1:8766`을 엽니다. Docker image와 Whisper model을 처음 받을 때는 네트워크와 시간이 필요합니다.
-
-종료·복구:
-
-```bash
-docker compose down
-docker compose up --build
-```
-
-모델 cache까지 지워 처음 상태로 되돌리는 `docker compose down -v`는 Whisper model을 다시 내려받게 되므로 필요한 경우에만 사용합니다.
+Docker image와 Whisper model을 처음 받을 때는 네트워크와 시간이 필요합니다. 종료는 `docker compose down`이며, 모델 cache까지 지우는 `docker compose down -v`는 필요한 경우에만 사용합니다.
 
 ## 결과를 만들 AI
 
@@ -89,9 +103,9 @@ ollama serve
 
 Docker 컨테이너는 `host.docker.internal:11434`로 호스트 Ollama에 접근합니다.
 
-## Codex·Claude localhost bridge
+## Codex·Claude localhost bridge · 강사 확장
 
-컨테이너에 홈 디렉터리, 브라우저 cookie, ChatGPT·Claude credential 파일을 마운트하지 않습니다. 패키지 launcher가 `127.0.0.1:8765`에 여는 일회성 bridge가 공식 CLI에만 위임합니다.
+컨테이너에 홈 디렉터리, 브라우저 cookie, ChatGPT·Claude credential 파일을 마운트하지 않습니다. 패키지 launcher는 기본적으로 bridge를 열지 않습니다. 합성·비식별 입력만 사용하는 강사 확장에서 `--enable-cli-bridge`를 명시한 경우에만 `127.0.0.1:8765`의 일회성 bridge가 공식 CLI에 위임합니다.
 
 ```text
 Container → 실행 때마다 새로 만든 256-bit token → localhost bridge
@@ -112,10 +126,10 @@ Container → 실행 때마다 새로 만든 256-bit token → localhost bridge
 개발 중 launcher 실행:
 
 ```bash
-go run . --app-dir "$(pwd)"
+go run . --app-dir "$(pwd)" --enable-cli-bridge
 ```
 
-수동 `docker compose` 실행에는 bridge token이 없으므로 Codex·Claude는 명시적 연결 실패 또는 허용된 연습 결과 fallback으로 끝납니다.
+수동 `docker compose`와 기본 Package 실행에는 bridge token이 없으므로 Codex·Claude는 명시적 연결 실패 또는 허용된 연습 결과 fallback으로 끝납니다. 회의 원문처럼 신뢰할 수 없는 입력에는 CLI bridge 대신 Fixture·Ollama·도구 없는 API Adapter를 사용합니다.
 
 ## 출력 계약
 
@@ -207,7 +221,7 @@ dist/MeetingIntelligence-macOS.pkg
 dist/SHA256SUMS
 ```
 
-현재 파일은 교육·내부 검증용 unsigned build입니다. 외부 배포 전 조직 인증서로 Windows code signing과 Apple Developer ID signing·notarization이 필요합니다.
+현재 파일은 Docker가 준비된 강사 PC를 위한 교육·내부 검증용 unsigned build입니다. 수강생 기본 경로가 아니며, 외부 배포 전 조직 인증서로 Windows code signing과 Apple Developer ID signing·notarization이 필요합니다. Launcher 종료 시 `docker compose down --remove-orphans`를 실행해 `8766` port를 정리합니다.
 
 ## 파일 구조
 

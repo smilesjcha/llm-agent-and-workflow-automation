@@ -42,11 +42,14 @@ mkdir -p "${APP_ROOT}/MacOS"
 install -m 0755 "${BUILD_DIR}/MeetingIntelligence" "${APP_ROOT}/MacOS/MeetingIntelligence"
 install -m 0644 "${PROJECT_DIR}/packaging/macos/Info.plist" "${APP_ROOT}/Info.plist"
 xattr -cr "${BUILD_DIR}/pkg-root"
+find "${BUILD_DIR}/pkg-root" -name '._*' -delete
 
-COPYFILE_DISABLE=1 pkgbuild \
+COPYFILE_DISABLE=1 COPY_EXTENDED_ATTRIBUTES_DISABLE=1 pkgbuild \
   --root "${BUILD_DIR}/pkg-root" \
+  --filter '(^|/)\._[^/]*$' \
+  --filter '(^|/)\.DS_Store$' \
   --identifier "kr.ipa.meeting-intelligence" \
-  --version "2.0.0" \
+  --version "2.1.0" \
   --install-location "/" \
   "${DIST_DIR}/MeetingIntelligence-macOS.pkg"
 

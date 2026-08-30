@@ -79,6 +79,8 @@ h2 { margin: 0; font-size: 25px; line-height: 1.25; letter-spacing: -.04em; }
 .drop-zone strong { font-size: 20px; }
 .drop-zone span { color: var(--muted); font-size: 12px; }
 .sample-links { display: flex; flex-wrap: wrap; gap: 9px 16px; align-items: center; padding: 12px 2px 2px; color: var(--muted); font-size: 12px; }
+.inline-action { padding: 7px 10px; border: 1px solid var(--black); background: var(--white); font-size: 12px; font-weight: 800; cursor: pointer; }
+.inline-action:hover { color: var(--white); background: var(--black); }
 .plain-notice, .secret-note { margin-top: 12px; padding: 13px 15px; border-left: 3px solid var(--black); background: #f0f1f3; color: #41474e; font-size: 12px; line-height: 1.65; }
 
 .field-label { display: block; margin: 22px 0 9px; font-size: 13px; font-weight: 800; }

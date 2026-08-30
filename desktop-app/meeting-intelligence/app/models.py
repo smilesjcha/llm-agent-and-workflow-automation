@@ -50,6 +50,17 @@ class TranscriptSegment(BaseModel):
         return self
 
 
+class TranscriptEnvelope(BaseModel):
+    """One normalized transcript source shared by all input adapters."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_mode: SourceMode
+    source_filename: str = Field(min_length=1, max_length=255)
+    segments: list[TranscriptSegment] = Field(min_length=1)
+    source_count: Literal[1] = 1
+
+
 class EvidenceItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

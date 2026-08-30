@@ -7,6 +7,7 @@ const resultPanel = document.querySelector("#result");
 const formError = document.querySelector("#form-error");
 const providerSelect = document.querySelector("#provider");
 let lastResult = null;
+let loadedTranscriptSample = null;
 
 const sourceLabels = {
   google_meet: "Google Meet 또는 전사 TXT",
@@ -72,6 +73,7 @@ function selectedSource() {
 
 function updateSourceUI() {
   const source = selectedSource();
+  loadedTranscriptSample = null;
   document.querySelectorAll(".source-card").forEach(card => {
     card.classList.toggle("selected", card.querySelector("input").checked);
   });
@@ -99,6 +101,26 @@ providerSelect.addEventListener("change", () => {
   document.querySelector("#model-field").classList.toggle("hidden", providerSelect.value !== "openai");
 });
 
+document.querySelector("#load-text-sample").addEventListener("click", async () => {
+  const source = selectedSource();
+  if (source === "audio") {
+    showFormError("예시 전사를 사용하려면 Google Meet 또는 ClovaNote 입력을 선택해 주세요.");
+    return;
+  }
+  const sampleName = source === "clova_note" ? "clova-note" : "google-meet";
+  const filename = source === "clova_note" ? "clova_note_sample_ko.txt" : "google_meet_sample_ko.txt";
+  try {
+    const response = await fetch(`/api/samples/${sampleName}`);
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
+    loadedTranscriptSample = new File([await response.blob()], filename, { type: "text/plain" });
+    transcriptInput.value = "";
+    document.querySelector("#text-file-label").textContent = `${filename} · 예시 준비 완료`;
+    formError.classList.add("hidden");
+  } catch (error) {
+    showFormError(`예시 파일을 불러오지 못했습니다. ${error.message}`);
+  }
+});
+
 document.querySelectorAll(".tab").forEach(button => {
   button.addEventListener("click", () => showTab(button.dataset.tab));
 });
@@ -121,7 +143,7 @@ form.addEventListener("submit", async event => {
   event.preventDefault();
   formError.classList.add("hidden");
   const source = selectedSource();
-  const selectedFile = source === "audio" ? audioInput.files[0] : transcriptInput.files[0];
+  const selectedFile = source === "audio" ? audioInput.files[0] : (transcriptInput.files[0] || loadedTranscriptSample);
   const outputs = [...form.querySelectorAll('input[name="output_kind"]:checked')].map(input => input.value);
   if (!selectedFile) {
     showFormError(source === "audio" ? "회의 녹음 파일을 선택해 주세요." : "전사 TXT 파일을 선택해 주세요.");
@@ -137,7 +159,12 @@ form.addEventListener("submit", async event => {
   data.set("requested_outputs", outputs.join(","));
   data.set("allow_fixture_fallback", form.querySelector('input[name="allow_fixture_fallback"]').checked ? "true" : "false");
   if (source === "audio") data.delete("transcript_file");
-  else data.delete("audio");
+  else {
+    data.delete("audio");
+    if (!transcriptInput.files[0] && loadedTranscriptSample) {
+      data.set("transcript_file", loadedTranscriptSample, loadedTranscriptSample.name);
+    }
+  }
 
   runButton.disabled = true;
   runButton.textContent = source === "audio" ? "음성을 글로 바꾸고 기록 만드는 중" : "회의 기록 만드는 중";
@@ -334,7 +361,14 @@ fetch("/api/capabilities")
   .then(data => {
     const voiceReady = data.inputs?.live_stt_dependency_installed ?? data.stt?.live_dependency_installed;
     const openAI = data.providers?.openai_configured;
-    document.querySelector("#health").textContent = `로컬 앱 준비 · 음성 변환 ${voiceReady ? "가능" : "추가 준비 필요"} · OpenAI API ${openAI ? "설정됨" : "선택 사항"}`;
+    const bridgeReady = data.providers?.host_bridge_configured;
+    const mode = data.runtime?.delivery_mode === "docker" ? "Docker" : "localhost";
+    document.querySelector("#health").textContent = `${mode} 준비 · 연습용 결과 가능 · 음성 변환 ${voiceReady ? "가능" : "추가 준비"} · OpenAI ${openAI ? "설정됨" : "선택"}`;
+    ["codex", "claude"].forEach(provider => {
+      const option = providerSelect.querySelector(`option[value="${provider}"]`);
+      option.disabled = !bridgeReady;
+      if (!bridgeReady && !option.textContent.includes("강사 확장")) option.textContent += " · 강사 확장";
+    });
     if (data.providers?.openai_default_model) document.querySelector("#model").value = data.providers.openai_default_model;
   })
   .catch(() => { document.querySelector("#health").textContent = "로컬 앱 연결 확인 필요"; });

@@ -32,9 +32,10 @@ def safe_output_path(path: Path) -> Path:
     return resolved
 
 
-def _request_payload(client: Any) -> tuple[dict[str, Any], dict[str, Any]]:
+def _request_payload(client: Any) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     fixtures = APP_ROOT / "fixtures"
     health_response = client.get("/health")
+    capabilities_response = client.get("/api/capabilities")
     process_response = client.post(
         "/api/process",
         files={
@@ -55,9 +56,11 @@ def _request_payload(client: Any) -> tuple[dict[str, Any], dict[str, Any]]:
     )
     if health_response.status_code != 200:
         raise RuntimeError(f"DAY2_DESKTOP_HEALTH_FAILED:{health_response.status_code}")
+    if capabilities_response.status_code != 200:
+        raise RuntimeError(f"DAY2_DESKTOP_CAPABILITIES_FAILED:{capabilities_response.status_code}")
     if process_response.status_code != 200:
         raise RuntimeError(f"DAY2_DESKTOP_PROCESS_FAILED:{process_response.status_code}")
-    return health_response.json(), process_response.json()
+    return health_response.json(), capabilities_response.json(), process_response.json()
 
 
 def run_in_process_smoke() -> dict[str, Any]:
@@ -67,11 +70,11 @@ def run_in_process_smoke() -> dict[str, Any]:
         from app.main import app
 
         with TestClient(app) as client:
-            health, result = _request_payload(client)
+            health, capabilities, result = _request_payload(client)
     finally:
         if sys.path and sys.path[0] == str(APP_ROOT):
             sys.path.pop(0)
-    return _build_report("FASTAPI_TESTCLIENT", health, result)
+    return _build_report("FASTAPI_TESTCLIENT", health, capabilities, result)
 
 
 def _validate_loopback(base_url: str) -> str:
@@ -86,18 +89,28 @@ def run_http_smoke(base_url: str) -> dict[str, Any]:
 
     base_url = _validate_loopback(base_url)
     with httpx.Client(base_url=base_url, timeout=30.0) as client:
-        health, result = _request_payload(client)
-    return _build_report("LOOPBACK_HTTP", health, result)
+        health, capabilities, result = _request_payload(client)
+    return _build_report("LOOPBACK_HTTP", health, capabilities, result)
 
 
-def _build_report(mode: str, health: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+def _build_report(
+    mode: str,
+    health: dict[str, Any],
+    capabilities: dict[str, Any],
+    result: dict[str, Any],
+) -> dict[str, Any]:
     plan = result.get("integration_plan") or []
+    email = result.get("email_draft") or {}
     checks = {
-        "health_ok": health.get("status") == "ok",
+        "health_ok": health.get("status") == "ok" and health.get("service") == "meeting-intelligence",
+        "health_external_write_blocked": health.get("external_write") is False,
+        "fixture_lane_ready": (capabilities.get("runtime") or {}).get("fixture_ready") is True,
         "pipeline_ready": result.get("status") == "READY",
+        "human_review_stage": result.get("stage") == "human_review",
         "fixture_provider_used": result.get("provider_used") == "fixture",
         "human_review_required": result.get("human_review_required") is True,
         "external_write_blocked": result.get("external_write") is False,
+        "email_draft_only": email.get("send_status") == "DRAFT_ONLY",
         "integration_plan_only": bool(plan)
         and all(item.get("status") == "PLAN_ONLY" and item.get("approval_required") is True for item in plan),
         "evidence_present": bool((result.get("meeting_record") or {}).get("summary", {}).get("evidence_ids")),
@@ -107,9 +120,14 @@ def _build_report(mode: str, health: dict[str, Any], result: dict[str, Any]) -> 
         "status": "PASS" if all(checks.values()) else "FAIL",
         "execution_mode": mode,
         "source_mode": result.get("source_mode"),
+        "service_version": health.get("version"),
+        "delivery_mode": (capabilities.get("runtime") or {}).get("delivery_mode"),
         "provider_requested": result.get("provider_requested"),
         "provider_used": result.get("provider_used"),
         "result_status": result.get("status"),
+        "stage": result.get("stage"),
+        "email_status": email.get("send_status"),
+        "integration_plan_only": checks["integration_plan_only"],
         "human_review_required": result.get("human_review_required"),
         "external_write": result.get("external_write"),
         "checks": checks,

@@ -15,6 +15,7 @@ from .models import (
     OutputKind,
     Participant,
     PipelineResult,
+    TranscriptEnvelope,
     TranscriptSegment,
 )
 from .providers import ProviderError, summarize
@@ -389,6 +390,12 @@ def process_request(
             model_requested=model,
         )
 
+    envelope = TranscriptEnvelope(
+        source_mode=source_mode,
+        source_filename=filename,
+        segments=segments,
+    )
+    segments = envelope.segments
     transcript_errors = quality_errors(segments)
     if transcript_errors:
         result = _hold(

@@ -25,11 +25,14 @@ def test_day2_preflight_is_offline_and_reference_outputs_are_safe() -> None:
     assert "openai" not in commands
     assert "langsmith" not in commands
     assert "docker" not in commands
+    assert "scripts/run_day2_local_app.py" in commands
+    assert "--smoke-and-exit" in commands
     result = validate_reference_outputs()
     assert result["status"] == "PASS"
     assert result["role"] == "CHECKED_IN_REFERENCE_EXAMPLES"
     assert result["human_review_markers"] > 0
     assert validate_package_checksums()["status"] == "PASS"
+    assert validate_package_checksums()["release"]["default_delivery"] == "localhost"
 
 
 def test_day2_preflight_blocks_unsafe_reference_and_outside_output(tmp_path: Path) -> None:
@@ -55,7 +58,20 @@ def test_day2_bundle_manifest_is_reviewed_and_secret_free(tmp_path: Path) -> Non
     assert "materials/day2/day2_service_lab.ipynb" in relative
     assert "data/day2_public_audio/meeting_ko_ccby_excerpt_10m.mp3" in relative
     assert "desktop-app/meeting-intelligence/dist/MeetingIntelligence-Windows.exe" in relative
+    assert "scripts/run_day2_local_app.py" in relative
+    assert "desktop-app/meeting-intelligence/scripts/run-local.command" in relative
+    assert "desktop-app/meeting-intelligence/scripts/run-local.cmd" in relative
+    assert "desktop-app/meeting-intelligence/tests/test_api.py" in relative
+    assert "desktop-app/meeting-intelligence/tests/test_transcript_envelope.py" not in relative
     assert not any("/.venv/" in f"/{item}/" or item.endswith("/.env") for item in relative)
+
+    for launcher in (
+        ROOT / "desktop-app/meeting-intelligence/scripts/run-local.command",
+        ROOT / "desktop-app/meeting-intelligence/scripts/run-local.cmd",
+    ):
+        content = launcher.read_text(encoding="utf-8")
+        assert "requirements-localhost.txt" in content
+        assert "scripts/run_day2_local_app.py" in content.replace("\\", "/")
 
     root = tmp_path / "workspace"
     root.mkdir()

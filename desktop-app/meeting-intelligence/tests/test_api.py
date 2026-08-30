@@ -12,6 +12,26 @@ client = TestClient(app)
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
 
 
+def test_health_identifies_local_service_and_safety_boundary() -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+        "service": "meeting-intelligence",
+        "version": "2.1.0",
+        "external_write": False,
+    }
+
+
+def test_index_exposes_one_click_fixture_path() -> None:
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'id="load-text-sample"' in response.text
+    assert "예시로 바로 시작" in response.text
+
+
 def test_capabilities_treats_disabled_bridge_token_as_not_configured(monkeypatch) -> None:
     monkeypatch.setenv("HOST_BRIDGE_TOKEN", "disabled")
 

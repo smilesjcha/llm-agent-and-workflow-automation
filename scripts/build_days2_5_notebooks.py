@@ -1353,9 +1353,9 @@ NOTEBOOKS[2] = notebook(
         human_review_result
         """),
         markdown("""
-        ## 8차시 · Desktop App Package
+        ## 8차시 · Localhost App · 선택 Package
 
-        세 시나리오의 결과를 로컬 Markdown과 이메일 초안으로 만들고 같은 핵심 기능을 Desktop UI에서 실행합니다. 수신자는 비어 있고 발송은 `false`입니다. 소스 실행과 Docker 실행, macOS PKG·Windows EXE 전달 경로까지 확인한 뒤 Day 2와 기존 Day 1 회귀 Test를 실행합니다.
+        세 시나리오의 결과를 로컬 Markdown과 이메일 초안으로 만들고 같은 핵심 기능을 localhost UI에서 실제 실행합니다. 수강생 기본 경로는 Python 환경을 재사용하는 localhost이며, unsigned EXE·PKG는 Docker가 준비된 강사 PC의 선택 시연입니다.
         """),
         code("""
         markdown_files = {}
@@ -1368,12 +1368,33 @@ NOTEBOOKS[2] = notebook(
             email_drafts[name] = render_email_draft(record, audience="internal")
 
         save_json("08_email_drafts.json", email_drafts)
+        localhost_report_path = OUT / "08_localhost_launch.json"
+        localhost_smoke = run_command(
+            sys.executable,
+            "scripts/run_day2_local_app.py",
+            "--smoke-and-exit",
+            "--port",
+            "0",
+            "--report",
+            str(localhost_report_path.relative_to(ROOT)),
+        )
+        assert localhost_smoke["returncode"] == 0
+        localhost_report = json.loads(localhost_report_path.read_text(encoding="utf-8"))
+        save_json("08_localhost_launch.json", localhost_report)
         desktop_delivery = {
-            "source_run": "cd desktop-app/meeting-intelligence && python -m uvicorn app.main:app --host 127.0.0.1 --port 8766",
-            "docker_run": "cd desktop-app/meeting-intelligence && docker compose up --build",
+            "primary_run": "python scripts/run_day2_local_app.py",
+            "macos_double_click": "desktop-app/meeting-intelligence/scripts/run-local.command",
+            "windows_double_click": "desktop-app\\\\meeting-intelligence\\\\scripts\\\\run-local.cmd",
+            "port_recovery": "python scripts/run_day2_local_app.py --port 0",
+            "minimum_install": "python -m pip install -r desktop-app/meeting-intelligence/requirements-localhost.txt",
             "browser": "http://127.0.0.1:8766",
-            "windows_exe": "desktop-app/meeting-intelligence/dist/MeetingIntelligence-Windows.exe",
-            "macos_pkg": "desktop-app/meeting-intelligence/dist/MeetingIntelligence-macOS.pkg",
+            "optional_package": {
+                "windows_exe": "desktop-app/meeting-intelligence/dist/MeetingIntelligence-Windows.exe",
+                "macos_pkg": "desktop-app/meeting-intelligence/dist/MeetingIntelligence-macOS.pkg",
+                "docker_required": True,
+                "signed": False,
+                "role": "instructor_optional_demo",
+            },
             "human_review_required": True,
             "external_write": False,
         }
@@ -1390,16 +1411,21 @@ NOTEBOOKS[2] = notebook(
         )
         focused_test_evidence = record_test_evidence("day2_focused", focused_test)
         day1_test_evidence = record_test_evidence("day1_regression", day1_suite)
+        localhost_test_evidence = record_test_evidence("localhost_http_smoke", localhost_smoke)
         export_result = {
             "markdown_files": markdown_files,
             "email_drafts": email_drafts,
             "desktop_delivery": desktop_delivery,
-            "test_evidence": [focused_test_evidence, day1_test_evidence],
+            "localhost_launch": localhost_report,
+            "test_evidence": [focused_test_evidence, day1_test_evidence, localhost_test_evidence],
             "checks": {
                 "all_emails_unsent": all(item["send"] is False for item in email_drafts.values()),
                 "all_external_write_false": all(item["external_write"] is False for item in email_drafts.values()),
                 "focused_test_returncode": focused_test["returncode"],
                 "day1_suite_returncode": day1_suite["returncode"],
+                "localhost_smoke_returncode": localhost_smoke["returncode"],
+                "localhost_smoke_status": localhost_report["status"],
+                "localhost_external_write_false": localhost_report["external_write"] is False,
             },
         }
         assert export_result["checks"] == {
@@ -1407,6 +1433,9 @@ NOTEBOOKS[2] = notebook(
             "all_external_write_false": True,
             "focused_test_returncode": 0,
             "day1_suite_returncode": 0,
+            "localhost_smoke_returncode": 0,
+            "localhost_smoke_status": "PASS",
+            "localhost_external_write_false": True,
         }
         save_json("08_export_drafts.json", export_result)
         export_result

@@ -17,7 +17,8 @@ from .pipeline import ALL_OUTPUTS, process_request
 
 
 ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="나의 회의 기록 도우미", version="2.0.0")
+APP_VERSION = "2.1.0"
+app = FastAPI(title="나의 회의 기록 도우미", version=APP_VERSION)
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
 
@@ -40,8 +41,13 @@ def index() -> FileResponse:
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health() -> dict[str, str | bool]:
+    return {
+        "status": "ok",
+        "service": "meeting-intelligence",
+        "version": APP_VERSION,
+        "external_write": False,
+    }
 
 
 @app.get("/api/samples/{sample_name}", include_in_schema=False)
@@ -65,6 +71,11 @@ def sample_file(sample_name: str) -> FileResponse:
 def capabilities() -> dict:
     bridge_token = os.getenv("HOST_BRIDGE_TOKEN", "").strip()
     return {
+        "runtime": {
+            "delivery_mode": os.getenv("APP_DELIVERY_MODE", "source"),
+            "local_url": os.getenv("APP_LOCAL_URL", "http://127.0.0.1:8766"),
+            "fixture_ready": True,
+        },
         "inputs": {
             "google_meet_txt": True,
             "clova_note_txt": True,

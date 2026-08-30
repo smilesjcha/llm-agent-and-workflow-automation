@@ -1,0 +1,8 @@
+# Minimum localhost lane for TXT fixtures and the browser UI.
+# Install requirements.txt instead when live audio STT is required.
+fastapi==0.115.12
+httpx==0.28.1
+pydantic==2.12.5
+python-multipart==0.0.20
+requests==2.34.2
+uvicorn==0.34.2

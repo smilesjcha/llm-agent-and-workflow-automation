@@ -5,9 +5,10 @@ import io
 import wave
 
 import pytest
+from pydantic import ValidationError
 
 from app.audio import AudioValidationError, inspect_audio
-from app.models import ActionItem, EvidenceItem, MeetingBrief, TranscriptSegment
+from app.models import ActionItem, EvidenceItem, MeetingBrief, TranscriptEnvelope, TranscriptSegment
 from app.pipeline import process_meeting, validate_evidence
 
 
@@ -24,6 +25,35 @@ def wav_bytes(*, seconds: float = 1.0, sample_rate: int = 8000) -> bytes:
         wav_file.setframerate(sample_rate)
         wav_file.writeframes(b"\x00\x00" * int(seconds * sample_rate))
     return stream.getvalue()
+
+
+def test_transcript_envelope_normalizes_one_source() -> None:
+    envelope = TranscriptEnvelope(
+        source_mode="google_meet",
+        source_filename="meeting.txt",
+        segments=[
+            TranscriptSegment(
+                id="s001",
+                start=0,
+                end=3,
+                speaker="진행자",
+                text="오늘 회의의 입력 계약을 확인합니다.",
+            )
+        ],
+    )
+
+    assert envelope.source_count == 1
+    assert envelope.source_mode == "google_meet"
+    assert [segment.id for segment in envelope.segments] == ["s001"]
+
+
+def test_transcript_envelope_rejects_empty_segments() -> None:
+    with pytest.raises(ValidationError):
+        TranscriptEnvelope(
+            source_mode="clova_note",
+            source_filename="empty.txt",
+            segments=[],
+        )
 
 
 def test_fixture_pipeline_returns_grounded_ready_result() -> None:

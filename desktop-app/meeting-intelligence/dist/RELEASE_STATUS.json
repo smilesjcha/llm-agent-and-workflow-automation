@@ -1,0 +1,9 @@
+{
+  "version": "2.1.0",
+  "role": "OPTIONAL_UNSIGNED_EDUCATION_BUILD",
+  "default_delivery": "localhost",
+  "requires_docker": true,
+  "windows_signed": false,
+  "macos_signed": false,
+  "cli_bridge_default": "disabled"
+}

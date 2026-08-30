@@ -8,6 +8,8 @@ services:
     ports:
       - "127.0.0.1:8766:8000"
     environment:
+      APP_DELIVERY_MODE: "docker"
+      APP_LOCAL_URL: "http://127.0.0.1:8766"
       WHISPER_MODEL: "${WHISPER_MODEL:-small}"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3:4b}"
       OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
