@@ -22,7 +22,9 @@ import shutil
 import subprocess
 from typing import Any, Callable, Literal, Mapping, TypedDict
 
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import Command, interrupt
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 
@@ -210,6 +212,7 @@ class WorkflowState(TypedDict, total=False):
     trace: list[dict[str, Any]]
     status: str
     external_write: bool
+    review_thread_id: str
 
 
 _TIMESTAMP_SPEAKER = re.compile(
@@ -1020,6 +1023,110 @@ def _export_node(state: WorkflowState) -> dict[str, Any]:
     }
 
 
+def _route_after_evidence(state: WorkflowState) -> Literal["human_review", "evidence_hold"]:
+    """Send invalid evidence to a terminal hold before asking a person to review."""
+
+    return "evidence_hold" if state.get("evidence_errors") else "human_review"
+
+
+def _evidence_hold_node(state: WorkflowState) -> dict[str, Any]:
+    """Create a stable terminal result when the record cannot be grounded."""
+
+    review = {
+        "decision": None,
+        "status": "HOLD_EVIDENCE_ERROR",
+        "export_ready": False,
+        "human_reviewed": False,
+        "external_write": False,
+    }
+    exports = {
+        "status": "SKIPPED_EVIDENCE_ERROR",
+        "markdown": None,
+        "email": None,
+        "external_write": False,
+    }
+    return {
+        "review": review,
+        "exports": exports,
+        "status": "HOLD_EVIDENCE_ERROR",
+        "external_write": False,
+        "trace": _event(
+            state,
+            "evidence_hold",
+            "HOLD_EVIDENCE_ERROR",
+            error_count=len(state.get("evidence_errors", [])),
+        ),
+    }
+
+
+def _interruptible_review_node(state: WorkflowState) -> dict[str, Any]:
+    """Pause the graph and resume only with an explicit approve/edit/reject payload."""
+
+    record = MeetingRecord.model_validate(state["record"])
+    review_request = {
+        "kind": "MEETING_RECORD_HUMAN_REVIEW",
+        "thread_id": state["review_thread_id"],
+        "status": "WAITING_FOR_HUMAN_REVIEW",
+        "allowed_decisions": ["approve", "edit", "reject"],
+        "record": record.model_dump(mode="json"),
+        "evidence_errors": list(state.get("evidence_errors", [])),
+        "human_review_required": True,
+        "external_write": False,
+    }
+    resume_payload = interrupt(review_request)
+    if not isinstance(resume_payload, Mapping):
+        raise ValueError("REVIEW_RESUME_PAYLOAD_REQUIRED")
+    decision = resume_payload.get("decision")
+    if decision not in {"approve", "edit", "reject"}:
+        raise ValueError("REVIEW_DECISION_INVALID")
+    edits = resume_payload.get("edits", {})
+    if not isinstance(edits, Mapping):
+        raise ValueError("REVIEW_EDITS_INVALID")
+    reviewed, review = review_meeting_record(
+        record,
+        decision=decision,
+        edits=edits,
+    )
+    return {
+        "record": reviewed.model_dump(mode="json"),
+        "review": review,
+        "status": review["status"],
+        "external_write": False,
+        "trace": _event(
+            state,
+            "human_review",
+            review["status"],
+            decision=review["decision"],
+        ),
+    }
+
+
+def _route_after_interruptible_review(
+    state: WorkflowState,
+) -> Literal["export_draft", "review_rejected"]:
+    """Export only approved or edited records; rejection is a separate terminal path."""
+
+    review = state.get("review", {})
+    return "export_draft" if review.get("export_ready") else "review_rejected"
+
+
+def _review_rejected_node(state: WorkflowState) -> dict[str, Any]:
+    """Finish a rejected review without creating a Markdown or e-mail draft."""
+
+    exports = {
+        "status": "SKIPPED_NOT_APPROVED",
+        "markdown": None,
+        "email": None,
+        "external_write": False,
+    }
+    return {
+        "exports": exports,
+        "status": "REJECTED",
+        "external_write": False,
+        "trace": _event(state, "review_rejected", "REJECTED"),
+    }
+
+
 def build_meeting_graph():
     """Compile the actual LangGraph used by all three classroom scenarios."""
 
@@ -1040,6 +1147,159 @@ def build_meeting_graph():
     builder.add_edge("human_review", "export_draft")
     builder.add_edge("export_draft", END)
     return builder.compile()
+
+
+def build_interruptible_meeting_graph(*, checkpointer: Any | None = None):
+    """Compile the classroom pause/resume graph with an in-memory checkpointer.
+
+    The deterministic :func:`run_meeting_workflow` API remains unchanged for
+    batch and regression use.  This graph is the interactive teaching path:
+    evidence errors stop before review, a valid record calls ``interrupt()``,
+    and only an explicit resume command can create local drafts.
+    """
+
+    builder = StateGraph(WorkflowState)
+    builder.add_node("policy", _policy_node)
+    builder.add_node("input_normalize", _normalize_node)
+    builder.add_node("stt_optional", _stt_node)
+    builder.add_node("structure", _structure_node)
+    builder.add_node("evidence", _evidence_node)
+    builder.add_node("evidence_hold", _evidence_hold_node)
+    builder.add_node("human_review", _interruptible_review_node)
+    builder.add_node("export_draft", _export_node)
+    builder.add_node("review_rejected", _review_rejected_node)
+    builder.add_edge(START, "policy")
+    builder.add_edge("policy", "input_normalize")
+    builder.add_edge("input_normalize", "stt_optional")
+    builder.add_edge("stt_optional", "structure")
+    builder.add_edge("structure", "evidence")
+    builder.add_conditional_edges(
+        "evidence",
+        _route_after_evidence,
+        {
+            "human_review": "human_review",
+            "evidence_hold": "evidence_hold",
+        },
+    )
+    builder.add_conditional_edges(
+        "human_review",
+        _route_after_interruptible_review,
+        {
+            "export_draft": "export_draft",
+            "review_rejected": "review_rejected",
+        },
+    )
+    builder.add_edge("evidence_hold", END)
+    builder.add_edge("export_draft", END)
+    builder.add_edge("review_rejected", END)
+    selected_checkpointer = checkpointer if checkpointer is not None else InMemorySaver()
+    return builder.compile(checkpointer=selected_checkpointer)
+
+
+def _interruptible_result(
+    result: Mapping[str, Any],
+    *,
+    thread_id: str,
+) -> dict[str, Any]:
+    """Convert LangGraph interrupt objects into a JSON-serializable result."""
+
+    serialized = {
+        key: value
+        for key, value in result.items()
+        if key != "__interrupt__" and key != "transcriber"
+    }
+    interrupt_items = []
+    for item in result.get("__interrupt__", []):
+        interrupt_items.append(
+            {
+                "id": str(item.id),
+                "value": item.value,
+            }
+        )
+    if interrupt_items:
+        serialized["status"] = "WAITING_FOR_HUMAN_REVIEW"
+    serialized.update(
+        {
+            "thread_id": thread_id,
+            "interrupts": interrupt_items,
+            "framework": "LangGraph",
+            "checkpointer": "InMemorySaver",
+            "graph_nodes": [
+                "policy",
+                "input_normalize",
+                "stt_optional",
+                "structure",
+                "evidence",
+                "evidence_hold",
+                "human_review",
+                "export_draft",
+                "review_rejected",
+            ],
+            "external_write": False,
+        }
+    )
+    return serialized
+
+
+def start_interruptible_meeting_review(
+    graph: Any,
+    source_input: SourceInput | Mapping[str, Any],
+    domain_context: DomainContext | Mapping[str, Any],
+    *,
+    thread_id: str,
+    transcriber: STTCallable | None = None,
+    retrieval_policy: MCPRetrievalPolicy | Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run to the Human Review interrupt and persist state under ``thread_id``."""
+
+    if not thread_id.strip():
+        raise ValueError("REVIEW_THREAD_ID_REQUIRED")
+    source = SourceInput.model_validate(source_input)
+    domain = DomainContext.model_validate(domain_context)
+    policy_payload = (
+        MCPRetrievalPolicy.model_validate(retrieval_policy).model_dump(mode="json")
+        if retrieval_policy is not None
+        else None
+    )
+    config = {"configurable": {"thread_id": thread_id}}
+    result = graph.invoke(
+        {
+            "source_input": source.model_dump(mode="json"),
+            "domain_context": domain.model_dump(mode="json"),
+            "transcriber": transcriber,
+            "retrieval_policy": policy_payload,
+            "trace": [],
+            "status": "CREATED",
+            "external_write": False,
+            "review_thread_id": thread_id,
+        },
+        config=config,
+    )
+    return _interruptible_result(result, thread_id=thread_id)
+
+
+def resume_interruptible_meeting_review(
+    graph: Any,
+    *,
+    thread_id: str,
+    decision: ReviewDecision,
+    edits: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Resume one paused review with ``Command(resume=...)`` and return its result."""
+
+    if not thread_id.strip():
+        raise ValueError("REVIEW_THREAD_ID_REQUIRED")
+    if decision not in {"approve", "edit", "reject"}:
+        raise ValueError("REVIEW_DECISION_INVALID")
+    config = {"configurable": {"thread_id": thread_id}}
+    snapshot = graph.get_state(config)
+    if not snapshot.interrupts:
+        raise ValueError("REVIEW_THREAD_NOT_WAITING")
+    result = graph.invoke(
+        Command(resume={"decision": decision, "edits": dict(edits or {})}),
+        config=config,
+    )
+    return _interruptible_result(result, thread_id=thread_id)
 
 
 def run_meeting_workflow(

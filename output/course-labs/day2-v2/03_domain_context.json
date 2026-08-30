@@ -51,7 +51,7 @@
         "allowed_scopes": [
           "CX PoC"
         ],
-        "max_items": 12,
+        "max_items": 5,
         "participant_match_required": true,
         "private_message_collection": false
       },
@@ -67,7 +67,7 @@
         "allowed_scopes": [
           "CX 정책"
         ],
-        "max_items": 12,
+        "max_items": 5,
         "participant_match_required": true,
         "private_message_collection": false
       },
@@ -83,7 +83,7 @@
         "allowed_scopes": [
           "#delivery-poc"
         ],
-        "max_items": 12,
+        "max_items": 5,
         "participant_match_required": true,
         "private_message_collection": false
       }

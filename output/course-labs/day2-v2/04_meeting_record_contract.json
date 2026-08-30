@@ -1,0 +1,279 @@
+{
+  "schema": {
+    "name": "MeetingRecord",
+    "field_names": [
+      "title",
+      "domain",
+      "purpose",
+      "previous_context",
+      "meeting_summary",
+      "summary_evidence_ids",
+      "participant_perspectives",
+      "todos",
+      "insights",
+      "wellbeing_risks",
+      "evidence_segment_count",
+      "status",
+      "human_review_required",
+      "external_write"
+    ],
+    "required_fields": [
+      "title",
+      "domain",
+      "purpose",
+      "previous_context",
+      "meeting_summary",
+      "summary_evidence_ids",
+      "participant_perspectives",
+      "todos",
+      "insights",
+      "evidence_segment_count"
+    ],
+    "properties": {
+      "title": {
+        "minLength": 1,
+        "title": "Title",
+        "type": "string"
+      },
+      "domain": {
+        "minLength": 1,
+        "title": "Domain",
+        "type": "string"
+      },
+      "purpose": {
+        "minLength": 1,
+        "title": "Purpose",
+        "type": "string"
+      },
+      "previous_context": {
+        "minLength": 1,
+        "title": "Previous Context",
+        "type": "string"
+      },
+      "meeting_summary": {
+        "minLength": 1,
+        "title": "Meeting Summary",
+        "type": "string"
+      },
+      "summary_evidence_ids": {
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "title": "Summary Evidence Ids",
+        "type": "array"
+      },
+      "participant_perspectives": {
+        "items": {
+          "$ref": "#/$defs/ParticipantPerspective"
+        },
+        "minItems": 1,
+        "title": "Participant Perspectives",
+        "type": "array"
+      },
+      "todos": {
+        "items": {
+          "$ref": "#/$defs/TodoItem"
+        },
+        "minItems": 1,
+        "title": "Todos",
+        "type": "array"
+      },
+      "insights": {
+        "$ref": "#/$defs/HorizonInsights"
+      },
+      "wellbeing_risks": {
+        "items": {
+          "$ref": "#/$defs/WellbeingRisk"
+        },
+        "title": "Wellbeing Risks",
+        "type": "array"
+      },
+      "evidence_segment_count": {
+        "minimum": 1,
+        "title": "Evidence Segment Count",
+        "type": "integer"
+      },
+      "status": {
+        "default": "DRAFT",
+        "enum": [
+          "DRAFT",
+          "APPROVED",
+          "EDITED"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "human_review_required": {
+        "const": true,
+        "default": true,
+        "title": "Human Review Required",
+        "type": "boolean"
+      },
+      "external_write": {
+        "const": false,
+        "default": false,
+        "title": "External Write",
+        "type": "boolean"
+      }
+    }
+  },
+  "actual_record": {
+    "title": "배송 지연 회의 기록 자동화 범위 확정 회의 기록",
+    "domain": "이커머스 고객경험",
+    "purpose": "배송 지연 회의 기록 자동화 범위 확정",
+    "previous_context": "외부 발송은 사람 승인 뒤에만 진행; 환불 자동화는 이번 범위에서 제외",
+    "meeting_summary": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+    "summary_evidence_ids": [
+      "s01",
+      "s02"
+    ],
+    "participant_perspectives": [
+      {
+        "participant": "민지",
+        "perspective": "오늘은 배송 지연 회의 기록 자동화 범위를 확정하겠습니다. 최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+        "evidence_ids": [
+          "s01",
+          "s04"
+        ]
+      },
+      {
+        "participant": "준호",
+        "perspective": "WISMO 문의를 우선 처리하고 환불 자동화는 보류하는 것이 좋겠습니다.",
+        "evidence_ids": [
+          "s02"
+        ]
+      },
+      {
+        "participant": "서연",
+        "perspective": "제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+        "evidence_ids": [
+          "s03"
+        ]
+      }
+    ],
+    "todos": [
+      {
+        "task": "제가 9월 2일까지 고객 안내 문구를 정리해 공유하겠습니다.",
+        "owner": "서연",
+        "due_date": "2026-09-02",
+        "evidence_ids": [
+          "s03"
+        ]
+      }
+    ],
+    "insights": {
+      "short_term": [
+        "담당자·기한이 비어 있는 실행 항목을 먼저 확정하고 근거가 있는 담당자별 To Do 초안을 준비"
+      ],
+      "medium_term": [
+        "반복되는 회의 입력을 동일 계약으로 정규화하고 품질 기준을 수치화"
+      ],
+      "long_term": [
+        "이커머스 고객경험 맥락·근거·승인 이력을 조직 지식으로 축적"
+      ]
+    },
+    "wellbeing_risks": [
+      {
+        "signal": "최근 야근 부담이 있으니 이번 범위를 더 늘리지 않겠습니다.",
+        "risk": "업무 지속 가능성 저하 가능성",
+        "severity": "MEDIUM",
+        "mitigation": "담당 범위·기한을 다시 확인하고 필요한 경우 업무량을 조정",
+        "evidence_ids": [
+          "s04"
+        ]
+      }
+    ],
+    "evidence_segment_count": 4,
+    "status": "APPROVED",
+    "human_review_required": true,
+    "external_write": false
+  },
+  "evidence_validation": {
+    "known_segment_ids": [
+      "s01",
+      "s02",
+      "s03",
+      "s04"
+    ],
+    "errors": []
+  },
+  "execution_strategy_comparison": [
+    {
+      "strategy": "single_llm",
+      "control_flow": "한 번의 구조화 요청",
+      "best_for": "입력과 산출물이 단순한 일회성 작업",
+      "llm_calls": "1",
+      "strength": "가장 빠른 시작",
+      "risk": "누락·형식 변동을 한 호출 안에서 발견하기 어려움"
+    },
+    {
+      "strategy": "deterministic_workflow",
+      "control_flow": "고정 노드와 검증 규칙",
+      "best_for": "STT→요약→근거→승인처럼 순서가 정해진 반복 업무",
+      "llm_calls": "0~필요한 노드 수",
+      "strength": "비용·오류 위치·재실행 범위 예측 가능",
+      "risk": "새 유즈케이스는 사람이 Workflow를 추가해야 함"
+    },
+    {
+      "strategy": "agent_router",
+      "control_flow": "요청·정책을 읽고 도구/Workflow 선택",
+      "best_for": "Notion·Confluence·Slack 등 필요한 정보원이 요청마다 달라지는 작업",
+      "llm_calls": "상황별 다수",
+      "strength": "모호한 요청과 다양한 도구 조합에 대응",
+      "risk": "비용·권한·잘못된 도구 선택 위험이 가장 큼"
+    }
+  ],
+  "rule_router_examples": {
+    "fixed_meeting_record": {
+      "strategy": "deterministic_workflow",
+      "reason": "KNOWN_REPEATABLE_SEQUENCE",
+      "requested_actions": [
+        "normalize",
+        "summarize",
+        "perspectives",
+        "todos",
+        "insights",
+        "draft"
+      ],
+      "unknown_actions": [],
+      "external_context_sources": [],
+      "router_provider": "rule_based",
+      "llm_router_call": false
+    },
+    "context_retrieval_needed": {
+      "strategy": "agent_router",
+      "reason": "VARIABLE_CONTEXT_OR_AMBIGUOUS_REQUEST",
+      "requested_actions": [
+        "summarize",
+        "todos"
+      ],
+      "unknown_actions": [],
+      "external_context_sources": [
+        "notion",
+        "confluence",
+        "slack"
+      ],
+      "router_provider": "rule_based",
+      "llm_router_call": false
+    },
+    "one_off_unmodeled_request": {
+      "strategy": "single_llm",
+      "reason": "ONE_OFF_UNMODELED_TRANSFORMATION",
+      "requested_actions": [
+        "rewrite_as_podcast_script"
+      ],
+      "unknown_actions": [
+        "rewrite_as_podcast_script"
+      ],
+      "external_context_sources": [],
+      "router_provider": "rule_based",
+      "llm_router_call": false
+    }
+  },
+  "delivery_policy": {
+    "human_review_required": true,
+    "external_write": false,
+    "draft_status": "DRAFT_READY"
+  }
+}

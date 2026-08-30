@@ -95,7 +95,7 @@ def notebook(title: str, day: int, cells: list[dict]) -> dict:
                 f"""
                 # {title}
 
-                하나의 입력을 8개 차시 동안 확장합니다. 웹사이트 확인이 아니라 코드·명령·test·결과 파일을 직접 다루며, 모든 외부 쓰기는 dry-run과 사람 승인을 먼저 거칩니다.
+                하나의 입력을 8개 차시 동안 확장합니다. 웹사이트 확인이 아니라 코드·명령·test·결과 파일을 직접 다루며, 외부 서비스 저장·게시·발송은 dry-run과 사람 승인을 먼저 거칩니다.
                 """
             ),
             code(
@@ -155,7 +155,7 @@ def notebook(title: str, day: int, cells: list[dict]) -> dict:
 
                 - Day {day}의 1~8차시 결과 파일을 확인했습니다.
                 - 정상 경로와 가장 중요한 실패 경로를 모두 실행했습니다.
-                - 외부 쓰기와 자동 메일이 기본값 `false`임을 확인했습니다.
+                - 외부 서비스 저장·게시·발송과 자동 메일이 기본값 `false`임을 확인했습니다.
                 - Codex·Claude Code 결과는 test와 diff를 사람이 검토한 뒤에만 반영합니다.
                 """
             ),
@@ -638,7 +638,7 @@ NOTEBOOKS[2] = notebook(
     2,
     [
         markdown("""
-        ## 1차시 · 회의 Agent 전체 지도
+        ## 1차시 · Meeting Agent Architecture
 
         일반 사용자의 말로 시작해도 구현에서는 입력·맥락·변환·검증·승인·초안을 분리합니다. LLM은 한 단계의 판단 도구이고, Agent는 요청에 따라 정보원과 Workflow를 고르는 상위 실행 구조입니다.
         """),
@@ -646,9 +646,11 @@ NOTEBOOKS[2] = notebook(
         from src.course_services.day2_meeting_workflow import (
             DEFAULT_OPENAI_MODEL, DomainContext, MCPRetrievalPolicy, MeetingRecord,
             SourceInput, TranscriptEnvelope, build_mcp_retrieval_plan,
+            build_interruptible_meeting_graph,
             compact_workflow_result, compare_execution_strategies,
             diagnose_provider_options, normalize_source, render_email_draft,
-            route_execution_strategy, run_meeting_workflow,
+            resume_interruptible_meeting_review, route_execution_strategy,
+            run_meeting_workflow, start_interruptible_meeting_review,
             run_optional_cli_prompt, run_optional_openai_prompt, run_optional_openai_record,
             source_mixing_error_example,
             validate_record_evidence,
@@ -684,7 +686,7 @@ NOTEBOOKS[2] = notebook(
         architecture
         """),
         markdown("""
-        ## 2차시 · 세 가지 입력과 STT 선택
+        ## 2차시 · Input Route · STT
 
         Google Meet 텍스트, ClovaNote TXT, 로컬 음성은 출발점만 다릅니다. 텍스트가 이미 있으면 STT를 건너뛰고, 음성만 있을 때 로컬 STT를 실행합니다. 한 요청에 입력을 섞지 않고 모두 `TranscriptEnvelope`로 바꾼 뒤 같은 Workflow에 넣습니다.
         """),
@@ -764,7 +766,7 @@ NOTEBOOKS[2] = notebook(
         input_result
         """),
         markdown("""
-        ## 3차시 · 도메인 맥락과 MCP 정책
+        ## 3차시 · Domain Context · MCP Policy
 
         회의에서 말한 사실과 사용자가 제공한 업무 맥락을 분리합니다. Notion·Confluence·Slack이 필요해 보여도 자동으로 읽지 않고, 허용된 범위와 기간을 가진 MCP 읽기 계획만 먼저 만듭니다.
         """),
@@ -786,7 +788,7 @@ NOTEBOOKS[2] = notebook(
                 "notion": ["CX PoC"], "confluence": ["CX 정책"], "slack": ["#delivery-poc"],
             },
             participant_match_required=True,
-            max_items_per_connector=12,
+            max_items_per_connector=5,
         )
         mcp_plan = build_mcp_retrieval_plan(
             envelope=envelopes["google_meet_text"],
@@ -812,12 +814,20 @@ NOTEBOOKS[2] = notebook(
         context_result
         """),
         markdown("""
-        ## 4차시 · MeetingRecord 결과 계약
+        ## 4차시 · MeetingRecord Schema
 
         먼저 모든 실행 방식이 반환해야 할 `MeetingRecord`를 고정합니다. 그 다음 한 번의 생성이면 단일 LLM, 고정 순서면 Workflow, 정보원과 다음 행동이 요청마다 달라지면 Agent Router를 선택합니다. 알려진 경로를 고르는 데 LLM을 쓰지 않으면 비용과 오작동 지점을 줄일 수 있습니다.
         """),
         code("""
-        strategy_table = compare_execution_strategies()
+        record_contract_run = run_meeting_workflow(
+            sources["google_meet_text"],
+            domain_context,
+            review_decision="approve",
+            retrieval_policy=retrieval_policy,
+        )
+        actual_record = MeetingRecord.model_validate(record_contract_run["record"])
+        actual_envelope = TranscriptEnvelope.model_validate(record_contract_run["envelope"])
+        actual_schema = MeetingRecord.model_json_schema()
         routing_cases = {
             "fixed_meeting_record": route_execution_strategy(
                 requested_actions=["normalize", "summarize", "perspectives", "todos", "insights", "draft"]
@@ -830,34 +840,37 @@ NOTEBOOKS[2] = notebook(
                 requested_actions=["rewrite_as_podcast_script"]
             ),
         }
-        cost_guard = {
-            "default_router_llm_calls": 0,
-            "single_llm_expected_calls": 1,
-            "deterministic_workflow_default_llm_calls": 0,
-            "agent_router_budget_must_be_set": True,
-            "stop_conditions": ["MAX_TOOL_CALLS", "MAX_TOKEN_BUDGET", "POLICY_DENIED", "HUMAN_REVIEW"],
-        }
-        strategy_result = {
-            "meeting_record_contract": {
-                "required_fields": [
-                    "meeting_summary", "decisions", "participant_perspectives",
-                    "todos", "insights", "wellbeing_signals", "evidence_index",
-                ],
-                "evidence_rule": "사실·결정·할 일은 실제 발화 evidence ID와 연결",
-                "delivery_rule": "사람 승인 전에는 외부 저장·메일 발송 금지",
+        record_contract_result = {
+            "schema": {
+                "name": "MeetingRecord",
+                "field_names": list(MeetingRecord.model_fields),
+                "required_fields": actual_schema.get("required", []),
+                "properties": actual_schema["properties"],
             },
-            "comparison": strategy_table,
+            "actual_record": actual_record.model_dump(mode="json"),
+            "evidence_validation": {
+                "known_segment_ids": [segment.id for segment in actual_envelope.segments],
+                "errors": validate_record_evidence(actual_record, actual_envelope),
+            },
+            "execution_strategy_comparison": compare_execution_strategies(),
             "rule_router_examples": routing_cases,
-            "cost_guard": cost_guard,
+            "delivery_policy": {
+                "human_review_required": actual_record.human_review_required,
+                "external_write": actual_record.external_write,
+                "draft_status": record_contract_run["exports"]["status"],
+            },
         }
+        assert set(record_contract_result["actual_record"]) == set(MeetingRecord.model_fields)
+        assert record_contract_result["evidence_validation"]["errors"] == []
+        assert record_contract_result["delivery_policy"]["external_write"] is False
         assert routing_cases["fixed_meeting_record"]["strategy"] == "deterministic_workflow"
         assert routing_cases["context_retrieval_needed"]["strategy"] == "agent_router"
         assert routing_cases["one_off_unmodeled_request"]["strategy"] == "single_llm"
-        save_json("04_strategy_compare.json", strategy_result)
-        strategy_result
+        save_json("04_meeting_record_contract.json", record_contract_result)
+        record_contract_result
         """),
         markdown("""
-        ## 5차시 · Codex·Claude 시나리오 설계
+        ## 5차시 · Coding Agent Workflow
 
         Codex나 Claude Code에는 곧바로 “Agent를 만들어 줘”라고 하지 않습니다. 세 입력 시나리오, 공통 결과 계약, 금지 행동, 정상·실패 Test를 먼저 합의한 뒤 구현을 요청합니다. 아래 실행 결과가 대화형 코딩 Agent에게 전달할 인수 기준입니다.
         """),
@@ -917,7 +930,7 @@ NOTEBOOKS[2] = notebook(
         workflow_result["scenarios"]
         """),
         markdown("""
-        ## 6차시 · LLM Provider와 비용 경계
+        ## 6차시 · LLM Provider · Cost Guardrail
 
         기본 `Run All`은 API와 CLI를 호출하지 않습니다. OpenAI는 `OPENAI_LIVE_OPT_IN=1`과 환경변수 key가 모두 있을 때만 선택하며, 모델 접근 불가를 fixture 성공으로 위장하지 않고 `MODEL_NOT_AVAILABLE`로 남깁니다.
         """),
@@ -976,27 +989,56 @@ NOTEBOOKS[2] = notebook(
         provider_result
         """),
         markdown("""
-        ## 7차시 · LangGraph 사람 검증
+        ## 7차시 · LangGraph · Human Review
 
         승인·수정·거절은 각각 다른 상태와 산출물을 만듭니다. 존재하지 않는 evidence ID는 사람이 승인하기 전 `HOLD`하며, 수정은 허용된 필드만 다시 검증합니다.
         """),
         code("""
-        review_runs = {
-            "approve": run_meeting_workflow(
-                sources["google_meet_text"], domain_context, review_decision="approve"
-            ),
-            "edit": run_meeting_workflow(
-                sources["google_meet_text"], domain_context, review_decision="edit",
-                review_edits={
-                    "meeting_summary": "사람이 근거를 확인하고 배송 지연 기록 범위를 수정했습니다.",
-                    "todo_updates": {"0": {"owner": "민지", "due_date": "2026-09-05"}},
-                },
-            ),
-            "reject": run_meeting_workflow(
-                sources["google_meet_text"], domain_context, review_decision="reject"
-            ),
+        review_inputs = {
+            "approve": {},
+            "edit": {
+                "meeting_summary": "사람이 근거를 확인하고 배송 지연 기록 범위를 수정했습니다.",
+                "todo_updates": {"0": {"owner": "민지", "due_date": "2026-09-05"}},
+            },
+            "reject": {},
         }
-        boundary_record = MeetingRecord.model_validate(review_runs["approve"]["record"])
+        interruptible_runs = {}
+        for decision, edits in review_inputs.items():
+            review_graph = build_interruptible_meeting_graph()
+            thread_id = f"day2-{decision}-review"
+            started = start_interruptible_meeting_review(
+                review_graph,
+                sources["google_meet_text"],
+                domain_context,
+                thread_id=thread_id,
+                retrieval_policy=retrieval_policy,
+            )
+            resumed = resume_interruptible_meeting_review(
+                review_graph,
+                thread_id=thread_id,
+                decision=decision,
+                edits=edits,
+            )
+            interruptible_runs[decision] = {
+                "start": {
+                    "status": started["status"],
+                    "thread_id": started["thread_id"],
+                    "checkpointer": started["checkpointer"],
+                    "interrupt": started["interrupts"][0],
+                    "external_write": started["external_write"],
+                },
+                "resume": {
+                    "status": resumed["status"],
+                    "review": resumed["review"],
+                    "export_status": resumed["exports"]["status"],
+                    "trace": resumed["trace"],
+                    "external_write": resumed["external_write"],
+                },
+            }
+
+        boundary_record = MeetingRecord.model_validate(
+            record_contract_result["actual_record"]
+        )
         boundary_payload = boundary_record.model_dump(mode="json")
         boundary_payload["todos"][0]["evidence_ids"] = ["s999"]
         evidence_boundary = validate_record_evidence(
@@ -1004,26 +1046,37 @@ NOTEBOOKS[2] = notebook(
             envelopes["google_meet_text"],
         )
         human_review_result = {
-            "decisions": {
-                name: {
-                    "status": result["status"],
-                    "review": result["review"],
-                    "export_status": result["exports"]["status"],
-                    "external_write": result["external_write"],
-                }
-                for name, result in review_runs.items()
+            "graph": {
+                "framework": "LangGraph",
+                "checkpointer": "InMemorySaver",
+                "pause": "interrupt()",
+                "resume": "Command(resume=...)",
+                "conditional_routes": [
+                    "evidence → human_review | evidence_hold",
+                    "human_review → export_draft | review_rejected",
+                ],
             },
+            "decisions": interruptible_runs,
             "unknown_evidence_boundary": evidence_boundary,
         }
-        assert human_review_result["decisions"]["approve"]["status"] == "DRAFT_READY"
-        assert human_review_result["decisions"]["edit"]["status"] == "DRAFT_READY"
-        assert human_review_result["decisions"]["reject"]["status"] == "REJECTED"
+        assert all(
+            item["start"]["status"] == "WAITING_FOR_HUMAN_REVIEW"
+            for item in interruptible_runs.values()
+        )
+        assert interruptible_runs["approve"]["resume"]["status"] == "DRAFT_READY"
+        assert interruptible_runs["edit"]["resume"]["status"] == "DRAFT_READY"
+        assert interruptible_runs["reject"]["resume"]["status"] == "REJECTED"
+        assert interruptible_runs["reject"]["resume"]["export_status"] == "SKIPPED_NOT_APPROVED"
+        assert all(
+            item["resume"]["external_write"] is False
+            for item in interruptible_runs.values()
+        )
         assert evidence_boundary == ["TODO_1_UNKNOWN_EVIDENCE:s999"]
         save_json("07_human_review.json", human_review_result)
         human_review_result
         """),
         markdown("""
-        ## 8차시 · Desktop 선물 패키지
+        ## 8차시 · Desktop App Package
 
         세 시나리오의 결과를 로컬 Markdown과 이메일 초안으로 만들고 같은 핵심 기능을 Desktop UI에서 실행합니다. 수신자는 비어 있고 발송은 `false`입니다. 소스 실행과 Docker 실행, macOS PKG·Windows EXE 전달 경로까지 확인한 뒤 Day 2와 기존 Day 1 회귀 Test를 실행합니다.
         """),

@@ -18,14 +18,19 @@ from src.course_services.day2_meeting_workflow import (
     adapt_audio_stt,
     adapt_clovanote,
     adapt_google_meet,
+    build_interruptible_meeting_graph,
+    build_mcp_retrieval_plan,
     compare_execution_strategies,
     render_email_draft,
+    resume_interruptible_meeting_review,
     route_execution_strategy,
     run_meeting_workflow,
     run_optional_cli_prompt,
     run_optional_openai_record,
     run_optional_openai_prompt,
     source_mixing_error_example,
+    start_interruptible_meeting_review,
+    validate_record_evidence,
 )
 
 
@@ -119,6 +124,153 @@ def test_source_mode_mixing_and_silent_stt_fallback_are_blocked(tmp_path: Path) 
                 audio_path=str(audio_path),
             ),
             transcriber=None,
+        )
+
+
+def test_mcp_retrieval_plan_is_read_only_bounded_and_requires_scope() -> None:
+    envelope = adapt_google_meet(
+        SourceInput(
+            source_mode="google_meet_text",
+            source_ref="meet://fixture/policy",
+            meet_transcript=MEET_TEXT,
+        )
+    )
+    allowed = build_mcp_retrieval_plan(
+        envelope=envelope,
+        domain=DOMAIN,
+        policy=MCPRetrievalPolicy(
+            allowed_connectors=["notion", "slack"],
+            explicit_user_authorization=True,
+            lookback_days=14,
+            allowed_scopes={"notion": ["CX PoC"], "slack": ["#delivery-poc"]},
+            max_items_per_connector=5,
+        ),
+    )
+
+    assert allowed["status"] == "SIMULATED_POLICY_PLAN"
+    assert allowed["executed"] is False
+    assert allowed["external_write"] is False
+    assert len(allowed["operations"]) == 2
+    assert all(item["operation"] == "search_read_only" for item in allowed["operations"])
+    assert all(item["lookback_days"] == 14 for item in allowed["operations"])
+    assert all(item["max_items"] == 5 for item in allowed["operations"])
+    assert all(item["private_message_collection"] is False for item in allowed["operations"])
+
+    blocked = build_mcp_retrieval_plan(
+        envelope=envelope,
+        domain=DOMAIN,
+        policy=MCPRetrievalPolicy(
+            allowed_connectors=["notion", "slack"],
+            explicit_user_authorization=False,
+            allowed_scopes={"notion": ["CX PoC"]},
+            max_items_per_connector=5,
+        ),
+    )
+    assert blocked == {
+        "status": "POLICY_HOLD",
+        "reasons": [
+            "EXPLICIT_USER_AUTHORIZATION_REQUIRED",
+            "ALLOWED_SCOPE_REQUIRED:slack",
+        ],
+        "operations": [],
+        "executed": False,
+        "external_write": False,
+    }
+
+
+def test_meeting_record_matches_the_actual_schema_and_evidence_contract() -> None:
+    result = run_meeting_workflow(
+        SourceInput(
+            source_mode="google_meet_text",
+            source_ref="meet://fixture/record-contract",
+            meet_transcript=MEET_TEXT,
+        ),
+        DOMAIN,
+        review_decision="approve",
+    )
+    record = MeetingRecord.model_validate(result["record"])
+    envelope = TranscriptEnvelope.model_validate(result["envelope"])
+
+    assert set(result["record"]) == set(MeetingRecord.model_fields)
+    assert validate_record_evidence(record, envelope) == []
+    assert record.human_review_required is True
+    assert record.external_write is False
+    assert record.meeting_summary
+    assert record.participant_perspectives
+    assert record.todos
+    assert record.insights.short_term
+    assert record.insights.medium_term
+    assert record.insights.long_term
+
+
+@pytest.mark.parametrize(
+    ("decision", "expected_status", "expected_export"),
+    [
+        ("approve", "DRAFT_READY", "DRAFT_READY"),
+        ("reject", "REJECTED", "SKIPPED_NOT_APPROVED"),
+    ],
+)
+def test_interruptible_human_review_starts_and_resumes_with_a_checkpoint(
+    decision: str,
+    expected_status: str,
+    expected_export: str,
+) -> None:
+    graph = build_interruptible_meeting_graph()
+    thread_id = f"review-{decision}"
+    start = start_interruptible_meeting_review(
+        graph,
+        SourceInput(
+            source_mode="google_meet_text",
+            source_ref=f"meet://fixture/{decision}",
+            meet_transcript=MEET_TEXT,
+        ),
+        DOMAIN,
+        thread_id=thread_id,
+        retrieval_policy=MCPRetrievalPolicy(
+            allowed_connectors=["notion"],
+            explicit_user_authorization=True,
+            allowed_scopes={"notion": ["CX PoC"]},
+            max_items_per_connector=5,
+        ),
+    )
+
+    assert start["status"] == "WAITING_FOR_HUMAN_REVIEW"
+    assert start["checkpointer"] == "InMemorySaver"
+    assert start["thread_id"] == thread_id
+    assert len(start["interrupts"]) == 1
+    assert start["interrupts"][0]["value"]["allowed_decisions"] == [
+        "approve",
+        "edit",
+        "reject",
+    ]
+    assert start["interrupts"][0]["value"]["external_write"] is False
+    assert "exports" not in start
+
+    resumed = resume_interruptible_meeting_review(
+        graph,
+        thread_id=thread_id,
+        decision=decision,
+    )
+    assert resumed["status"] == expected_status
+    assert resumed["exports"]["status"] == expected_export
+    assert resumed["external_write"] is False
+    assert resumed["interrupts"] == []
+    assert [event["node"] for event in resumed["trace"]][-2:] == [
+        "human_review",
+        "export_draft" if decision == "approve" else "review_rejected",
+    ]
+    if decision == "approve":
+        assert resumed["exports"]["markdown"]
+        assert resumed["exports"]["email"]["send"] is False
+    else:
+        assert resumed["exports"]["markdown"] is None
+        assert resumed["exports"]["email"] is None
+
+    with pytest.raises(ValueError, match="^REVIEW_THREAD_NOT_WAITING$"):
+        resume_interruptible_meeting_review(
+            graph,
+            thread_id=thread_id,
+            decision=decision,
         )
 
 
