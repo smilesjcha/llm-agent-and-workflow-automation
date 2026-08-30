@@ -27,14 +27,19 @@
 - `data/meeting_sample_ko_12min.wav`: 4인 합성 한국어 회의 음성
 - `data/meeting_sample_ko_12min.txt`: 회의 원문과 타임라인
 
-## 2-5일차 초안 산출물
+## 2일차 최종본·3-5일차 초안
 
-- `slides/IPA_LLM_Agent_업무자동화_Day2_DRAFT_240p.pptx`: STT·품질 gate·회의 schema·chunk·LangChain·근거 검증
+- `slides/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pptx`: 2일차 수강생용 최종 강의 자료
+- `output/pdf/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pdf`: 2일차 배포·검수용 최종 PDF
+- `materials/day2/2026_Day2_수강생_실습가이드.md`: 1~8차시 실행·복구·산출물 안내
+- `materials/day2/2026_Day2_강사용_상세교안.md`: 강사 진행·시연·복구 안내
+- `materials/day2/2026_Day2_강의직전_체크리스트.md`: 릴리스·환경·시연 점검표
+- `materials/day2/day2_service_lab.ipynb`: 회의기록 Workflow·Agent·Human Review 실습
+- `materials/day2/day2_service_lab.executed.ipynb`: 실행 완료 참고본
+- `output/course-labs/day2-v2/`: 읽기 전용 기준 결과; 수강생 실행 결과는 `student-run/`과 `run_manifest.json`에 분리
 - `slides/IPA_LLM_Agent_업무자동화_Day3_DRAFT_240p.pptx`: diff parser·review contract·Codex harness·hybrid review·평가
 - `slides/IPA_LLM_Agent_업무자동화_Day4_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
 - `slides/IPA_LLM_Agent_업무자동화_Day5_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
-- `output/pdf/IPA_LLM_Agent_업무자동화_Day2_DRAFT_240p.pdf` 등: AppleGothic 기반 240쪽 PDF 검수본
-- `materials/day2/day2_service_lab.ipynb`: audio metadata·segment chunk·선택 STT
 - `materials/day3/day3_service_lab.ipynb`: unified diff·finding·Codex task spec
 - `materials/day4/day4_service_lab.ipynb`: GitHub dry-run·사람 승인·중복 실행 방지
 - `materials/day5/day5_service_lab.ipynb`: 서비스 router·golden evaluation·release gate
@@ -71,6 +76,17 @@ python scripts/build_day1_student_bundle.py
 ```
 
 기존 `.venv`가 Python 3.9로 만들어졌다면 내부 Python을 업그레이드할 수 없으므로 재사용하지 않는다. 위처럼 새 `.venv312`를 만들고, VS Code와 Notebook Kernel도 그 환경의 Python으로 다시 선택한다. `pip3 install -r requirements*.txt`처럼 wildcard로 모든 파일을 한꺼번에 설치하지 말고, 기본·로컬 LLM·OpenAI·STT를 필요한 순서대로 분리한다.
+
+### 2일차 실행
+
+```bash
+python -m pip install -r requirements-day2.txt
+python scripts/run_day2_preflight.py --full-suite
+python scripts/build_day2_student_bundle.py
+jupyter lab materials/day2/day2_service_lab.ipynb
+```
+
+Notebook의 기본 실행은 강사가 검토한 음성·전사 fixture를 사용한다. `faster-whisper`, Ollama, OpenAI는 필요한 의존성과 opt-in을 준비한 경우만 실행한다. 기준 결과는 `output/course-labs/day2-v2/`에서 읽고, 자신의 결과는 `output/course-labs/day2-v2/student-run/`과 `run_manifest.json`에서 확인한다.
 
 Ollama용 adapter가 필요할 때만 기본 설치 뒤에 다음 명령을 추가한다.
 
@@ -109,7 +125,7 @@ CLI는 Git에서 제외된 `.env`를 자동으로 읽는다. 성공 결과는 `l
 
 배포된 읽기·검토용 결과 UI: https://web-demo-five-sigma.vercel.app
 
-STT를 로컬에서 실행하려면 선택 의존성을 추가합니다.
+1일차 회의 데모에서 STT를 로컬로 실행하려면 선택 의존성을 추가합니다.
 
 ```bash
 python -m pip install -r requirements-stt-optional.txt
@@ -118,7 +134,7 @@ python -m src.meeting_demo --audio data/demo_meeting.wav \
   --model tiny --device cpu --compute-type int8
 ```
 
-`tiny`는 강의 전 smoke test용입니다. 품질 비교용 `small` 모델은 수업 전에 미리 내려받습니다. 모델 설치가 없거나 STT가 실패하면 제공된 전사문으로 후속 파이프라인을 계속하되 `quality_gate=HOLD`로 사람 검증을 요구합니다.
+`tiny`는 1일차 강의 전 smoke test용입니다. 품질 비교용 `small` 모델은 수업 전에 미리 내려받습니다. 모델 설치가 없거나 STT가 실패하면 1일차에서 제공한 같은 음성의 전사문으로 후속 파이프라인을 계속하되 `quality_gate=HOLD`로 사람 검증을 요구합니다.
 
 ## 저장소 운영 기준
 
@@ -131,11 +147,11 @@ python -m src.meeting_demo --audio data/demo_meeting.wav \
 
 ## PPT 재생성
 
-Codex 데스크톱의 프레젠테이션 런타임이 연결된 환경에서는 다음 소스로 동일한 270장 PPT를 다시 생성할 수 있습니다.
+프레젠테이션 빌드 환경에서는 다음 소스로 강의 자료를 다시 생성할 수 있습니다. 2일차 배포 기준은 176쪽 수강생용 최종본이며, 3~5일차는 초안 빌더를 사용합니다.
 
 ```bash
 node scripts/slides/build_day1_detail.mjs
-node scripts/slides/build_days2_5_drafts.mjs --day 2
+node scripts/slides/build_day2_student_ready.mjs
 node scripts/slides/build_days2_5_drafts.mjs --day 3
 node scripts/slides/build_days2_5_drafts.mjs --day 4
 node scripts/slides/build_days2_5_drafts.mjs --day 5

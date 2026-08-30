@@ -8,15 +8,12 @@ import { CLAUDE_CODE_DESKTOP, CLAUDE_CODE_QUICKSTART, CODEX_OFFICIAL_SOURCE, COU
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const argIndex = process.argv.indexOf("--day");
 const day = Number(argIndex >= 0 ? process.argv[argIndex + 1] : process.env.COURSE_DAY);
-if (![2, 3, 4, 5].includes(day)) throw new Error("--day must be one of 2, 3, 4, 5");
+if (![3, 4, 5].includes(day)) {
+  throw new Error("--day must be one of 3, 4, 5; use build_day2_student_ready.mjs for Day 2");
+}
 
 const config = COURSE_DAYS[day];
-const outPath = path.join(
-  ROOT,
-  day === 2
-    ? "slides/IPA_LLM_Agent_업무자동화_Day2_2026_FINAL_240p.pptx"
-    : `slides/IPA_LLM_Agent_업무자동화_Day${day}_DRAFT_240p.pptx`,
-);
+const outPath = path.join(ROOT, `slides/IPA_LLM_Agent_업무자동화_Day${day}_DRAFT_240p.pptx`);
 const C = makeCoursePalette();
 // AppleGothic is present on the instructor Mac and survives LibreOffice's
 // print-to-PDF path without the NanumGothic → display-font substitution.
@@ -26,11 +23,12 @@ const screenshotBytes = new Map();
 const notebookPath = path.join(ROOT, `materials/day${day}/day${day}_service_lab.ipynb`);
 const notebookData = JSON.parse(await fs.readFile(notebookPath, "utf8"));
 const labOutputDir = path.join(ROOT, `output/course-labs/${day === 2 ? "day2-v2" : `day${day}`}`);
+const learnerOutputDir = day === 2 ? "day2-v2/student-run" : `day${day}`;
 const DAY2_RESULT_FILES = [
   "01_architecture.json",
   "02_inputs.json",
   "03_domain_context.json",
-  "04_strategy_compare.json",
+  "04_meeting_record_contract.json",
   "05_workflow_runs.json",
   "06_provider_diagnostics.json",
   "07_human_review.json",
@@ -539,9 +537,9 @@ function addExecutionTrace(period, periodIndex) {
   addHeader(slide, `${period.title} Terminal 실행`, periodIndex, "소프트웨어 실습");
   addShape(slide, "rect", { left: 72, top: 174, width: 1136, height: 280 }, C.black);
   addText(slide, `$ ${period.command}`, { left: 100, top: 212, width: 1080, height: 90 }, { size: 22, bold: true, color: C.white, typeface: "Menlo", valign: "middle" });
-  addText(slide, `저장 위치\noutput/course-labs/${day === 2 ? "day2-v2" : `day${day}`}/${labResultFiles[periodIndex]}`, { left: 100, top: 326, width: 1080, height: 80 }, { size: 17, bold: true, color: C.gray300, typeface: "Menlo" });
+  addText(slide, `저장 위치\noutput/course-labs/${learnerOutputDir}/${labResultFiles[periodIndex]}`, { left: 100, top: 326, width: 1080, height: 80 }, { size: 17, bold: true, color: C.gray300, typeface: "Menlo" });
   addText(slide, `${period.normalTest}\n실패 시 ${period.artifact}의 status·error_code를 먼저 확인`, { left: 112, top: 508, width: 1056, height: 82 }, { size: 20, bold: true, color: C.ink, align: "center" });
-  addNotes(slide, "현재 차시의 실제 명령과 결과 파일 경로를 한 화면에서 확인한다.", [`local:${period.files[1]}`, `local:output/course-labs/${day === 2 ? "day2-v2" : `day${day}`}/${labResultFiles[periodIndex]}`]);
+  addNotes(slide, "현재 차시의 실제 명령과 결과 파일 경로를 한 화면에서 확인한다.", [`local:${period.files[1]}`, `local:output/course-labs/${learnerOutputDir}/${labResultFiles[periodIndex]}`]);
 }
 
 async function addActualResult(period, periodIndex) {
@@ -559,7 +557,7 @@ async function addBoundaryEvidence(period, periodIndex) {
   addHeader(slide, `${period.title} 실패 증거`, periodIndex, "Boundary Evidence");
   addText(slide, period.boundaryTest, { left: 78, top: 164, width: 1100, height: 82 }, { size: 27, bold: true, color: C.ink, align: "center", valign: "middle" });
   addShape(slide, "rect", { left: 104, top: 286, width: 1072, height: 190 }, C.black);
-  addText(slide, `result_file = "output/course-labs/${day === 2 ? "day2-v2" : `day${day}`}/${result.fileName}"\nexpected = "HOLD | EXPECTED_FAILURE | BLOCKED"\nexternal_write = false`, { left: 140, top: 324, width: 1000, height: 116 }, { size: 20, bold: true, color: C.white, typeface: "Menlo" });
+  addText(slide, `result_file = "output/course-labs/${learnerOutputDir}/${result.fileName}"\nexpected = "HOLD | EXPECTED_FAILURE | BLOCKED"\nexternal_write = false`, { left: 140, top: 324, width: 1000, height: 116 }, { size: 20, bold: true, color: C.white, typeface: "Menlo" });
   addText(slide, `${period.artifact}이 HOLD라면 외부 쓰기 없이 해당 차시 입력으로 돌아갑니다.`, { left: 130, top: 522, width: 1020, height: 58 }, { size: 20, bold: true, color: C.ink, align: "center" });
   addNotes(slide, "대표 실패를 실제 결과 파일·기대 상태·복구 경로로 연결한다.", [`local:${result.resultPath}`, "local:tests/test_course_services.py"]);
 }
