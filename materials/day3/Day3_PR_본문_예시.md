@@ -28,6 +28,7 @@
 ~~~
 
 - Result: `35 passed`
+- Clean worktree full suite: `204 passed`
 - Slide validation: `176 pages`, overflow `0`, exact headline duplicate `0`
 - Student bundle: `62 files`, allowlist 기반 deterministic ZIP
 
