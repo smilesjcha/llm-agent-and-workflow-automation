@@ -1,0 +1,41 @@
+{
+  "cases": {
+    "unsafe-exec": {
+      "findings": [
+        {"path": "src/template.py", "line": 2, "rule_id": "unsafe-dynamic-execution"}
+      ]
+    },
+    "shell-injection": {
+      "findings": [
+        {"path": "src/export_cli.py", "line": 4, "rule_id": "shell-command-injection"}
+      ]
+    },
+    "external-write": {
+      "findings": [
+        {"path": "src/notion_export.py", "line": 6, "rule_id": "external-write-without-approval"}
+      ]
+    },
+    "broad-exception": {
+      "findings": [
+        {"path": "src/provider.py", "line": 10, "rule_id": "broad-exception-boundary"}
+      ]
+    },
+    "path-escape": {
+      "error_code": "DIFF_PATH_BLOCKED"
+    },
+    "secret-logging": {
+      "findings": [
+        {"path": "src/provider_status.py", "line": 3, "rule_id": "secret-in-log"}
+      ]
+    },
+    "timeout-idempotency": {
+      "findings": [
+        {"path": "src/github_comment.py", "line": 5, "rule_id": "network-timeout-missing"},
+        {"path": "src/github_comment.py", "line": 5, "rule_id": "idempotency-key-missing"}
+      ]
+    },
+    "safe-negative": {
+      "findings": []
+    }
+  }
+}

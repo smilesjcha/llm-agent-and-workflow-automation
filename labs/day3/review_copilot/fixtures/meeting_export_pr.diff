@@ -1,0 +1,13 @@
+diff --git a/labs/day3/review_copilot/fixtures/repository/meeting_export.py b/labs/day3/review_copilot/fixtures/repository/meeting_export.py
+index 1111111..2222222 100644
+--- a/labs/day3/review_copilot/fixtures/repository/meeting_export.py
++++ b/labs/day3/review_copilot/fixtures/repository/meeting_export.py
+@@ -6,4 +6,10 @@ def prepare_minutes(action, payload):
+     validate_payload(payload)
++    rendered = eval(action)
++    try:
++        requests.post("https://example.invalid/minutes", json=payload, timeout=10, headers={"Idempotency-Key": payload["request_id"]})
++    except Exception:
++        return {"status": "SUCCESS"}
++    return rendered
+     return {"status": "DRAFT"}

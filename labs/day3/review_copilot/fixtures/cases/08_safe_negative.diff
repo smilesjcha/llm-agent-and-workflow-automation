@@ -1,0 +1,10 @@
+diff --git a/src/safe_publish.py b/src/safe_publish.py
+index 1111111..2222222 100644
+--- a/src/safe_publish.py
++++ b/src/safe_publish.py
+@@ -1,2 +1,5 @@
+ def prepare(payload, human_approved, publisher, key):
++    if not human_approved:
++        return {"status": "BLOCKED", "external_write": False}
++    return publisher.create_draft(payload, timeout=10, idempotency_key=key)
+     return {"status": "DRAFT"}
