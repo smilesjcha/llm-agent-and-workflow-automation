@@ -29,7 +29,7 @@
 
 - Result: `35 passed`
 - Slide validation: `176 pages`, overflow `0`, exact headline duplicate `0`
-- Student bundle: `61 files`, allowlist 기반 deterministic ZIP
+- Student bundle: `62 files`, allowlist 기반 deterministic ZIP
 
 ## Review request
 

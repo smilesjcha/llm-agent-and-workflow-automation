@@ -26,6 +26,7 @@ REQUIRED_FILES = (
     "materials/day3/day3_review_intelligence_lab.executed.ipynb",
     "materials/day3/2026_Day3_수강생_실습가이드.md",
     "materials/day3/2026_Day3_강사용_상세교안.md",
+    "labs/day3/__init__.py",
     "labs/day3/review_copilot/cli.py",
     "labs/day3/review_copilot/day3.env.example",
     "labs/day3/review_copilot/web_app.py",

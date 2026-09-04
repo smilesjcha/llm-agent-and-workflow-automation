@@ -43,6 +43,7 @@ EXPLICIT_FILES = (
     ".github/codex/prompts/day3_pr_review.md",
     ".github/workflows/day3-pr-quality.yml",
     ".github/workflows/day3-codex-review-optional.yml",
+    "labs/day3/__init__.py",
     "labs/day3/review_copilot/AGENTS.md",
     "labs/day3/review_copilot/CODEX_TASK.md",
     "labs/day3/review_copilot/README.md",
