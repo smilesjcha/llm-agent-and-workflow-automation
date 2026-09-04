@@ -1,0 +1,541 @@
+import { COURSE_DAYS, DAY_TIMES } from "./days2_5_content.mjs";
+
+const BASE = COURSE_DAYS[3].periods;
+
+const COMMON_SETUP = [
+  "Python 3.12 · VS Code · Jupyter Kernel",
+  "Repository root · .venv312 활성화",
+  "materials/day3/day3_review_intelligence_lab.ipynb",
+];
+
+const COMMON_OPTIONAL = [
+  "Codex 또는 Claude Code 로그인",
+  "GitHub CLI · 본인 교육용 repository",
+  "OpenAI API Key 불필요 · fixture 기본",
+];
+
+const DETAILS = [
+  {
+    shortTitle: "Review Contract",
+    label: "Review Contract",
+    subtitle: "Finding · Severity · 검토 기준",
+    focusTitle: "좋은 리뷰의 조건",
+    conceptTitle: "Finding과 Severity",
+    processTitle: "리뷰 판단 순서",
+    decisionTitle: "P0~P3 분류 기준",
+    filesTitle: "Contract 파일 구조",
+    demoTitle: "Review Contract Demo",
+    resultTitle: "Contract 결과",
+    codexTitle: "Codex Task · Contract Test",
+    labATitle: "리뷰 정책 실행",
+    labBTitle: "금지 행동 Test",
+    completionTitle: "1차시 완료",
+    phaseTimes: ["0-12분", "12-20분", "20-44분", "44-50분"],
+    focus: "중요한 문제만, 실제 변경 라인과 재현 가능한 근거로 전달하는 리뷰 계약",
+    setup: COMMON_SETUP,
+    optional: COMMON_OPTIONAL,
+    fileRoles: [
+      ["정책", "AGENTS.md"],
+      ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 1차시"],
+      ["구현", "labs/day3/review_copilot/contracts.py"],
+      ["검증", "tests/test_day3_review_copilot.py"],
+    ],
+    terms: [
+      ["Finding", "한 문제의 위치·영향·근거·최소 교정"],
+      ["Severity", "사용자 영향과 수정 시급성"],
+      ["Actionable", "리뷰를 받은 사람이 바로 재현하고 고칠 수 있는 상태"],
+      ["Contract", "입력·출력·오류·금지 행동의 약속"],
+    ],
+    conceptFiles: ["ReviewFinding", "P0 · P1 · P2 · P3", "required_finding_fields", "ReviewPolicy"],
+    decisions: [
+      ["P0", "즉시 차단", "보안·치명적 데이터 손실"],
+      ["P1", "merge 전 수정", "주요 기능·권한 위험"],
+      ["P2", "가급적 수정", "운영 안정성·관측성"],
+      ["P3", "낮은 위험", "명확성·유지보수성"],
+    ],
+    pipeline: ["변경 확인", "사용자 영향", "근거 라인", "최소 교정", "사람 판단"],
+    demo: ["정책 JSON 생성", "필수 finding field 확인", "automatic_publish=false 확인"],
+    resultChecks: ["allowed_severities", "required_finding_fields", "require_added_line", "external_write=false"],
+    mapCheck: "P0~P3 · 10개 필수 field\n자동 게시 금지",
+    labA: ["Notebook 1차시 Cell 실행", "focus·ignored 항목 비교", "01_review_contract.json 확인"],
+    labB: ["automatic_publish=true 입력 시도", "Contract 오류 확인", "원래 정책으로 복구"],
+    codexPrompt: [
+      "목표: 리뷰 finding 계약과 severity 검증",
+      "허용: contracts.py와 해당 focused test만 수정",
+      "Test: 허용 finding과 잘못된 severity·자동 게시 차단",
+      "금지: assertion 약화·외부 API·자동 commit·push",
+    ],
+    notebookSnippet: `from labs.day3.review_copilot.contracts import ReviewPolicy
+
+policy = ReviewPolicy()
+contract = {
+    "policy": policy.to_dict(),
+    "required_finding_fields": [
+        "path", "line", "severity", "title", "impact",
+        "evidence", "correction", "rule_id", "source", "confidence"],
+    "external_write": False,
+}
+save_json("01_review_contract.json", contract)
+assert contract["policy"]["automatic_publish"] is False`,
+    success: "정책·필수 field·severity가 구조화된 JSON",
+    expectedError: "허용하지 않은 severity 또는 자동 게시 요청 차단",
+    externalRule: "리뷰 결과의 자동 게시 없음",
+    externalState: "로컬 정책 파일",
+    recovery: ["Repository root 확인", "Kernel 경로 확인", "Contract field 확인", "Focused Test 재실행"],
+    applications: [["재직자", "팀의 코드 리뷰 기준표"], ["구직자", "정책·schema·boundary test 포트폴리오"]],
+    completion: ["P0~P3 설명", "허용·차단 Test 확인", "01_review_contract.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k contract",
+    demoCommand: "python -m labs.day3.review_copilot.cli",
+    saveLine: 'save_json("01_review_contract.json", contract)',
+    image: "day3_overview.png",
+    sources: ["local:AGENTS.md", "local:labs/day3/review_copilot/README.md"],
+  },
+  {
+    shortTitle: "Unified Diff",
+    label: "Diff Parser",
+    subtitle: "Hunk · Added Line · Line Mapping",
+    focusTitle: "변경 라인의 복원",
+    conceptTitle: "Diff 읽기 규칙",
+    processTitle: "Unified Diff Parser",
+    decisionTitle: "기호별 Line 이동",
+    filesTitle: "Parser 파일 구조",
+    demoTitle: "Line Mapping Demo",
+    resultTitle: "Parsed Diff 결과",
+    codexTitle: "Codex Task · Parser Boundary",
+    labATitle: "Diff Parser 실행",
+    labBTitle: "Path Escape 차단",
+    completionTitle: "2차시 완료",
+    phaseTimes: ["0-10분", "10-18분", "18-44분", "44-50분"],
+    focus: "리뷰의 위치를 추측하지 않고 Unified Diff의 hunk 정보로 변경 후 line을 계산하는 parser",
+    setup: COMMON_SETUP,
+    optional: COMMON_OPTIONAL,
+    fileRoles: [["입력", "labs/day3/review_copilot/fixtures/meeting_export_pr.diff"], ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 2차시"], ["구현", "labs/day3/review_copilot/diff_parser.py"], ["검증", "tests/test_day3_review_copilot.py"]],
+    terms: [["Unified Diff", "변경 전후를 한 문서에 표현한 형식"], ["Hunk", "@@로 시작하는 연속 변경 구간"], ["Added Line", "+로 시작하는 변경 후 코드"], ["Line Mapping", "Diff의 줄을 새 파일의 실제 줄 번호로 연결"]],
+    conceptFiles: ["meeting_export_pr.diff", "parse_unified_diff()", "AddedLine", "DIFF_PATH_BLOCKED"],
+    decisions: [["공통 줄", "old +1 · new +1", "문맥 유지"], ["삭제 줄", "old +1", "finding 위치 제외"], ["추가 줄", "new +1", "finding 근거 후보"], ["+++ header", "코드 줄 아님", "파일 경로로 분리"]],
+    pipeline: ["파일 header", "hunk header", "line counter", "added line", "workspace path"],
+    demo: ["meeting_export_pr.diff 로드", "추가된 7~12번 줄 복원", "경로 이탈 입력 차단"],
+    resultChecks: ["changed_paths", "added_lines", "line=7", "DIFF_PATH_BLOCKED"],
+    mapCheck: "변경 파일 1개 · 추가 라인 6개\n경로 이탈 차단",
+    labA: ["learner_added_line_map 직접 작성", "두 Hunk의 2·12번 line 계산", "정본 Parser와 결과 대조"],
+    labB: ["../secret.txt diff 입력", "DIFF_PATH_BLOCKED 확인", "02_parsed_diff.json 저장"],
+    codexPrompt: ["목표: Unified Diff 추가 라인 mapping", "허용: diff_parser.py와 parser test", "Test: new file·삭제 only·path escape", "금지: workspace 밖 읽기·실제 secret 사용"],
+    notebookSnippet: `from labs.day3.review_copilot.diff_parser import parse_unified_diff
+
+diff_text = (ROOT / "labs/day3/review_copilot/fixtures/meeting_export_pr.diff").read_text(
+    encoding="utf-8")
+parsed = parse_unified_diff(diff_text)
+result = {
+    "changed_paths": list(parsed.changed_paths),
+    "added_lines": [line.to_dict() for line in parsed.added_lines],
+}
+save_json("02_parsed_diff.json", result)
+assert result["added_lines"][0]["line"] == 7`,
+    success: "실제 추가 줄 번호와 코드가 함께 저장",
+    expectedError: "workspace를 벗어나는 diff 경로는 DIFF_PATH_BLOCKED",
+    externalRule: "파일 경로는 repository 안에서만 해석",
+    externalState: "로컬 diff 분석",
+    recovery: ["diff header 확인", "@@ 범위 확인", "줄 기호 확인", "path error code 확인"],
+    applications: [["재직자", "GitHub·GitLab 공통 diff 분석 core"], ["구직자", "parser와 boundary test 결과"]],
+    completion: ["hunk 계산 설명", "기본·path escape Test", "02_parsed_diff.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k diff",
+    demoCommand: "python -m labs.day3.review_copilot.cli",
+    saveLine: 'save_json("02_parsed_diff.json", result)',
+    image: "day3_pipeline.png",
+    sources: ["local:labs/day3/review_copilot/fixtures/meeting_export_pr.diff", "local:labs/day3/review_copilot/diff_parser.py"],
+  },
+  {
+    shortTitle: "Context Pack",
+    label: "Context Builder",
+    subtitle: "Changed File · Test · Policy",
+    focusTitle: "필요한 문맥의 선택",
+    conceptTitle: "Context Budget",
+    processTitle: "Context Builder",
+    decisionTitle: "포함·제외 기준",
+    filesTitle: "Context 파일 구조",
+    demoTitle: "Context Pack Demo",
+    resultTitle: "Context 결과",
+    codexTitle: "Codex Task · 최소 Context",
+    labATitle: "Context Pack 생성",
+    labBTitle: "민감 정보 제외",
+    completionTitle: "3차시 완료",
+    phaseTimes: ["0-11분", "11-19분", "19-44분", "44-50분"],
+    focus: "저장소 전체가 아니라 변경 파일·가까운 test·업무 정책만 골라 정확도와 비용을 함께 관리하는 context",
+    setup: COMMON_SETUP,
+    optional: COMMON_OPTIONAL,
+    fileRoles: [["정책", "AGENTS.md"], ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 3차시"], ["구현", "labs/day3/review_copilot/context_builder.py"], ["경로 보호", "labs/day3/review_copilot/workspace.py"]],
+    terms: [["Context Pack", "리뷰 판단에 필요한 최소 자료 묶음"], ["Context Budget", "한 번에 모델에 전달할 문맥 한도"], ["Test Candidate", "변경 동작을 직접 확인할 가능성이 높은 test"], ["Excluded Data", "비밀값·생성물·무관 파일처럼 넣지 않을 자료"]],
+    conceptFiles: ["build_context_pack()", "added_line_count", "test_candidates", "excluded_data"],
+    decisions: [["변경 파일", "포함", "리뷰의 직접 대상"], ["가까운 test", "포함", "동작 증거 후보"], ["AGENTS.md", "포함", "팀의 정책"], [".env·credential", "제외", "비밀값 보호"]],
+    pipeline: ["changed path", "added line", "nearby test", "project policy", "secret exclude"],
+    demo: ["parsed diff 입력", "test_candidates 연결", "excluded_data 확인"],
+    resultChecks: ["added_line_count=6", "test_candidates", "project_context", "credentials 제외"],
+    mapCheck: "변경·test·정책만 포함\ncredential 제외",
+    labA: ["learner_public_context 직접 작성", "허용 field·실제 test 확인", "03_context_pack.json 저장"],
+    labB: [".env를 context 후보에 추가", "민감 경로 제외 확인", "excluded_data 기록"],
+    codexPrompt: ["목표: 최소 review context pack", "허용: context_builder.py·workspace.py·test", "Test: 가까운 test 선택·.env·path escape 제외", "금지: env 값·대용량 output 읽기"],
+    notebookSnippet: `from labs.day3.review_copilot.context_builder import build_context_pack
+
+project_context = json.loads((
+    ROOT / "labs/day3/review_copilot/fixtures/project_context.json"
+).read_text())
+context_pack = build_context_pack(
+    parsed, policy=policy, project_context=project_context,
+    workspace_root=ROOT)
+save_json("03_context_pack.json", context_pack)
+assert context_pack["added_line_count"] == 6
+assert context_pack["repository_context"]
+assert context_pack["existing_tests"]
+assert "credentials" in context_pack["excluded_data"]`,
+    success: "변경·test·업무 정책을 담은 최소 context",
+    expectedError: "workspace 밖 경로와 민감 정보는 입력 후보에서 제외",
+    externalRule: "Context 생성 중 네트워크·외부 조회 없음",
+    externalState: "로컬 context JSON",
+    recovery: ["changed_paths 확인", "test 이름 규칙 확인", "excluded_data 확인", "Context Test 재실행"],
+    applications: [["재직자", "대형 저장소의 리뷰 비용·latency 관리"], ["구직자", "검색·선택·보안 정책이 있는 context pipeline"]],
+    completion: ["포함·제외 기준 설명", "민감 경로 Test", "03_context_pack.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k context",
+    demoCommand: "python -m labs.day3.review_copilot.cli",
+    saveLine: 'save_json("03_context_pack.json", context_pack)',
+    image: "vscode-repo-workspace-local.png",
+    sources: ["local:AGENTS.md", "local:labs/day3/review_copilot/context_builder.py"],
+  },
+  {
+    shortTitle: "Provider Adapter",
+    label: "Provider Adapter",
+    subtitle: "Fixture · OpenAI · Ollama",
+    focusTitle: "모델 독립 Adapter",
+    conceptTitle: "Adapter와 Provenance",
+    processTitle: "Provider 실행 경로",
+    decisionTitle: "Provider 선택 기준",
+    filesTitle: "Adapter 파일 구조",
+    demoTitle: "Fixture Provider Demo",
+    resultTitle: "Candidate 결과",
+    codexTitle: "Codex Task · Provider Fallback",
+    labATitle: "Fixture Provider 실행",
+    labBTitle: "Fallback 상태 검증",
+    completionTitle: "4차시 완료",
+    phaseTimes: ["0-10분", "10-18분", "18-44분", "44-50분"],
+    focus: "모델 호출을 하나의 adapter 뒤에 두고 실제 사용 모델·fallback 이유를 결과에 남기는 실행 구조",
+    setup: COMMON_SETUP,
+    optional: ["Ollama qwen3:4b", "OPENAI_API_KEY는 local .env만", "Live provider는 강사 opt-in"],
+    fileRoles: [["계약", "labs/day3/review_copilot/providers.py"], ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 4차시"], ["입력", "03_context_pack.json"], ["검증", "tests/test_day3_review_copilot.py"]],
+    terms: [["Provider Adapter", "모델별 호출 차이를 숨긴 동일 인터페이스"], ["Fixture", "토큰·네트워크 없이 같은 결과를 내는 수업 기본 경로"], ["Fallback", "선택 provider 실패 뒤 명시적으로 대체 경로 사용"], ["Provenance", "실제로 어떤 provider·model·경로를 사용했는지의 기록"]],
+    conceptFiles: ["ReviewProvider", "model", "schema_valid", "fallback_reason"],
+    decisions: [["Fixture", "전원 필수", "결정론·무료·오프라인"], ["Ollama", "선택", "로컬 model 품질 비교"], ["OpenAI", "강사 선택", "API 비용·secret 관리"], ["Provider 실패", "명시적 fallback", "성공으로 숨기지 않음"]],
+    pipeline: ["prompt build", "adapter call", "candidate parse", "provider record", "fixture fallback"],
+    demo: ["fixture로 candidate 생성", "존재하지 않는 line=999 포함", "provider_used 확인"],
+    resultChecks: ["status=SUCCESS", "model·schema_valid", "candidate line=999", "fallback_reason"],
+    mapCheck: "Provider 교체 가능\n실사용 경로 공개",
+    labA: ["Notebook 4차시 Cell 실행", "fixture candidate 2건 확인", "04_candidate_review.json 저장"],
+    labB: ["실패 provider 주입", "fallback_reason 확인", "Live 전용 평가 없으면 HOLD"],
+    codexPrompt: ["목표: provider adapter와 명시적 fallback", "허용: providers.py와 provider test", "Test: fixture 응답·timeout·잘못된 schema", "금지: key 출력·silent fallback·실행하지 않은 결과 표기"],
+    notebookSnippet: `from labs.day3.review_copilot.providers import (
+    FixtureReviewProvider, run_provider)
+
+fixture_payload = json.loads((ROOT /
+    "labs/day3/review_copilot/fixtures/provider_fixture.json").read_text())
+fixture = FixtureReviewProvider(fixture_payload["responses"])
+candidate_review = run_provider(
+    requested=fixture, fallback=fixture,
+    prompt={"case_id": fixture_payload["case_id"], "context": context_pack},
+    allow_fallback=True,
+)
+save_json("04_candidate_review.json", candidate_review)
+assert candidate_review["provider_used"] == "fixture"
+assert candidate_review["schema_valid"] is True
+assert candidate_review["model"] == "deterministic-review-fixture-v1"`,
+    success: "후보 finding과 provider provenance가 함께 저장",
+    expectedError: "Provider 오류는 fallback_reason 또는 안정적 error_code로 노출",
+    externalRule: "기본 Fixture 경로는 API·network 호출 없음",
+    externalState: "provider_used=fixture",
+    recovery: ["provider 이름 확인", "live opt-in 확인", "schema 오류 확인", "fixture로 재실행"],
+    applications: [["재직자", "모델 교체와 비용 비교가 가능한 adapter"], ["구직자", "offline fallback·provenance test"]],
+    completion: ["Adapter 역할 설명", "model·schema·fallback 확인", "04_candidate_review.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k provider",
+    demoCommand: "python -m labs.day3.review_copilot.cli",
+    saveLine: 'save_json("04_candidate_review.json", candidate_review)',
+    image: "ollama-langchain-provider-local.png",
+    sources: ["local:labs/day3/review_copilot/providers.py", "local:labs/day3/review_copilot/README.md"],
+  },
+  {
+    shortTitle: "Hybrid Review",
+    label: "Review Engine",
+    subtitle: "Rule · LLM Candidate · Evidence",
+    focusTitle: "결정론과 의미 판단",
+    conceptTitle: "Hybrid Review 구조",
+    processTitle: "Finding 검증 Pipeline",
+    decisionTitle: "후보 채택 기준",
+    filesTitle: "Review Engine 구조",
+    demoTitle: "Hybrid Finding Demo",
+    resultTitle: "Draft Review 결과",
+    codexTitle: "Codex Task · Evidence Test",
+    labATitle: "Hybrid Review 실행",
+    labBTitle: "근거 없는 후보 제거",
+    completionTitle: "5차시 완료",
+    phaseTimes: ["0-10분", "10-18분", "18-44분", "44-50분"],
+    focus: "빠르고 안정적인 rule과 맥락을 읽는 모델 후보를 합치되 변경 라인 근거가 없는 결과는 버리는 review engine",
+    setup: COMMON_SETUP,
+    optional: COMMON_OPTIONAL,
+    fileRoles: [["규칙", "labs/day3/review_copilot/review_engine.py"], ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 5차시"], ["입력", "02_parsed_diff.json · 04_candidate_review.json"], ["검증", "tests/test_day3_review_copilot.py"]],
+    terms: [["Rule Baseline", "동일 입력에 같은 finding을 내는 기준 검사"], ["LLM Candidate", "업무 맥락을 반영한 모델의 검토 후보"], ["Evidence", "실제 변경 라인·test 결과처럼 재현 가능한 근거"], ["Deduplication", "같은 문제를 안정 key로 한 건만 유지"]],
+    conceptFiles: ["rule_findings()", "provider candidates", "validate_evidence()", "build_hybrid_review()"],
+    decisions: [["실제 added line", "채택", "재현 가능"], ["line=999", "제외", "diff 근거 없음"], ["같은 rule_id·path·line", "중복 제거", "한 finding 유지"], ["스타일만 변경", "제외", "품질 핵심 아님"]],
+    pipeline: ["rule finding", "LLM candidate", "line validate", "deduplicate", "draft report"],
+    demo: ["rule 3건 생성", "line=999 후보 제거", "P0·P1·P2 Draft 확인"],
+    resultChecks: ["status=DRAFT", "finding_count=3", "source=rule", "automatic_publish=false"],
+    mapCheck: "근거 있는 3건만 유지\n자동 게시 없음",
+    labA: ["learner_grounded_candidates 작성", "Rule·Candidate 결합 확인", "05_hybrid_review.json 저장"],
+    labB: ["line=999·중복 후보 투입", "1건만 유지 확인", "Evidence Test 실행"],
+    codexPrompt: ["목표: rule·candidate hybrid review", "허용: review_engine.py와 engine test", "Test: 중복·없는 line·빈 diff", "금지: raw traceback·근거 없는 finding 채택"],
+notebookSnippet: `from labs.day3.review_copilot.review_engine import merge_grounded_candidates
+from labs.day3.review_copilot.test_evidence import collect_focused_test_evidence
+
+draft = merge_grounded_candidates(parsed, candidate_review)
+test_result = collect_focused_test_evidence(workspace_root=ROOT)
+hybrid_review = {
+    **draft.to_dict(),
+    "test_evidence": test_result,
+}
+save_json("05_hybrid_review.json", hybrid_review)
+assert hybrid_review["status"] == "DRAFT"
+assert test_result["executed"] is True
+assert test_result["exit_code"] == 0
+assert len(hybrid_review["findings"]) == 3`,
+    success: "P0·P1·P2 세 finding과 실제 added line 근거",
+    expectedError: "빈 diff는 EMPTY_DIFF, 근거 없는 후보는 결과에서 제외",
+    externalRule: "Draft review의 자동 comment·게시 없음",
+    externalState: "DRAFT",
+    recovery: ["parsed diff 확인", "candidate line 확인", "rule_id 비교", "engine Test 재실행"],
+    applications: [["재직자", "정적 검사와 LLM 의미 리뷰 결합"], ["구직자", "근거 validation·deduplication 구현"]],
+    completion: ["Hybrid 역할 설명", "근거 없는 후보 제거", "05_hybrid_review.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k hybrid",
+    demoCommand: "python -m labs.day3.review_copilot.cli",
+    saveLine: 'save_json("05_hybrid_review.json", draft)',
+    image: "vscode-pytest-25-passed-local.png",
+    sources: ["local:labs/day3/review_copilot/review_engine.py", "local:tests/test_day3_review_copilot.py"],
+  },
+  {
+    shortTitle: "Human Review",
+    label: "Human Review",
+    subtitle: "Approve · Edit · Reject",
+    focusTitle: "사람 판단의 위치",
+    conceptTitle: "LangGraph 상태 전이",
+    processTitle: "Interrupt와 Resume",
+    decisionTitle: "세 가지 결정",
+    filesTitle: "Human Review 구조",
+    demoTitle: "LangGraph Review Demo",
+    resultTitle: "승인 결과",
+    codexTitle: "Codex Task · State Test",
+    labATitle: "Approve 경로 실행",
+    labBTitle: "Edit·Reject 비교",
+    completionTitle: "6차시 완료",
+    phaseTimes: ["0-11분", "11-19분", "19-44분", "44-50분"],
+    focus: "AI 초안을 바로 게시하지 않고 근거를 본 사람이 승인·수정·거절한 뒤 다음 상태를 결정하는 workflow",
+    setup: COMMON_SETUP,
+    optional: ["langgraph 설치", "MemorySaver checkpointer", "외부 저장 connector 없음"],
+    fileRoles: [["결정", "labs/day3/review_copilot/human_review.py"], ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 6차시"], ["Graph", "labs/day3/review_copilot/workflow.py"], ["검증", "tests/test_day3_review_copilot.py"]],
+    terms: [["State", "node 사이에 전달되는 명시 데이터"], ["Interrupt", "사람 입력이 올 때까지 실행을 멈추는 지점"], ["Resume", "같은 thread_id로 저장 상태를 이어 실행"], ["Human Review", "결과의 근거·대상·행동을 사람이 최종 확인"]],
+    conceptFiles: ["ReviewState", "interrupt payload", "thread_id", "resume_review()"],
+    decisions: [["Approve", "DRY_RUN_READY", "근거와 교정 수용"], ["Edit", "DRY_RUN_READY", "검증된 수정 내용 반영"], ["Reject", "BLOCKED", "GitHub 단계 중단"], ["미결정", "REVIEW_REQUIRED", "Resume 전 대기"]],
+    pipeline: ["draft", "interrupt", "human decision", "resume", "no external write"],
+    demo: ["thread_id로 graph 시작", "interrupt payload 확인", "approve 뒤 DRY_RUN_READY"],
+    resultChecks: ["human_reviewed=true", "decision=approve", "status=APPROVED", "external_write=false"],
+    mapCheck: "Approve·Edit·Reject\n외부 서비스 변경 없음",
+    labA: ["Start Cell·interrupt 확인", "REVIEW_DECISION 한 번 선택", "06_human_review.json 저장"],
+    labB: ["Edit·Reject는 새 thread 사용", "8차시 Gate까지 결정 전달", "reject=HOLD 확인"],
+    codexPrompt: ["목표: Human Review state transition", "허용: human_review.py·workflow.py·test", "Test: approve·edit·reject·미결정", "금지: 승인 전 publish node·state에 secret 저장"],
+notebookSnippet: `from labs.day3.review_copilot.human_review import apply_human_review
+
+pending = apply_human_review(
+    hybrid_draft, decision=None, reviewer=None, rationale=None)
+assert pending.status == "REVIEW_REQUIRED"
+
+REVIEW_DECISION = "approve"  # 직접 선택
+reviewed = apply_human_review(
+    hybrid_draft, decision=REVIEW_DECISION, reviewer="수강생",
+    rationale="근거 라인과 최소 교정을 확인했습니다.")
+save_json("06_human_review.json", reviewed.to_dict())
+assert reviewed.external_write is False`,
+    success: "사람 결정·검토자·근거와 외부 서비스 변경 없음이 기록",
+    expectedError: "알 수 없는 decision은 HUMAN_REVIEW_DECISION_INVALID",
+    externalRule: "승인도 게시가 아니라 dry-run 준비 상태",
+    externalState: "DRY_RUN_READY",
+    recovery: ["thread_id 확인", "interrupt payload 확인", "decision 값 확인", "동일 thread로 resume"],
+    applications: [["재직자", "PR·문서·메일의 공통 승인 패턴"], ["구직자", "상태 전이와 회귀 test"]],
+    completion: ["Interrupt·Resume 설명", "세 결정 Test", "06_human_review.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k human",
+    demoCommand: "python -m labs.day3.review_copilot.cli run --run-tests --decision approve",
+    saveLine: 'save_json("06_human_review.json", reviewed.to_dict())',
+    image: "langgraph-interrupt-demo-local.png",
+    fullScreenDemo: true,
+    sources: ["local:labs/day3/review_copilot/human_review.py", "https://docs.langchain.com/oss/python/langgraph/interrupts"],
+  },
+  {
+    shortTitle: "Golden Set Evaluation",
+    label: "Offline Evaluation",
+    subtitle: "Precision · Recall · F1",
+    focusTitle: "리뷰 품질의 측정",
+    conceptTitle: "Golden Set 지표",
+    processTitle: "Offline Eval Pipeline",
+    decisionTitle: "Release Gate",
+    filesTitle: "Evaluation 파일 구조",
+    demoTitle: "8개 Case Demo",
+    resultTitle: "Evaluation 결과",
+    codexTitle: "Codex Task · Eval Boundary",
+    labATitle: "Golden Set 평가",
+    labBTitle: "Expected Failure 확인",
+    completionTitle: "7차시 완료",
+    phaseTimes: ["0-10분", "10-18분", "18-44분", "44-50분"],
+    focus: "리뷰 개수나 말투가 아니라 합의된 8개 case의 precision·recall·F1과 실패 Case로 release를 판단하는 평가",
+    setup: COMMON_SETUP,
+    optional: ["LangSmith trace는 선택", "기본 평가는 local JSON", "평가 데이터에 실제 고객 코드 없음"],
+    fileRoles: [["정답", "labs/day3/review_copilot/fixtures/golden_findings.json"], ["실행", "materials/day3/day3_review_intelligence_lab.ipynb · 7차시"], ["구현", "labs/day3/review_copilot/evaluation.py"], ["검증", "tests/test_day3_review_copilot.py"]],
+    terms: [["Golden Set", "팀이 기대 결과를 합의한 고정 평가 case"], ["Precision", "제기한 finding 중 맞은 비율"], ["Recall", "잡아야 할 finding 중 찾은 비율"], ["F1", "Precision과 Recall의 조화 평균"]],
+    conceptFiles: ["golden_findings.json", "evaluate_case_set()", "precision·recall·f1", "release_decision"],
+    decisions: [["8개 Case 전체", "PASS", "Case별 계약 일치"], ["F1 ≥ 0.9", "균형 기준", "오탐·누락 함께 관리"], ["Expected failure 통과", "차단 검증", "Path 차단 확인"], ["하나라도 미달", "HOLD", "원인 Case 수정"]],
+    pipeline: ["golden load", "predict", "exact key", "metric", "READY or HOLD"],
+    demo: ["8개 case 실행", "TP=7·FP=0·FN=0", "Expected failure 1건 확인"],
+    resultChecks: ["case_passed=8", "precision=1.0", "recall=1.0", "release_decision=READY"],
+    mapCheck: "Golden 8/8 · F1 1.0\nExpected failure 통과",
+    labA: ["learner_review_metrics 직접 작성", "정본 지표와 대조", "07_evaluation.json 저장"],
+    labB: ["TP=7·FP=1·FN=1 입력", "F1=0.875 계산", "HOLD 기준 설명"],
+    codexPrompt: ["목표: golden set offline evaluation", "허용: evaluation.py·golden fixture·test", "Test: empty expected·empty predicted·path escape", "금지: 점수 위해 golden·assertion 약화"],
+    notebookSnippet: `from labs.day3.review_copilot.evaluation import evaluate_case_set
+
+evaluation = evaluate_case_set(
+    workspace_root=ROOT,
+    manifest_path="labs/day3/review_copilot/fixtures/cases.json",
+    golden_path="labs/day3/review_copilot/fixtures/golden_findings.json",
+)
+save_json("07_evaluation.json", evaluation)
+assert evaluation["case_passed"] == 8
+assert evaluation["release_decision"] == "READY"`,
+    success: "Golden 8/8·Precision 1.0·Recall 1.0·F1 1.0",
+    expectedError: "DIFF_PATH_BLOCKED case도 예상된 실패로 통과",
+    externalRule: "평가 결과는 local JSON, 자동 배포 없음",
+    externalState: "READY",
+    recovery: ["golden path 확인", "stable key 확인", "FP·FN case 확인", "threshold 확인"],
+    applications: [["재직자", "모델·prompt 변경 전 회귀 평가"], ["구직자", "정량 지표와 error analysis report"]],
+    completion: ["세 지표 설명", "8개 case·예상 실패 확인", "07_evaluation.json 확인"],
+    command: "python -m pytest -q tests/test_day3_review_copilot.py -k golden_set",
+    demoCommand: "python -m labs.day3.review_copilot.cli",
+    saveLine: 'save_json("07_evaluation.json", evaluation)',
+    image: "day3_result.png",
+    sources: ["local:labs/day3/review_copilot/evaluation.py", "local:labs/day3/review_copilot/fixtures/golden_findings.json"],
+  },
+  {
+    shortTitle: "Localhost · GitHub PR",
+    label: "Release Evidence",
+    subtitle: "Local UI · Draft PR · CI · 사람 Merge",
+    focusTitle: "실행 결과의 연결",
+    conceptTitle: "PR·CI·Review 역할",
+    processTitle: "Localhost에서 Draft PR까지",
+    decisionTitle: "필수·선택 경로",
+    filesTitle: "Release 파일 구조",
+    demoTitle: "Review Copilot Localhost",
+    resultTitle: "Release Evidence 결과",
+    codexTitle: "Codex Task · PR Guard",
+    labATitle: "Localhost 실행",
+    labBTitle: "Draft PR·CI 확인",
+    completionTitle: "8차시 완료",
+    phaseTimes: ["0-9분", "9-17분", "17-43분", "43-50분"],
+    focus: "로컬 분석·사람 검토·Golden 평가를 evidence로 묶고, 선택한 branch만 Draft PR과 읽기 전용 CI로 연결하는 release 절차",
+    setup: ["브라우저 · Terminal 두 개", "GitHub 로그인 · 교육용 repository", "labs/day3/review_copilot.web · port 8765"],
+    optional: ["gh CLI", "Codex GitHub Review opt-in", "OPENAI_API_KEY secret은 강사 선택"],
+    fileRoles: [["실행", "labs/day3/review_copilot/web_app.py"], ["화면", "http://127.0.0.1:8765"], ["PR 정책", ".github/pull_request_template.md · day3-pr-quality.yml"], ["Runbook", "materials/day3/GitHub_PR_자동화_런북.md"]],
+    terms: [["Draft PR", "완료 전 검토를 위해 연 변경 요청"], ["CI", "PR마다 test와 정책 검사를 자동 실행하는 환경"], ["CODEOWNERS", "특정 경로의 사람 reviewer를 지정하는 파일"], ["Dry-run", "실제 push·comment 없이 target과 payload만 검증"]],
+    conceptFiles: ["web_app.py", "day3-pr-quality.yml", "CODEOWNERS", "08_release_evidence.json"],
+    decisions: [["필수·무료", "Fixture + local UI + GitHub Checks", "API key 없음"], ["선택 Codex", "workflow_dispatch + opt-in", "read-only artifact"], ["외부 서비스 변경", "사람 명령만", "자동 push·comment·merge 없음"], ["Merge", "사람 판단", "diff·test·target 재확인"]],
+    pipeline: ["local analysis", "human review", "release evidence", "Draft PR", "CI + human merge"],
+    demo: ["분석 · 전체 유지", "APPROVED·Golden 8/8", "GitHub DRY_RUN_READY"],
+    resultChecks: ["finding_count=3", "provider_candidate_gate", "github_dry_run", "external_write=false"],
+    mapCheck: "Localhost · Draft PR · CI\n사람 Merge",
+    labA: ["web server 실행", "127.0.0.1:8765 접속", "분석 · 전체 유지 후 JSON 저장"],
+    labB: ["개인 branch·focused commit", "Draft PR 템플릿 작성", "Checks와 사람 reviewer 확인"],
+    codexPrompt: ["목표: PR guard 허용·차단 test", "허용: day3_pr_guard.py·해당 test", "Test: PR contract·sensitive path·workspace escape", "금지: secret 읽기·자동 push·comment·merge"],
+notebookSnippet: `from labs.day3.review_copilot.workflow import run_review_workflow
+LAB = "labs/day3/review_copilot/fixtures"
+workflow_result = run_review_workflow(
+    workspace_root=ROOT, diff_path=DIFF_PATH,
+    project_context_path=f"{LAB}/project_context.json",
+    fixture_path=f"{LAB}/provider_fixture.json",
+    decision=REVIEW_DECISION, test_evidence=component_test_evidence)
+release = workflow_result["stages"]["08_release_evidence"]
+assert release["external_write"] is False
+assert release["decision"].startswith("READY_")
+save_json("08_release_evidence.json", release)`,
+    success: "Local UI·Golden 8/8·DRY_RUN_READY·external_write=false",
+    expectedError: "PR 본문·test·review focus 누락은 안정 error code로 CI 실패",
+    externalRule: "push·PR 생성은 본인 branch 확인 뒤 사람이 실행",
+    externalState: "READY_FOR_MANUAL_GITHUB_STEP",
+    recovery: ["port 8765 확인", "서버 Terminal 유지", "PR error code 확인", "branch·remote 재확인"],
+    applications: [["재직자", "팀 PR의 1차 검토와 사람 merge gate"], ["구직자", "Local app·CI·Draft PR까지 재현 영상"]],
+    completion: ["Localhost 화면 확인", "PR guard Test 통과", "08_release_evidence.json 확인"],
+    command: "python -m pytest -q tests/test_day3_pr_guard.py tests/test_day3_review_copilot.py",
+    demoCommand: "python -m labs.day3.review_copilot.web --port 8765",
+    replayCommand: "python -m labs.day3.review_copilot.cli run --run-tests --decision approve",
+    saveLine: 'save_json("08_release_evidence.json", release)',
+    image: "day3-review-copilot-local.png",
+    fullScreenDemo: true,
+    sources: ["local:materials/day3/GitHub_PR_자동화_런북.md", "local:labs/day3/review_copilot/README.md"],
+  },
+];
+
+export const DAY3_STUDENT_PERIODS = DETAILS.map((detail, index) => ({
+  ...BASE[index],
+  ...detail,
+  classNumber: index + 1,
+  time: DAY_TIMES[index][0],
+  artifact: [
+    "01_review_contract.json",
+    "02_parsed_diff.json",
+    "03_context_pack.json",
+    "04_candidate_review.json",
+    "05_hybrid_review.json",
+    "06_human_review.json",
+    "07_evaluation.json",
+    "08_release_evidence.json",
+  ][index],
+}));
+
+export const DAY3_GLOBAL = {
+  title: "코드 리뷰 Agent",
+  subtitle: "Diff · Context · Human Review · GitHub PR",
+  service: "Review Copilot",
+  scheduleMorning: [
+    ["09:00-09:50", "1차시", "Review Contract", "01_review_contract.json"],
+    ["09:50-10:40", "2차시", "Unified Diff", "02_parsed_diff.json"],
+    ["10:40-11:30", "3차시", "Context Pack", "03_context_pack.json"],
+    ["11:30-13:00", "휴식", "쉬는시간+점심 · 90분", "13:00 복귀"],
+  ],
+  scheduleAfternoon: [
+    ["13:00-13:50", "4차시", "Provider Adapter", "04_candidate_review.json"],
+    ["13:50-14:40", "5차시", "Hybrid Review", "05_hybrid_review.json"],
+    ["14:40-15:00", "휴식", "쉬는시간 · 20분", "15:00 복귀"],
+    ["15:00-15:50", "6차시", "Human Review", "06_human_review.json"],
+    ["15:50-16:40", "7차시", "Golden Set Evaluation", "07_evaluation.json"],
+    ["16:40-17:30", "8차시", "Localhost · GitHub PR", "08_release_evidence.json"],
+    ["17:30-18:00", "휴식·Q&A", "쉬는시간 겸 Q&A · 30분", "실습 복구"],
+  ],
+  requiredSetup: [
+    ["필수", "Python 3.12 · .venv312", "1~8차시 코드 실행"],
+    ["필수", "VS Code · Jupyter", "Notebook·Test·Diff"],
+    ["필수", "Git · repository clone", "branch·commit·diff"],
+    ["필수", "Chrome·Edge·Safari", "localhost UI"],
+    ["확인", "pip install -r requirements-day3.txt", "수업 전 1회"],
+  ],
+  optionalSetup: [
+    ["선택", "Codex 또는 Claude Code", "Task→Patch→Test→Review"],
+    ["선택", "GitHub CLI gh", "Draft PR 생성"],
+    ["선택", "Ollama qwen3:4b", "Provider 비교"],
+    ["강사 선택", "OpenAI API secret", "읽기 전용 Codex Review"],
+  ],
+  references: [
+    ["Day 3 실행", "local:labs/day3/review_copilot/README.md"],
+    ["GitHub PR·CI", "local:materials/day3/GitHub_PR_자동화_런북.md"],
+    ["GitHub Pull Request", "https://docs.github.com/en/pull-requests"],
+    ["GitHub Actions", "https://docs.github.com/en/actions"],
+    ["LangGraph Interrupt", "https://docs.langchain.com/oss/python/langgraph/interrupts"],
+  ],
+};
