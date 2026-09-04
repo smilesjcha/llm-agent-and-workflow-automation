@@ -1,0 +1,84 @@
+name: day3-codex-review-optional
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "검토할 교육용 PR 번호"
+        required: true
+        type: number
+      confirm_cost:
+        description: "API 사용 가능성과 비용 발생 가능성을 확인했습니다"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  codex-read-only-review:
+    if: ${{ inputs.confirm_cost == true && vars.ENABLE_CODEX_REVIEW == 'true' && github.ref_name == github.event.repository.default_branch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      final_message: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - name: Confirm repository opt-in and secret configuration
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY repository secret is not configured."
+            exit 1
+          fi
+
+      - name: Check out the pull request merge ref
+        uses: actions/checkout@v5
+        with:
+          ref: refs/pull/${{ inputs.pr_number }}/merge
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Extract the trusted review prompt from the default branch
+        id: trusted_prompt
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git check-ref-format --branch "$DEFAULT_BRANCH" >/dev/null
+          trusted_prompt="$RUNNER_TEMP/day3_pr_review.md"
+          git show "refs/remotes/origin/${DEFAULT_BRANCH}:.github/codex/prompts/day3_pr_review.md" > "$trusted_prompt"
+          test -s "$trusted_prompt"
+          echo "prompt_path=$trusted_prompt" >> "$GITHUB_OUTPUT"
+
+      - name: Run read-only Codex review
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: ${{ steps.trusted_prompt.outputs.prompt_path }}
+          sandbox: read-only
+          safety-strategy: drop-sudo
+          codex-args: '["--ephemeral"]'
+
+  preserve-review-for-human:
+    needs: codex-read-only-review
+    if: ${{ needs.codex-read-only-review.outputs.final_message != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Save review output without posting to the PR
+        env:
+          CODEX_FINAL_MESSAGE: ${{ needs.codex-read-only-review.outputs.final_message }}
+        run: printf '%s\n' "$CODEX_FINAL_MESSAGE" > codex-review.md
+
+      - name: Upload human-review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-review-pr-${{ inputs.pr_number }}
+          path: codex-review.md
+          retention-days: 7
