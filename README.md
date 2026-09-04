@@ -27,7 +27,7 @@
 - `data/meeting_sample_ko_12min.wav`: 4인 합성 한국어 회의 음성
 - `data/meeting_sample_ko_12min.txt`: 회의 원문과 타임라인
 
-## 2일차 최종본·3-5일차 초안
+## 2~3일차 최종본·4~5일차 초안
 
 - `slides/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pptx`: 2일차 수강생용 최종 강의 자료
 - `output/pdf/IPA_LLM_Agent_업무자동화_Day2_2026_STUDENT_READY_176p.pdf`: 2일차 배포·검수용 최종 PDF
@@ -37,10 +37,17 @@
 - `materials/day2/day2_service_lab.ipynb`: 회의기록 Workflow·Agent·Human Review 실습
 - `materials/day2/day2_service_lab.executed.ipynb`: 실행 완료 참고본
 - `output/course-labs/day2-v2/`: 읽기 전용 기준 결과; 수강생 실행 결과는 `student-run/`과 `run_manifest.json`에 분리
-- `slides/IPA_LLM_Agent_업무자동화_Day3_DRAFT_240p.pptx`: diff parser·review contract·Codex harness·hybrid review·평가
+- `slides/IPA_LLM_Agent_업무자동화_Day3_2026_STUDENT_READY_176p.pptx`: Review Contract·diff parser·LangChain adapter·LangGraph Human Review·GitHub PR
+- `output/pdf/IPA_LLM_Agent_업무자동화_Day3_2026_STUDENT_READY_176p.pdf`: 3일차 배포·검수용 최종 PDF
 - `slides/IPA_LLM_Agent_업무자동화_Day4_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
 - `slides/IPA_LLM_Agent_업무자동화_Day5_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
-- `materials/day3/day3_service_lab.ipynb`: unified diff·finding·Codex task spec
+- `materials/day3/day3_review_intelligence_lab.ipynb`: 1~8차시 누적 Review Intelligence 실습
+- `materials/day3/day3_review_intelligence_lab.executed.ipynb`: fixture 기반 실행 완료 참고본
+- `materials/day3/2026_Day3_수강생_실습가이드.md`: 설치·차시별 실행·복구·PR 안내
+- `materials/day3/2026_Day3_강사용_상세교안.md`: 8시간 발화·시연·실습 운영안
+- `labs/day3/review_copilot/`: diff·context·provider·review·LangGraph·evaluation·localhost 서비스
+- `output/course-labs/day3-v2/`: 8개 차시 검토 완료 기준 결과
+- `dist/day3-student-code-bundle.zip`: 정본 Notebook·서비스·Fixture·Test만 담은 학생용 코드 묶음
 - `materials/day4/day4_service_lab.ipynb`: GitHub dry-run·사람 승인·중복 실행 방지
 - `materials/day5/day5_service_lab.ipynb`: 서비스 router·golden evaluation·release gate
 - `materials/days2_5/32시간_Codex_서비스_운영_블루프린트.md`: 강사 시연·수강생 실행·파일·명령·운영 기준
@@ -88,6 +95,22 @@ python scripts/run_day2_local_app.py
 ```
 
 Notebook의 기본 실행은 강사가 검토한 음성·전사 fixture를 사용한다. 8차시는 Docker 없는 localhost App이 기본이며 macOS `run-local.command`, Windows `run-local.cmd`, 공통 `run_day2_local_app.py` 중 하나로 실행한다. 화면의 `예시로 바로 시작`을 누르면 파일 선택 없이 전체 흐름을 확인할 수 있다. `faster-whisper`, Ollama, OpenAI는 필요한 의존성과 opt-in을 준비한 경우만 실행한다. 기준 결과는 `output/course-labs/day2-v2/`에서 읽고, 자신의 결과는 `output/course-labs/day2-v2/student-run/`과 `run_manifest.json`에서 확인한다.
+
+### 3일차 실행
+
+```bash
+python -m pip install -r requirements-day3.txt
+python scripts/run_day3_preflight.py
+jupyter lab materials/day3/day3_review_intelligence_lab.ipynb
+python -m labs.day3.review_copilot.web --port 8765
+# 검토 전 안전한 기본값: REVIEW_REQUIRED / HOLD
+python -m labs.day3.review_copilot.cli run --run-tests
+# Finding을 직접 확인한 뒤에만 READY 후보 생성
+python -m labs.day3.review_copilot.cli run --run-tests --decision approve
+python scripts/build_day3_student_bundle.py
+```
+
+기본 Notebook은 synthetic diff와 fixture provider를 사용해 network call과 외부 서비스 쓰기 없이 끝난다. 자신의 결과는 `output/course-labs/day3-v2/student-run/`, 강사용 검토 완료 결과는 상위 `day3-v2/`에서 확인한다. CLI에서 결정을 생략하면 `REVIEW_REQUIRED/HOLD`이며, Notebook의 6차시에서 선택한 결정은 8차시 Release Gate까지 전달된다. Ollama·OpenAI는 선택 requirements와 live opt-in을 함께 설정한 컴퓨터에서만 호출하며, GitHub push·Draft PR·`@codex review`는 target과 diff를 사람이 확인한 뒤 실행한다. 자동 comment와 자동 merge는 제공하지 않는다.
 
 Ollama용 adapter가 필요할 때만 기본 설치 뒤에 다음 명령을 추가한다.
 
@@ -148,12 +171,12 @@ python -m src.meeting_demo --audio data/demo_meeting.wav \
 
 ## PPT 재생성
 
-프레젠테이션 빌드 환경에서는 다음 소스로 강의 자료를 다시 생성할 수 있습니다. 2일차 배포 기준은 176쪽 수강생용 최종본이며, 3~5일차는 초안 빌더를 사용합니다.
+프레젠테이션 빌드 환경에서는 다음 소스로 강의 자료를 다시 생성할 수 있습니다. 2·3일차 배포 기준은 176쪽 수강생용 최종본이며, 4·5일차는 초안 빌더를 사용합니다.
 
 ```bash
 node scripts/slides/build_day1_detail.mjs
 node scripts/slides/build_day2_student_ready.mjs
-node scripts/slides/build_days2_5_drafts.mjs --day 3
+node scripts/slides/build_day3_student_ready.mjs
 node scripts/slides/build_days2_5_drafts.mjs --day 4
 node scripts/slides/build_days2_5_drafts.mjs --day 5
 ```

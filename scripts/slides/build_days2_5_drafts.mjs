@@ -8,8 +8,8 @@ import { CLAUDE_CODE_DESKTOP, CLAUDE_CODE_QUICKSTART, CODEX_OFFICIAL_SOURCE, COU
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const argIndex = process.argv.indexOf("--day");
 const day = Number(argIndex >= 0 ? process.argv[argIndex + 1] : process.env.COURSE_DAY);
-if (![3, 4, 5].includes(day)) {
-  throw new Error("--day must be one of 3, 4, 5; use build_day2_student_ready.mjs for Day 2");
+if (![4, 5].includes(day)) {
+  throw new Error("--day must be 4 or 5; use build_day2_student_ready.mjs for Day 2 and build_day3_student_ready.mjs for Day 3");
 }
 
 const config = COURSE_DAYS[day];
