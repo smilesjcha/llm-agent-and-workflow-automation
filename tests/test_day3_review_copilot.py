@@ -26,10 +26,214 @@ from labs.day3.review_copilot.test_evidence import collect_focused_test_evidence
 from labs.day3.review_copilot.cli import build_parser, main as cli_main
 from labs.day3.review_copilot.workspace import read_workspace_text
 from scripts.day3_pr_guard import validate_pr_payload
+from labs.day3.review_copilot.codex_cli import CodexCLIReviewProvider
+from labs.day3.review_copilot.exercise import (
+    checkout_fixture_provider, exercise_diff, prepare_exercise,
+    review_exercise, run_exercise_demo, run_exercise_tests,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 LAB = Path("labs/day3/review_copilot")
+
+
+@pytest.fixture
+def checkout_workspace(tmp_path):
+    import shutil
+    shutil.copytree(ROOT / LAB / "fixtures/checkout", tmp_path / LAB / "fixtures/checkout")
+    prepare_exercise(workspace_root=tmp_path)
+    return tmp_path
+
+
+def test_checkout_exercise_reproduces_and_repairs_real_business_bug(checkout_workspace):
+    before = run_exercise_demo(workspace_root=checkout_workspace)
+    after = run_exercise_demo(workspace_root=checkout_workspace, version="solution")
+    assert before["result"]["payable_won"] == -2_000
+    assert after["result"]["payable_won"] == 3_000
+    assert after["result"]["coupon_applied_won"] == 10_000
+    shipping = run_exercise_demo(workspace_root=checkout_workspace, version="solution", total_won=50_000, coupon_won=10_000)
+    assert shipping["result"]["payable_won"] == 43_000
+    assert run_exercise_demo(workspace_root=checkout_workspace, version="solution", total_won=-1)["error_code"] == "MONEY_NON_NEGATIVE_REQUIRED"
+
+
+def test_checkout_uses_same_real_tests_before_and_after(checkout_workspace):
+    before = run_exercise_tests(workspace_root=checkout_workspace)
+    after = run_exercise_tests(workspace_root=checkout_workspace, version="solution")
+    assert (before["status"], before["exit_code"], before["test_count"]) == ("FAILED", 1, 9)
+    assert "failures=7" in before["stderr"]
+    assert (after["status"], after["exit_code"], after["test_count"]) == ("PASSED", 0, 9)
+    assert before["command"] == after["command"]
+
+
+@pytest.mark.parametrize("output", ["", "Ran 0 tests in 0.001s\n\nOK\n", "Ran 9 tests in 0.001s\n\nOK\n"])
+def test_checkout_does_not_pass_without_actual_test_evidence(checkout_workspace, monkeypatch, output):
+    import subprocess
+    monkeypatch.setattr("labs.day3.review_copilot.exercise.subprocess.run", lambda *args, **kwargs: subprocess.CompletedProcess([], 0, stdout="", stderr=output))
+    result = run_exercise_tests(workspace_root=checkout_workspace)
+    assert result["status"] == "EXPECTED_FAILURE"
+    assert result["error_code"] == "NO_TEST_EVIDENCE"
+
+
+def test_checkout_counts_an_additional_student_test(checkout_workspace):
+    path = checkout_workspace / "output/day3-redesign/student-service/solution/checkout_checks.py"
+    source = path.read_text(encoding="utf-8").replace(
+        "class CheckoutTests(unittest.TestCase):",
+        "class CheckoutTests(unittest.TestCase):\n    def test_extra_zero_total(self):\n        self.assertEqual(payable(0, 0), 0)\n",
+    )
+    path.write_text(source, encoding="utf-8")
+    result = run_exercise_tests(workspace_root=checkout_workspace, version="solution")
+    assert result["status"] == "PASSED"
+    assert result["test_count"] == len(result["cases"]) == 10
+
+
+def test_checkout_prepare_preserves_edits_and_tests_modified_student_file(checkout_workspace):
+    directory = checkout_workspace / "output/day3-redesign/student-service"
+    starter = directory / "starter/checkout.py"
+    starter.write_text((directory / "solution/checkout.py").read_text(), encoding="utf-8")
+    result = prepare_exercise(workspace_root=checkout_workspace)
+    assert result["created_files"] == []
+    assert run_exercise_tests(workspace_root=checkout_workspace)["status"] == "PASSED"
+
+
+def test_checkout_reports_malformed_student_receipt(checkout_workspace):
+    starter = checkout_workspace / "output/day3-redesign/student-service/starter/checkout.py"
+    starter.write_text("def calculate_checkout(**kwargs):\n    return {'amount': 1}\n", encoding="utf-8")
+    assert run_exercise_demo(workspace_root=checkout_workspace)["error_code"] == "EXERCISE_RECEIPT_INVALID"
+
+
+def test_checkout_blocks_path_escape_and_existing_unowned_directory(checkout_workspace):
+    with pytest.raises(ValueError, match="WORKSPACE_PATH_BLOCKED"):
+        prepare_exercise(workspace_root=checkout_workspace, output_dir="../escape")
+    with pytest.raises(ValueError, match="DAY3_EXERCISE_SUBDIRECTORY_REQUIRED"):
+        prepare_exercise(workspace_root=checkout_workspace, output_dir=".")
+    with pytest.raises(ValueError, match="DAY3_EXERCISE_NONEMPTY_DIRECTORY"):
+        prepare_exercise(workspace_root=checkout_workspace, output_dir=LAB)
+
+
+def test_checkout_blocks_symlinked_source_file(checkout_workspace, tmp_path_factory):
+    source = checkout_workspace / "output/day3-redesign/student-service/starter/checkout.py"
+    outside = tmp_path_factory.mktemp("outside") / "checkout.py"
+    outside.write_text("raise RuntimeError('do not execute')", encoding="utf-8")
+    source.unlink()
+    source.symlink_to(outside)
+    with pytest.raises(ValueError, match="WORKSPACE_PATH_BLOCKED"):
+        run_exercise_tests(workspace_root=checkout_workspace)
+
+
+def test_checkout_replay_saves_grounded_readable_review(checkout_workspace):
+    result = review_exercise(workspace_root=checkout_workspace, provider=checkout_fixture_provider(workspace_root=checkout_workspace))
+    assert result["status"] == "SUCCESS"
+    assert result["provider"]["provider_used"] == "fixture"
+    assert result["test_evidence"]["status"] == "FAILED"
+    assert len(result["review"]["findings"]) == 2
+    assert "쿠폰이 상품 금액" in result["markdown"]
+    assert Path(result["review_path"]).read_text(encoding="utf-8") == result["markdown"]
+    assert "+    return total_won - coupon_won" in exercise_diff(workspace_root=checkout_workspace)
+
+
+def test_checkout_uses_students_review_prompt_in_actual_provider_call(checkout_workspace):
+    class CapturingProvider:
+        name = "fixture"
+        model = "prompt-test"
+        def review(self, prompt):
+            assert prompt["review_instructions"] == "쿠폰 상한과 배송비의 실제 사용자 영향을 검토"
+            assert prompt["test_evidence"]["test_count"] == 9
+            return []
+    result = review_exercise(workspace_root=checkout_workspace, provider=CapturingProvider(), review_instructions="쿠폰 상한과 배송비의 실제 사용자 영향을 검토")
+    assert result["status"] == "SUCCESS"
+
+
+def test_checkout_rejects_empty_review_prompt(checkout_workspace):
+    with pytest.raises(ValueError, match="REVIEW_INSTRUCTIONS_INVALID"):
+        review_exercise(workspace_root=checkout_workspace, review_instructions=" ")
+
+
+def test_codex_no_opt_in_has_named_failure_and_no_silent_fixture():
+    result = run_provider(requested=CodexCLIReviewProvider(), fallback=FixtureReviewProvider({}), prompt={}, allow_fallback=False)
+    assert result["status"] == "EXPECTED_FAILURE"
+    assert result["error_code"] == "CODEX_LIVE_OPT_IN_REQUIRED"
+    assert result["provider_used"] is None
+
+
+def test_codex_explicit_fallback_has_truthful_provenance():
+    result = run_provider(requested=CodexCLIReviewProvider(), fallback=FixtureReviewProvider({}), prompt={}, allow_fallback=True)
+    assert result["provider_used"] == "fixture"
+    assert result["fallback_reason"] == "CODEX_LIVE_OPT_IN_REQUIRED"
+
+
+def test_codex_subprocess_uses_stdin_schema_readonly_and_redacted_context(monkeypatch):
+    import subprocess
+    import labs.day3.review_copilot.codex_cli as module
+    monkeypatch.setattr(module.shutil, "which", lambda value: "/public/bin/codex")
+    monkeypatch.setenv("OPENAI_API_KEY", "synthetic-not-for-child")
+    def fake_run(command, **kwargs):
+        assert command[-1] == "-"
+        assert "--ignore-user-config" in command and "--ephemeral" in command
+        assert command[command.index("--sandbox") + 1] == "read-only"
+        assert "features.shell_tool=false" in command
+        assert "--model" not in command
+        assert "OPENAI_API_KEY" not in kwargs["env"]
+        assert kwargs["encoding"] == "utf-8" and kwargs["errors"] == "replace"
+        assert "synthetic-password" not in kwargs["input"]
+        assert "[REDACTED]" in kwargs["input"]
+        schema = json.loads(Path(command[command.index("--output-schema") + 1]).read_text())
+        assert schema["additionalProperties"] is False
+        assert set(schema["properties"]["candidates"]["items"]["required"]) == set(schema["properties"]["candidates"]["items"]["properties"])
+        Path(command[command.index("--output-last-message") + 1]).write_text('{"candidates": []}', encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, stderr="")
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    provider = CodexCLIReviewProvider(live_opt_in=True)
+    assert provider.review({"text": "password=synthetic-password"}) == []
+    assert provider.last_run["model_source"] == "cli_default"
+    assert provider.last_run["inference_location"] == "cloud"
+
+
+@pytest.mark.parametrize("failure,expected", [("timeout", "CODEX_TIMEOUT"), ("auth", "CODEX_LOGIN_REQUIRED"), ("json", "CODEX_OUTPUT_CONTRACT_INVALID"), ("utf8", "CODEX_OUTPUT_CONTRACT_INVALID")])
+def test_codex_failure_contract_never_exposes_stderr(monkeypatch, failure, expected):
+    import subprocess
+    import labs.day3.review_copilot.codex_cli as module
+    monkeypatch.setattr(module.shutil, "which", lambda value: "/public/bin/codex")
+    def fake_run(command, **kwargs):
+        if failure == "timeout":
+            raise subprocess.TimeoutExpired(command, 0.1)
+        if failure == "auth":
+            return subprocess.CompletedProcess(command, 1, stderr="401 Unauthorized: synthetic-sensitive-detail")
+        if failure == "utf8":
+            Path(command[command.index("--output-last-message") + 1]).write_bytes(b"\xff")
+            return subprocess.CompletedProcess(command, 0, stderr="")
+        Path(command[command.index("--output-last-message") + 1]).write_text("not JSON")
+        return subprocess.CompletedProcess(command, 0, stderr="")
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    result = run_provider(requested=CodexCLIReviewProvider(live_opt_in=True), fallback=FixtureReviewProvider({}), prompt={}, allow_fallback=False)
+    assert result["error_code"] == expected
+    assert "synthetic-sensitive-detail" not in json.dumps(result)
+
+
+def test_codex_missing_install_is_named_error(monkeypatch):
+    import labs.day3.review_copilot.codex_cli as module
+    monkeypatch.setattr(module.shutil, "which", lambda value: None)
+    result = run_provider(requested=CodexCLIReviewProvider(live_opt_in=True), fallback=FixtureReviewProvider({}), prompt={}, allow_fallback=False)
+    assert result["error_code"] == "CODEX_CLI_NOT_INSTALLED"
+
+
+def test_codex_unexpected_decode_failure_keeps_named_error(monkeypatch):
+    import labs.day3.review_copilot.codex_cli as module
+    monkeypatch.setattr(module.shutil, "which", lambda value: "/public/bin/codex")
+    def bad_decode(*args, **kwargs):
+        raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid")
+    monkeypatch.setattr(module.subprocess, "run", bad_decode)
+    result = run_provider(requested=CodexCLIReviewProvider(live_opt_in=True), fallback=FixtureReviewProvider({}), prompt={}, allow_fallback=False)
+    assert result["error_code"] == "CODEX_OUTPUT_ENCODING_INVALID"
+
+
+def test_localhost_checkout_endpoints_use_same_exercise(checkout_workspace):
+    from labs.day3.review_copilot.web_app import exercise_request
+    receipt = exercise_request({"action": "demo"}, root=checkout_workspace)
+    assert receipt["receipts"]["starter"]["result"]["payable_won"] == -2_000
+    replay = exercise_request({"action": "review", "provider": "fixture"}, root=checkout_workspace)
+    assert replay["provider"]["provider_used"] == "fixture"
+    live = exercise_request({"action": "review", "provider": "codex_cli"}, root=checkout_workspace)
+    assert live["provider"]["error_code"] == "CODEX_LIVE_OPT_IN_REQUIRED"
 
 
 def passing_test_evidence() -> dict:

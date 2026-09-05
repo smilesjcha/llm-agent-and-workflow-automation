@@ -10,10 +10,12 @@ import sys
 from typing import Any
 
 from .context_builder import build_context_pack
+from .codex_cli import CodexCLIReviewProvider
 from .contracts import ReviewPolicy
 from .diff_parser import parse_unified_diff
 from .errors import stable_error_code
 from .evaluation import evaluate_case_set
+from .exercise import prepare_exercise, run_exercise_tests, run_exercise_demo, review_exercise, exercise_diff, checkout_fixture_provider
 from .providers import OllamaReviewProvider, ReviewProvider
 from .review_engine import deterministic_review
 from .test_evidence import collect_focused_test_evidence
@@ -64,7 +66,7 @@ def _case(root: Path, requested: str) -> dict[str, str]:
     raise ValueError("CASE_NOT_FOUND")
 
 
-def _provider(name: str) -> ReviewProvider | None:
+def _provider(name: str, *, live: bool = False) -> ReviewProvider | None:
     if name == "fixture":
         return None
     if name == "ollama":
@@ -72,6 +74,8 @@ def _provider(name: str) -> ReviewProvider | None:
             model=os.getenv("OLLAMA_MODEL", "qwen3:4b"),
             live_opt_in=os.getenv("OLLAMA_LIVE_OPT_IN") == "1",
         )
+    if name == "codex_cli":
+        return CodexCLIReviewProvider(model=os.getenv("CODEX_MODEL") or None, live_opt_in=live)
     raise ValueError("PROVIDER_NOT_SUPPORTED")
 
 
@@ -83,6 +87,8 @@ def _run_case(
     context_max_bytes: int,
     decision: str | None,
     test_evidence: dict[str, Any] | None = None,
+    live: bool = False,
+    allow_fallback: bool = False,
 ) -> dict[str, Any]:
     item = _case(root, case_id)
     return run_review_workflow(
@@ -90,7 +96,8 @@ def _run_case(
         diff_path=item["diff"],
         project_context_path=PROJECT_CONTEXT,
         fixture_path=PROVIDER_FIXTURE,
-        provider=_provider(provider_name),
+        provider=_provider(provider_name, live=live),
+        allow_fallback=allow_fallback,
         context_max_bytes=context_max_bytes,
         decision=decision,
         test_evidence=test_evidence,
@@ -175,7 +182,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("approve", "reject"),
         help="사람이 검토한 뒤에만 지정; 생략하면 REVIEW_REQUIRED/HOLD",
     )
-    run.add_argument("--provider", choices=("fixture", "ollama"), default="fixture")
+    run.add_argument("--provider", choices=("fixture", "codex_cli", "ollama"), default="fixture")
+    run.add_argument("--live", action="store_true", help="Codex CLI의 로그인된 계정으로 모델 실행")
+    run.add_argument("--allow-fallback", action="store_true", help="실패 시 fixture 대체와 사유를 명시")
     run.add_argument("--context-max-bytes", type=int, default=20_000)
     run.add_argument(
         "--run-tests",
@@ -192,7 +201,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     review = commands.add_parser("review", help="한 case 또는 전체 case 리뷰")
     review.add_argument("--case", default="unsafe_dynamic_execution")
-    review.add_argument("--provider", choices=("fixture", "ollama"), default="fixture")
+    review.add_argument("--provider", choices=("fixture", "codex_cli", "ollama"), default="fixture")
+    review.add_argument("--live", action="store_true")
+    review.add_argument("--allow-fallback", action="store_true")
     review.add_argument("--context-max-bytes", type=int, default=20_000)
     review.add_argument(
         "--decision",
@@ -203,6 +214,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     commands.add_parser("evaluate", help="8개 golden case 평가")
     commands.add_parser("cases", help="사용 가능한 synthetic case 목록")
+    exercise = commands.add_parser("exercise", help="실제 쿠폰 서비스의 실패 재현·리뷰·수정 검증")
+    exercise.add_argument("--step", choices=("prepare", "test", "demo", "diff", "review"), default="prepare")
+    exercise.add_argument("--version", choices=("starter", "solution"), default="starter")
+    exercise.add_argument("--directory", default="output/day3-redesign/student-service")
+    exercise.add_argument("--provider", choices=("codex_cli", "fixture"), default="codex_cli")
+    exercise.add_argument("--live", action="store_true")
+    exercise.add_argument("--allow-fallback", action="store_true")
+    exercise.add_argument("--total", type=int, default=10_000)
+    exercise.add_argument("--coupon", type=int, default=15_000)
     return parser
 
 
@@ -214,6 +234,30 @@ def main(argv: list[str] | None = None) -> int:
     elif raw_args[0].startswith("-"):
         raw_args.insert(0, "run")
     args = build_parser().parse_args(raw_args)
+
+    if args.command == "exercise":
+        options = {"workspace_root": root, "exercise_dir": args.directory}
+        try:
+            if args.step == "prepare":
+                payload = prepare_exercise(workspace_root=root, output_dir=args.directory)
+            elif args.step == "test":
+                payload = run_exercise_tests(**options, version=args.version)
+            elif args.step == "demo":
+                payload = run_exercise_demo(**options, version=args.version, total_won=args.total, coupon_won=args.coupon)
+            elif args.step == "diff":
+                print(exercise_diff(**options, version=args.version))
+                return 0
+            else:
+                if args.provider == "fixture":
+                    provider = checkout_fixture_provider(**options)
+                else:
+                    provider = _provider(args.provider, live=args.live)
+                payload = review_exercise(**options, provider=provider, allow_fallback=args.allow_fallback)
+            _print(payload)
+            return 0 if payload["status"] in {"SUCCESS", "PASSED"} else 2
+        except (OSError, ValueError, TypeError) as exc:
+            _print({"status": "EXPECTED_FAILURE", "error_code": stable_error_code(exc)})
+            return 2
 
     if args.command == "cases":
         _print({"status": "SUCCESS", "cases": _cases(root), "external_write": False})
@@ -245,6 +289,8 @@ def main(argv: list[str] | None = None) -> int:
                         context_max_bytes=args.context_max_bytes,
                         decision=args.decision,
                         test_evidence=evidence,
+                        live=args.live,
+                        allow_fallback=args.allow_fallback,
                     ),
                 }
                 for item in _cases(root)
@@ -263,6 +309,8 @@ def main(argv: list[str] | None = None) -> int:
                 context_max_bytes=args.context_max_bytes,
                 decision=args.decision,
                 test_evidence=evidence,
+                live=args.live,
+                allow_fallback=args.allow_fallback,
             )
         _print(payload)
         return 0 if payload["status"] == "SUCCESS" else 2
@@ -273,7 +321,8 @@ def main(argv: list[str] | None = None) -> int:
         diff_path=args.diff,
         project_context_path=PROJECT_CONTEXT,
         fixture_path=PROVIDER_FIXTURE,
-        provider=_provider(args.provider),
+        provider=_provider(args.provider, live=args.live),
+        allow_fallback=args.allow_fallback,
         decision=args.decision,
         context_max_bytes=args.context_max_bytes,
         test_evidence=evidence,

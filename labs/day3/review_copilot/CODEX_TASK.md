@@ -1,5 +1,33 @@
 # Codex 실습 요청서 · 작은 변경에서 PR까지
 
+## 이번 수업의 기본 Task · 쿠폰 결제 서비스
+
+`exercise --step prepare`를 실행한 뒤 아래 대화를 사용합니다. Notebook에서 별도 폴더를 만들었다면 경로를 해당 폴더로 바꿉니다.
+
+```text
+쿠폰 결제 서비스의 코드 리뷰를 부탁해.
+먼저 output/day3-redesign/student-service/requirements.md를 읽고
+starter/checkout.py와 starter/checkout_checks.py를 확인해.
+starter 폴더에서 python checkout_checks.py를 실행해서 실패 조건을 재현해.
+
+상품 10,000원에 쿠폰 15,000원을 적용하면 어떤 문제가 생기는지,
+상품 50,000원에 쿠폰 10,000원을 적용하면 배송비는 얼마여야 하는지 확인해.
+각 리뷰는 파일·줄 번호·사용자 영향·재현 입력·최소 수정으로 작성해.
+지금은 코드를 수정하지 말고 리뷰 결과를 먼저 보여줘.
+```
+
+리뷰를 읽고 수정할 항목을 선택한 다음 이어서 요청합니다.
+
+```text
+입력 검증, 쿠폰 상한, 할인 후 배송비 기준, 영수증 할인액을 수정하자.
+수정 범위는 output/day3-redesign/student-service/starter/checkout.py야.
+기존 테스트를 약하게 바꾸지 말고, 같은 9개 테스트를 다시 실행해.
+수정 전후 결제 예정액과 실제 테스트 결과를 보여줘.
+마지막으로 변경 diff, 수정 이유, 테스트 결과를 PR 본문 초안으로 정리해.
+```
+
+기본 Task를 마친 뒤 아래 Rule 추가 과제를 선택합니다.
+
 아래 블록을 Codex에 그대로 전달한 뒤, 학생은 `목표`와 `완료 조건`만 자신의 기능에 맞게 바꿉니다.
 
 ```text
