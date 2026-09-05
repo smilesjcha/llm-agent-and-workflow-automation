@@ -18,6 +18,7 @@
 - 전체 PDF 121쪽을 렌더해 개별 검수했다. 작은 테스트·리뷰 캡처는 원본의 해당 영역만 확대하고 잘린 함수명 설명은 교정했다. PDF에는 AppleGothic·Menlo를 포함한다. Windows PowerPoint에서의 글꼴 대체는 직접 실행 검증하지 않았으므로 배포에는 PDF를 함께 제공한다.
 - Day 3 6개 테스트 파일 실행: `120 passed`. Day 1 5개 회귀 테스트 파일 실행: `35 passed`. 정확한 명령은 `materials/day3/2026_Day3_개편_검증결과.md`에 기록한다.
 - 학생 ZIP은 74개 allowlist 파일만 포함하며 `.env`, 토큰, 실제 고객 자료, 생성 Output, 실행 완료 Notebook은 포함하지 않는다. PDF·PPT·실행 예시는 별도 배포다.
+- 배포 커밋 `94e96bb`의 clean worktree에서 전체 pytest `244 passed`, 데스크톱 Go 테스트 `ok`를 확인했다. 원래 폴더의 기존 Day 2 수정 파일 때문에 생기는 초안 가정 테스트 실패는 해당 파일을 보존한 채 별도로 기록했다.
 
 ## 2026-09-04 · Review Intelligence 정본 전환
 

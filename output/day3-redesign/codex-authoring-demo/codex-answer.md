@@ -1,4 +1,4 @@
-[checkout.py](<WORKSPACE>/output/day3-redesign/codex-authoring-demo/starter/checkout.py)를 수정했습니다. 테스트 파일과 조건은 변경하지 않았습니다.
+[checkout.py](starter/checkout.py)를 수정했습니다. 테스트 파일과 조건은 변경하지 않았습니다.
 
 수정한 로직:
 
