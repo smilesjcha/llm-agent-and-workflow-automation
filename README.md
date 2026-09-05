@@ -37,14 +37,17 @@
 - `materials/day2/day2_service_lab.ipynb`: 회의기록 Workflow·Agent·Human Review 실습
 - `materials/day2/day2_service_lab.executed.ipynb`: 실행 완료 참고본
 - `output/course-labs/day2-v2/`: 읽기 전용 기준 결과; 수강생 실행 결과는 `student-run/`과 `run_manifest.json`에 분리
-- `slides/IPA_LLM_Agent_업무자동화_Day3_2026_STUDENT_READY_176p.pptx`: Review Contract·diff parser·LangChain adapter·LangGraph Human Review·GitHub PR
-- `output/pdf/IPA_LLM_Agent_업무자동화_Day3_2026_STUDENT_READY_176p.pdf`: 3일차 배포·검수용 최종 PDF
+- `slides/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pptx`: 코드 리뷰 Agent 정본. 오류 재현·Codex 리뷰·코드 수정·Test·LangGraph·Localhost
+- `output/pdf/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pdf`: 같은 장표의 배포·검수용 PDF. 이전 176p 파일은 구버전
 - `slides/IPA_LLM_Agent_업무자동화_Day4_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
 - `slides/IPA_LLM_Agent_업무자동화_Day5_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
-- `materials/day3/day3_review_intelligence_lab.ipynb`: 1~8차시 누적 Review Intelligence 실습
+- `materials/day3/day3_review_intelligence_lab.ipynb`: 직접 구현·실패 재현·실제 코드 수정·재실행을 포함한 1~8차시 실습
 - `materials/day3/day3_review_intelligence_lab.executed.ipynb`: fixture 기반 실행 완료 참고본
 - `materials/day3/2026_Day3_수강생_실습가이드.md`: 설치·차시별 실행·복구·PR 안내
 - `materials/day3/2026_Day3_강사용_상세교안.md`: 8시간 발화·시연·실습 운영안
+- `materials/day3/코드리뷰_Agent_아키텍처.md`: Mermaid 마스터 구조·대화형 Agent와 리뷰 Adapter의 구분
+- `materials/day3/4·5주차_운영안_및_미니프로젝트.md`: GitHub 자동 리뷰·마지막 주 개인 프로젝트 3시간 운영
+- `materials/day3/페이지별_강의_진행.md`: 페이지별 권장 시간·설명·코드·실습 연결
 - `labs/day3/review_copilot/`: diff·context·provider·review·LangGraph·evaluation·localhost 서비스
 - `output/course-labs/day3-v2/`: 8개 차시 검토 완료 기준 결과
 - `dist/day3-student-code-bundle.zip`: 정본 Notebook·서비스·Fixture·Test만 담은 학생용 코드 묶음
@@ -100,17 +103,23 @@ Notebook의 기본 실행은 강사가 검토한 음성·전사 fixture를 사�
 
 ```bash
 python -m pip install -r requirements-day3.txt
+codex --version
+codex login status
 python scripts/run_day3_preflight.py
 jupyter lab materials/day3/day3_review_intelligence_lab.ipynb
 python -m labs.day3.review_copilot.web --port 8765
-# 검토 전 안전한 기본값: REVIEW_REQUIRED / HOLD
-python -m labs.day3.review_copilot.cli run --run-tests
-# Finding을 직접 확인한 뒤에만 READY 후보 생성
-python -m labs.day3.review_copilot.cli run --run-tests --decision approve
+# 실제 코드 준비·실행·테스트
+python -m labs.day3.review_copilot.cli exercise --step prepare
+python -m labs.day3.review_copilot.cli exercise --step demo
+python -m labs.day3.review_copilot.cli exercise --step test
+# 로그인 확인 후 명시적 실제 리뷰
+python -m labs.day3.review_copilot.cli exercise --step review --provider codex_cli --live
 python scripts/build_day3_student_bundle.py
 ```
 
-기본 Notebook은 synthetic diff와 fixture provider를 사용해 network call과 외부 서비스 쓰기 없이 끝난다. 자신의 결과는 `output/course-labs/day3-v2/student-run/`, 강사용 검토 완료 결과는 상위 `day3-v2/`에서 확인한다. CLI에서 결정을 생략하면 `REVIEW_REQUIRED/HOLD`이며, Notebook의 6차시에서 선택한 결정은 8차시 Release Gate까지 전달된다. Ollama·OpenAI는 선택 requirements와 live opt-in을 함께 설정한 컴퓨터에서만 호출하며, GitHub push·Draft PR·`@codex review`는 target과 diff를 사람이 확인한 뒤 실행한다. 자동 comment와 자동 merge는 제공하지 않는다.
+3주차 주 실행 경로는 **로컬 Codex CLI + ChatGPT 로그인**이다. 모델 추론은 연결된 클라우드 서비스에서 수행하며 인터넷·계정 이용 권한·한도가 필요하다. Ollama나 API key는 3주차 필수 준비물이 아니다. Notebook의 `RUN_CODEX_LIVE=True`에서 실제 리뷰를 실행하고, 기본 Run All은 출처를 표시한 Fixture로 재현한다. 실습은 결제 계산의 실제 오류 재현→리뷰→Python 파일 수정→동일 Test 재실행→화면 확인이다. Notebook 실행마다 생성되는 폴더 경로를 확인해 자신의 코드를 보존한다. GitHub push·Draft PR·리뷰 요청은 본인 저장소와 변경 Diff를 확인한 뒤 실행하고 자동 merge는 하지 않는다. 기존 8개 JSON은 내부 단계 호환·디버깅용이며 실습 완료 기준이 아니다.
+
+코드 ZIP만 받은 경우 `python scripts/run_day3_preflight.py --code-only`로 검사한다. 전체 PPT/PDF 배포 검사는 Git 저장소의 기본 preflight를 사용한다.
 
 Ollama용 adapter가 필요할 때만 기본 설치 뒤에 다음 명령을 추가한다.
 
@@ -171,12 +180,13 @@ python -m src.meeting_demo --audio data/demo_meeting.wav \
 
 ## PPT 재생성
 
-프레젠테이션 빌드 환경에서는 다음 소스로 강의 자료를 다시 생성할 수 있습니다. 2·3일차 배포 기준은 176쪽 수강생용 최종본이며, 4·5일차는 초안 빌더를 사용합니다.
+프레젠테이션 빌드 환경에서는 다음 소스로 강의 자료를 다시 생성할 수 있습니다. 3일차는 `CODEX_CLI` 리디자인 정본이며, 4·5일차 PPT는 초안입니다. 4·5일차의 최신 운영 계획은 3일차 가이드에 연결되어 있습니다.
 
 ```bash
 node scripts/slides/build_day1_detail.mjs
 node scripts/slides/build_day2_student_ready.mjs
-node scripts/slides/build_day3_student_ready.mjs
+# 기존 정본을 보존하며 새 파일로 검증·출력
+DAY3_FINAL_PATH="$PWD/slides/Day3_CODEX_CLI_next.pptx" node scripts/slides/build_day3_codex_cli.mjs
 node scripts/slides/build_days2_5_drafts.mjs --day 4
 node scripts/slides/build_days2_5_drafts.mjs --day 5
 ```

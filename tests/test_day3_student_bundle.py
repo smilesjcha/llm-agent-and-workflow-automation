@@ -8,7 +8,8 @@ import zipfile
 
 import pytest
 
-from scripts.build_day3_student_bundle import BUNDLE_ROOT, build_bundle, student_files
+from scripts.build_day3_student_bundle import BUNDLE_ROOT, EXPLICIT_FILES, build_bundle, student_files
+from scripts.run_day3_preflight import REQUIRED_CODE_FILES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,12 +21,41 @@ def test_day3_bundle_allowlist_contains_only_student_code_assets() -> None:
     assert "materials/day3/day3_review_intelligence_lab.ipynb" in relative
     assert "labs/day3/review_copilot/web_app.py" in relative
     assert "labs/day3/review_copilot/day3.env.example" in relative
+    assert "labs/day3/review_copilot/codex_cli.py" in relative
+    assert "labs/day3/review_copilot/exercise.py" in relative
+    assert "labs/day3/review_copilot/fixtures/checkout/starter/checkout.py" in relative
+    assert "labs/day3/review_copilot/fixtures/checkout/solution/checkout.py" in relative
+    assert "assets/components/day3/master-code-review-agent.mmd" in relative
+    assert "materials/day3/코드리뷰_Agent_아키텍처.md" in relative
+    assert "materials/day3/day3_redesign_curriculum.json" in relative
+    assert ".gitignore" in relative
     assert ".github/workflows/day3-pr-quality.yml" in relative
     assert "tests/test_day3_review_copilot.py" in relative
     assert "materials/day3/day3_review_intelligence_lab.executed.ipynb" not in relative
     assert "materials/day3/2026_Day3_강사용_상세교안.md" not in relative
     assert not any("student-run" in item or item.startswith("output/") for item in relative)
     assert not any(part.startswith(".env") for item in relative for part in Path(item).parts)
+
+
+def test_bundle_includes_every_code_preflight_file_and_dependency_include() -> None:
+    assert set(REQUIRED_CODE_FILES).issubset(EXPLICIT_FILES)
+    assert "scripts/build_day3_student_bundle.py" in EXPLICIT_FILES
+    assert "tests/test_day3_student_bundle.py" in EXPLICIT_FILES
+    for relative in EXPLICIT_FILES:
+        if Path(relative).name.startswith("requirements") and relative.endswith(".txt"):
+            for line in (ROOT / relative).read_text(encoding="utf-8").splitlines():
+                if line.strip().startswith("-r "):
+                    include = (Path(relative).parent / line.strip()[3:].strip()).as_posix()
+                    assert include in EXPLICIT_FILES, f"missing dependency file: {include}"
+
+
+def test_bundle_checkout_fixture_inventory_is_complete() -> None:
+    expected = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "labs/day3/review_copilot/fixtures/checkout").rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts
+    }
+    assert expected.issubset(EXPLICIT_FILES)
 
 
 def test_day3_bundle_is_deterministic_and_has_safe_manifest(tmp_path: Path) -> None:

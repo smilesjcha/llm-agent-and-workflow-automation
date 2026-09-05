@@ -1,5 +1,24 @@
 # Day 3 콘텐츠 검증 이력
 
+## 2026-09-06 · Codex CLI 기반 개편 정본
+
+이 절이 아래 176p·Ollama 중심 기록보다 우선한다. 아래 내용은 변경 이력으로 보존한다.
+
+- 원본 6개 모듈 40H와 1·2주차 진행 내용을 연결했다. 3주차는 코드 리뷰 Agent 8H, 4주차는 GitHub 자동 리뷰 6H와 문서 연결 2H, 5주차는 문서 2H·통합/운영 3H·개인 프로젝트 3H다. 과거 실제 시간의 측정값이 아닌 향후 운영을 위한 주제 배분이다.
+- 실습 완료 기준은 JSON 파일이 아니라 오류 재현·직접 함수 구현·Codex 리뷰·실제 checkout.py 수정·9개 테스트 재실행·HTTP 화면과 Markdown 리뷰다.
+- 주 경로는 로컬 Codex CLI다. PC 클라이언트와 클라우드 추론을 구분하고 인터넷·로그인·계정 이용 권한을 설명한다. Ollama 설치와 API key는 3주차 필수 조건이 아니다.
+- Reviewer Adapter는 제공된 Context만 검토하는 제한된 LLM 호출이다. 학생과 대화형 Codex의 코드 탐색·수정·테스트 Agent 과정은 별도 Role로 표현했다. Python의 검증 로직과 LangGraph의 interrupt/resume도 분리했다.
+- 실제 Codex CLI 리뷰에서 4개 지적을 얻었고 fixture fallback은 없었다. 별도 대화형 코드 수정에서는 checkout.py만 변경하고 테스트 파일을 유지했다. 9개 테스트 중 7개 실패에서 9개 통과로 개선됐다. 실행 기록은 `output/day3-redesign/live-evidence/`와 `codex-authoring-demo/`에 있다.
+- Notebook 49셀의 기본 전체 실행은 명시적인 Fixture 재현이다. 별도 Live 전체 실행도 완료했다. 실패를 Live 성공으로 표시하지 않고 `allow_fallback=False`를 유지한다. 학생은 `RUN_CODEX_LIVE=True`로 실제 리뷰를 선택한다.
+- 단계별 안전 검증에 workspace 이탈·잘못된 출력·CLI 시간 초과·출력 인코딩·테스트 미실행을 포함한다. exit code 0이라도 실행된 테스트가 0개면 `NO_TEST_EVIDENCE`다.
+- 매 Notebook 실행마다 고유 실습 폴더를 만든다. 직접 수정한 폴더·Day 2 기존 작업은 보존한다. Localhost는 Notebook이 출력한 `--exercise-dir`로 동일 코드를 실행한다.
+- 수업 8차시 각 50분이다. 오전 3차시 뒤 11:30~12:00 휴식, 12:00~13:00 점심, 4·5차시 뒤 14:40~15:00 휴식, 마지막 17:30~18:00 휴식·Q&A다.
+- 5주차 프로젝트는 15:00~18:00 안에서 제작·검증·개선 정리 150분과 후반 휴식·Q&A 30분이다. 온라인 개인 실습이며 발표를 강제하지 않는다.
+- 121장 정본은 짧은 명사형 제목, 26개 편집 가능한 표, 코드·설명·비교·실제 화면을 교차 사용한다. 본문 21pt 이상, 표 19.5pt, 코드 18pt 기준이다. Mermaid 원본은 `assets/components/day3/master-code-review-agent.mmd`에 보존한다.
+- 전체 PDF 121쪽을 렌더해 개별 검수했다. 작은 테스트·리뷰 캡처는 원본의 해당 영역만 확대하고 잘린 함수명 설명은 교정했다. PDF에는 AppleGothic·Menlo를 포함한다. Windows PowerPoint에서의 글꼴 대체는 직접 실행 검증하지 않았으므로 배포에는 PDF를 함께 제공한다.
+- Day 3 6개 테스트 파일 실행: `120 passed`. Day 1 5개 회귀 테스트 파일 실행: `35 passed`. 정확한 명령은 `materials/day3/2026_Day3_개편_검증결과.md`에 기록한다.
+- 학생 ZIP은 74개 allowlist 파일만 포함하며 `.env`, 토큰, 실제 고객 자료, 생성 Output, 실행 완료 Notebook은 포함하지 않는다. PDF·PPT·실행 예시는 별도 배포다.
+
 ## 2026-09-04 · Review Intelligence 정본 전환
 
 - 구형 21셀 Notebook과 범용 240장 초안을 참고본으로 유지하고, 55셀 `day3_review_intelligence_lab.ipynb`를 3일차 정본으로 지정했다.
