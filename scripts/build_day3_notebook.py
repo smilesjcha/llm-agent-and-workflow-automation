@@ -301,6 +301,63 @@ def build_notebook() -> dict:
     print("Template 변수 바인딩 확인. 아직 모델 호출 없음.")
     ''')
     md('''
+    ### 실제 전달 자료의 세 가지 조건
+
+    요청 문장에 “규칙 없이”라고 적어도 프로그램이 규칙을 계속 첨부하면 공정한 비교가 아닙니다. 이번 실험은 실제 payload에서 필드를 넣고 빼는 방식입니다.
+
+    | 조건 | 코드·변경분 | 업무 규칙 | 실제 Test 결과 |
+    |---|---|---|---|
+    | code_only | 포함 | 제외 | 제외 |
+    | policy | 포함 | 포함 | 제외 |
+    | policy_and_tests | 포함 | 포함 | 포함 |
+
+    세 조건은 동일한 수정 전 코드와 Diff를 사용합니다. 아직 모델을 호출하지 않고 전달 자료부터 검사합니다.
+    ''')
+    code('''
+    from labs.day3.review_copilot.deep_dive import build_context_payload
+
+    CONTEXT_MODES = ("code_only", "policy", "policy_and_tests")
+    context_payloads = {
+        mode: build_context_payload(
+            source=BEFORE_SOURCE, diff=DIFF,
+            business_rules=review_context["business_rules"],
+            test_evidence=before_tests, mode=mode,
+        ) for mode in CONTEXT_MODES
+    }
+
+    def learner_check_context_mode(payload, mode):
+        if mode not in CONTEXT_MODES:
+            raise ValueError("CONTEXT_MODE_INVALID")
+        assert ("business_rules" in payload) == (mode != "code_only")
+        assert ("test_evidence" in payload) == (mode == "policy_and_tests")
+        return True
+
+    for mode, payload in context_payloads.items():
+        assert learner_check_context_mode(payload, mode)
+        assert payload["source"] == BEFORE_SOURCE and payload["diff"] == DIFF
+        save_json(f"context_{mode}.json", payload)
+        print(mode, "→", sorted(payload), "→", len(json.dumps(payload, ensure_ascii=False)), "문자")
+    ''')
+    md('''
+    ### 자료 누락 Test
+
+    policy 조건에서 업무 규칙을 실수로 빼 봅니다. 모델 응답을 기다리기 전에 잘못 준비된 실험을 찾아야 합니다. 아래 assert 실패는 예상한 실패이며 원래 payload는 보존합니다.
+
+    직접 활동: 세 조건의 필드를 먼저 예상하고, 실제 목록을 비교합니다. 다음으로 `policy_and_tests` 복사본에서 Test를 빼 같은 검사를 실행합니다.
+    ''')
+    code('''
+    broken_policy = dict(context_payloads["policy"])
+    broken_policy.pop("business_rules")
+    try:
+        learner_check_context_mode(broken_policy, "policy")
+    except AssertionError:
+        print("예상 실패 확인: policy 조건에 업무 규칙 누락")
+    else:
+        raise AssertionError("잘못된 비교 조건을 통과시켰습니다")
+    assert "business_rules" in context_payloads["policy"]
+    print("원본 비교 조건 보존 확인")
+    ''')
+    md('''
     # 4차시 · Local Codex CLI 연동
 
     **13:00-13:50 · 이론 12분 / 시연 8분 / 코드 실습 25분 / 결과 확인 5분**
@@ -373,6 +430,56 @@ def build_notebook() -> dict:
     비교 확장: 같은 Diff에 baseline/refined 요청을 CLI로 각각 전달합니다. 같은 계정·모델·입력으로 비교하며 한 번의 결과를 전체 성능으로 해석하지 않습니다.
     ''')
     md('''
+    ### 선택 실험 · 같은 코드의 Context 비교
+
+    앞의 기본 리뷰와 별개로 선택하는 실험입니다. `RUN_CONTEXT_COMPARE=True`인 경우에만 실제 Codex를 호출합니다. 기본 비교는 두 조건이며 Kernel당 비교 호출 상한은 3회입니다. 실패한 호출도 사용량에 포함합니다. 반복 실행하면 남은 횟수가 줄어듭니다.
+
+    `run_context_review()`는 위에서 만든 payload를 그대로 사용합니다. 일반 `review_exercise()`가 자동으로 붙이는 업무 규칙·Test를 이 경로에서는 추가하지 않습니다. 조건별 실제 결과는 각각 다른 파일에 남습니다. 후보 수가 많다고 품질이 더 좋다고 판단하지 않습니다.
+    ''')
+    code('''
+    from labs.day3.review_copilot.deep_dive import run_context_review
+
+    RUN_CONTEXT_COMPARE = False
+    MAX_CONTEXT_CALLS = 3
+    CONTEXT_CALLS_USED = globals().get("CONTEXT_CALLS_USED", 0)
+    COMPARE_MODES = ("code_only", "policy_and_tests")
+    comparison_results = (globals().get("comparison_results", {})
+                          if globals().get("CONTEXT_RESULT_RUN_ID") == RUN_ID else {})
+    CONTEXT_RESULT_RUN_ID = RUN_ID
+
+    def learner_check_call_budget(used, requested, limit):
+        if any(type(value) is not int for value in (used, requested, limit)):
+            raise ValueError("CONTEXT_CALL_COUNT_INVALID")
+        if used < 0 or requested < 1 or limit < 1:
+            raise ValueError("CONTEXT_CALL_COUNT_INVALID")
+        if used + requested > limit:
+            raise RuntimeError("CONTEXT_CALL_BUDGET_EXCEEDED")
+        return used + requested
+
+    if RUN_CONTEXT_COMPARE:
+        learner_check_call_budget(CONTEXT_CALLS_USED, len(COMPARE_MODES), MAX_CONTEXT_CALLS)
+        if not set(COMPARE_MODES).issubset(CONTEXT_MODES):
+            raise ValueError("CONTEXT_MODE_INVALID")
+        for mode in COMPARE_MODES:
+            CONTEXT_CALLS_USED = learner_check_call_budget(CONTEXT_CALLS_USED, 1, MAX_CONTEXT_CALLS)
+            result = run_context_review(context_payloads[mode],
+                provider=CodexCLIReviewProvider(live_opt_in=True, timeout_seconds=180),
+                allow_live=True, allow_fallback=False)
+            comparison_results[mode] = result
+            save_json(f"live_compare_{mode}.json", result)
+            print(mode, result["status"], "후보", len(result.get("candidates", [])))
+    else:
+        print("실제 Context 비교 미실행. RUN_CONTEXT_COMPARE=True로 별도 선택")
+    print("비교 호출 사용:", CONTEXT_CALLS_USED, "/", MAX_CONTEXT_CALLS)
+    ''')
+    md('''
+    ### 비교 결과의 읽기
+
+    파일·줄·재현 조건을 먼저 비교합니다. 같은 문제가 다른 문장으로 표현되면 한 문제로 봅니다. 규칙을 추가했어도 결과가 나빠질 수 있고, 한 번의 응답만으로 개선을 확정할 수는 없습니다.
+
+    수업 기본 경로는 payload 필드 검증까지입니다. 실제 두 조건 호출과 결과 채점은 선택 확장이므로 추가 시간을 필수 50분에 중복 계산하지 않습니다.
+    ''')
+    md('''
     # 5차시 · 리뷰 반영과 회귀 Test
 
     **13:50-14:40 · 이론 10분 / 시연 8분 / 코드 실습 27분 / 결과 확인 5분**
@@ -406,35 +513,69 @@ def build_notebook() -> dict:
 
     VS Code에서 이번 실습 폴더의 `starter/checkout.py`를 열고 아래 조건을 직접 작성합니다.
 
-    1. 원 단위 정수·음수 검사
-    2. 쿠폰 적용액을 상품 금액 이하로 제한
-    3. 할인 후 금액으로 배송비 판정
+    1. 쿠폰 적용액을 상품 금액 이하로 제한하고 영수증 할인액에도 반영
+    2. 할인 후 금액으로 배송비 판정
+    3. 원 단위 정수·음수 검사
 
-    아래는 강사와 함께 쓰는 완성 예시입니다. 먼저 직접 시도한 뒤 비교합니다. Notebook에서 적용하면 이번에 새로 만든 실습 폴더의 파일만 변경합니다. VS Code로 직접 고쳤다면 `APPLY_LEARNER_FIX=False`로 바꾸고 Test를 실행합니다.
+    한 번에 정답을 붙이지 않고 세 단계로 수정합니다. 완성 예시 자동 적용은 `APPLY_LEARNER_FIX=True`, VS Code 직접 입력은 `False`입니다. 자동 경로도 각 단계에서 실제 파일을 바꾸고 같은 Test를 실행합니다. 수업에서는 False로 두고 먼저 직접 작성한 뒤 예시 코드와 비교합니다.
+
+    | 단계 | 바꿀 조건 | 확인할 실패 감소 |
+    |---|---|---:|
+    | 초안 | 수정 전 | 7개 |
+    | coupon_cap | 쿠폰 상한·영수증 할인액 | 5개 |
+    | shipping | 할인 후 배송비 | 4개 |
+    | validated | 원 단위 정수·음수 검사 | 0개 |
     ''')
     code('''
-    REPAIRED_SOURCE = "\\n".join([
-        '"""수강생 수정: 원 단위 입력과 쿠폰·배송비 업무 규칙."""',
-        "", "def validate_money(value):",
-        "    if isinstance(value, bool) or not isinstance(value, int):",
-        '        raise ValueError("MONEY_INTEGER_REQUIRED")',
-        "    if value < 0:", '        raise ValueError("MONEY_NON_NEGATIVE_REQUIRED")',
-        "", "def payable(total_won, coupon_won):",
-        "    validate_money(total_won)", "    validate_money(coupon_won)",
-        "    return total_won - min(total_won, coupon_won)",
-        "", "def calculate_checkout(total_won, coupon_won):",
-        "    payment = payable(total_won, coupon_won)",
-        "    shipping = 0 if payment >= 50_000 else 3_000", "    return {",
-        '        "total_won": total_won,',
-        '        "coupon_applied_won": min(total_won, coupon_won),',
-        '        "shipping_won": shipping,', '        "payable_won": payment + shipping,',
-        "    }", "",
-    ])
+    from labs.day3.review_copilot.deep_dive import build_stage_source
+
+    def learner_failed_tests(evidence):
+        if evidence["status"] == "PASSED":
+            return 0
+        counts = re.findall(r"(?:failures|errors)=(\\d+)", evidence["stderr"])
+        if not counts:
+            raise ValueError("TEST_FAILURE_COUNT_MISSING")
+        return sum(int(value) for value in counts)
+
     APPLY_LEARNER_FIX = True
     student_file = resolve_workspace_path(EXERCISE / "starter/checkout.py", workspace_root=ROOT)
+    stage_history = [{"stage": "starter", "failed": learner_failed_tests(before_tests)}]
+    coupon_source = build_stage_source("coupon_cap")
+    print(coupon_source)
+    if APPLY_LEARNER_FIX:
+        student_file.write_text(coupon_source, encoding="utf-8")
+    coupon_tests = run_exercise_tests(workspace_root=ROOT, exercise_dir=EXERCISE_REL)
+    show_tests(coupon_tests)
+    assert learner_failed_tests(coupon_tests) == 5
+    stage_history.append({"stage": "coupon_cap", "failed": learner_failed_tests(coupon_tests)})
+    ''')
+    md('''
+    ### 두 번째 수정 · 배송비 기준
+
+    쿠폰 계산을 고쳐도 배송비와 입력 검사는 여전히 잘못될 수 있습니다. `total_won`을 `payment`로 바꾸는 한 줄이 어떤 Test에 영향을 주는지 먼저 예상합니다.
+    ''')
+    code('''
+    shipping_source = build_stage_source("shipping")
+    import difflib
+    print("".join(difflib.unified_diff(coupon_source.splitlines(True), shipping_source.splitlines(True),
+                                      fromfile="coupon_cap", tofile="shipping")))
+    if APPLY_LEARNER_FIX:
+        student_file.write_text(shipping_source, encoding="utf-8")
+    shipping_tests = run_exercise_tests(workspace_root=ROOT, exercise_dir=EXERCISE_REL)
+    show_tests(shipping_tests)
+    assert learner_failed_tests(shipping_tests) == 4
+    stage_history.append({"stage": "shipping", "failed": learner_failed_tests(shipping_tests)})
+    ''')
+    md('''
+    ### 세 번째 수정 · 입력 검사
+
+    금액이 음수·소수·True이면 어떻게 처리할지 결정합니다. Python에서 bool은 int의 하위 자료형이므로 정수 여부만 검사하면 True가 통과할 수 있습니다. 입력 검사 후 전체 Test를 다시 실행합니다.
+    ''')
+    code('''
+    REPAIRED_SOURCE = build_stage_source("validated")
+    print(REPAIRED_SOURCE)
     if APPLY_LEARNER_FIX:
         student_file.write_text(REPAIRED_SOURCE, encoding="utf-8")
-    import difflib
     actual_fixed_source = student_file.read_text(encoding="utf-8")
     print("".join(difflib.unified_diff(BEFORE_SOURCE.splitlines(True), actual_fixed_source.splitlines(True),
                                       fromfile="before/checkout.py", tofile="after/checkout.py")))
@@ -444,6 +585,8 @@ def build_notebook() -> dict:
     after_receipt = run_exercise_demo(workspace_root=ROOT, exercise_dir=EXERCISE_REL)
     show_tests(after_tests)
     assert after_tests["status"] == "PASSED"
+    stage_history.append({"stage": "validated", "failed": learner_failed_tests(after_tests)})
+    assert [item["failed"] for item in stage_history] == [7, 5, 4, 0]
     assert after_receipt["result"]["payable_won"] == 3_000
     second_case = run_exercise_demo(workspace_root=ROOT, exercise_dir=EXERCISE_REL,
                                     total_won=50_000, coupon_won=10_000)
@@ -453,6 +596,7 @@ def build_notebook() -> dict:
                      "| 상품 50,000·쿠폰 10,000 | 40,000원 | 43,000원 |"))
     save_text("test_before.txt", before_tests["stderr"])
     save_text("test_after.txt", after_tests["stderr"])
+    save_json("repair_stages.json", {"automatic_example_applied": APPLY_LEARNER_FIX, "stages": stage_history})
     ''')
     md('''
     ### 경계 Test 추가
@@ -496,20 +640,102 @@ def build_notebook() -> dict:
     print("유지·수정·제외 입력 검증 완료")
     ''')
     code('''
-    from labs.day3.review_copilot.langgraph_review import build_review_graph
+    from typing import TypedDict
+    from langgraph.graph import StateGraph, START, END
+    from langgraph.checkpoint.memory import InMemorySaver
+    from langgraph.types import interrupt, Command
+    from labs.day3.review_copilot.contracts import ReviewDraft
+    from labs.day3.review_copilot.human_review import apply_human_review
+
+    class LearnerReviewState(TypedDict, total=False):
+        draft: dict
+        status: str
+        findings: list
+        review: dict
+        audit: list
+        external_write: bool
+
+    def learner_prepare_review(state):
+        draft = ReviewDraft.model_validate(state["draft"])
+        return {"status": "REVIEW_REQUIRED", "findings": [item.to_dict() for item in draft.findings],
+                "audit": [{"node": "prepare"}], "external_write": False}
+    ''')
+    md('''
+    ### 사람 입력을 기다리는 Node
+
+    `interrupt()` 전까지 후보를 보여주고, 재개되면 사람이 준 값을 검증합니다. 입력 계약은 앞서 검증한 공통 함수를 사용하지만 State·Node·연결·분기는 Notebook에서 직접 작성합니다.
+    ''')
+    code('''
+    def learner_human_review(state):
+        answer = interrupt({"question": "유지·수정·제외 선택", "options": ["approve", "edit", "reject"],
+                            "findings": state["findings"]})
+        if not isinstance(answer, dict):
+            answer = {"decision": "invalid"}
+        review = apply_human_review(
+            ReviewDraft.model_validate(state["draft"]),
+            decision=answer.get("decision"), reviewer=answer.get("reviewer"),
+            rationale=answer.get("rationale"), edited_findings=answer.get("edited_findings"),
+        ).to_dict()
+        return {"review": review, "findings": review["findings"],
+                "audit": [*state["audit"], {"node": "human", "status": review["status"]}]}
+
+    def learner_review_route(state):
+        return "finish" if state["review"]["status"] in {"APPROVED", "EDITED"} else "blocked"
+
+    def learner_finish_review(state):
+        return {"status": "DRY_RUN_READY", "external_write": False,
+                "audit": [*state["audit"], {"node": "finish"}]}
+
+    def learner_block_review(state):
+        return {"status": "BLOCKED", "external_write": False,
+                "audit": [*state["audit"], {"node": "blocked"}]}
+    ''')
+    md('''
+    ### Graph 연결과 Compile
+
+    다음 연결을 직접 입력합니다. `human` 다음은 항상 종료가 아니라 사람 입력에 따라 두 갈래로 나뉩니다. `InMemorySaver`는 현재 Python 프로세스 안의 복습용 Checkpoint이며, Kernel 종료 후에도 저장되는 데이터베이스는 아닙니다.
+    ''')
+    code('''
+    def build_learner_review_graph():
+        builder = StateGraph(LearnerReviewState)
+        builder.add_node("prepare", learner_prepare_review)
+        builder.add_node("human", learner_human_review)
+        builder.add_node("finish", learner_finish_review)
+        builder.add_node("blocked", learner_block_review)
+        builder.add_edge(START, "prepare")
+        builder.add_edge("prepare", "human")
+        builder.add_conditional_edges("human", learner_review_route,
+                                      {"finish": "finish", "blocked": "blocked"})
+        builder.add_edge("finish", END)
+        builder.add_edge("blocked", END)
+        return builder.compile(checkpointer=InMemorySaver())
+
+    assert learner_review_route({"review": {"status": "APPROVED"}}) == "finish"
+    assert learner_review_route({"review": {"status": "BLOCKED"}}) == "blocked"
+    print("직접 작성한 Node·Edge·분기·Checkpoint로 Graph Compile 완료")
+    ''')
+    md('''
+    ### Checkpoint의 실제 대기 상태
+
+    시작 셀을 실행하고 다음 셀로 넘어가기 전에 대기 상태를 확인합니다. 작성한 Graph가 현재 어떤 Node에서 기다리는지 `get_state()`로 읽습니다.
+    ''')
+    code('''
     from langgraph.types import Command
 
     # Live가 성공하면 해당 리뷰를 사용. 실패 시 독립 Graph 학습용 예제라고 명시.
     graph_draft = (review_result["review"] if review_result["status"] == "SUCCESS"
                    and review_result["review"]["findings"] else fixture_review["review"])
     print("Graph 검토 대상 Provider:", graph_draft["provider_used"])
-    review_graph = build_review_graph()
+    review_graph = build_learner_review_graph()
     REVIEW_THREAD_ID = f"day3-learner-review-{RUN_ID}"
     graph_config = {"configurable": {"thread_id": REVIEW_THREAD_ID}}
     graph_start = review_graph.invoke({"draft": graph_draft, "audit": [], "external_write": False},
                                       config=graph_config)
     assert "__interrupt__" in graph_start and graph_start["status"] == "REVIEW_REQUIRED"
+    waiting = review_graph.get_state(graph_config)
+    assert waiting.next == ("human",)
     print("현재 상태:", graph_start["status"], "/ 사람 입력 대기 중")
+    print("Checkpoint 다음 Node:", waiting.next)
     print("선택:", graph_start["__interrupt__"][0].value["options"])
     ''')
     md('''
@@ -535,7 +761,7 @@ def build_notebook() -> dict:
     save_json("06_human_review.json", graph_final["review"])
     ''')
     code('''
-    reject_graph = build_review_graph()
+    reject_graph = build_learner_review_graph()
     reject_config = {"configurable": {"thread_id": f"day3-reject-{RUN_ID}"}}
     pending_reject = reject_graph.invoke({"draft": graph_draft, "audit": []}, config=reject_config)
     assert "__interrupt__" in pending_reject
@@ -545,13 +771,34 @@ def build_notebook() -> dict:
     print("제외 경로:", rejected["status"], "/ 최종 Finding", len(rejected["findings"]))
     ''')
     md('''
+    ### 잘못된 편집의 차단
+
+    리뷰 제목은 수정할 수 있지만 존재하지 않는 코드 줄로 옮길 수는 없습니다. 새 Graph에서 999번 줄로 바꾼 편집을 넣고 차단되는지 확인합니다. 원래의 정상 편집 결과는 별도로 보존합니다.
+    ''')
+    code('''
+    invalid_graph = build_learner_review_graph()
+    invalid_config = {"configurable": {"thread_id": f"day3-invalid-edit-{RUN_ID}"}}
+    invalid_graph.invoke({"draft": graph_draft, "audit": []}, config=invalid_config)
+    invalid_edit = [dict(item) for item in graph_draft["findings"]]
+    invalid_edit[0]["line"] = 999
+    invalid_result = invalid_graph.invoke(Command(resume={
+        "decision": "edit", "reviewer": "수강생", "rationale": "잘못된 줄 수정 실험",
+        "edited_findings": invalid_edit,
+    }), config=invalid_config)
+    assert invalid_result["status"] == "BLOCKED"
+    assert invalid_result["review"]["error_code"] == "EDIT_FINDING_NOT_GROUNDED"
+    assert invalid_result["findings"] == []
+    print("없는 줄 편집 차단:", invalid_result["review"]["error_code"])
+    print("정상 편집 결과 보존:", graph_final["status"])
+    ''')
+    md('''
     # 7차시 · 리뷰 품질 비교
 
     **15:50-16:40 · 이론 12분 / 시연 8분 / 코드 실습 25분 / 결과 확인 5분**
 
     `오탐` 없는 문제를 지적, `미탐` 실제 문제를 놓침. Precision은 지적 중 맞는 비율, Recall은 실제 결함 중 찾은 비율입니다.
 
-    아래는 계산을 배우기 위한 **고정 평가 예제**이며 실제 CLI 성능 수치가 아닙니다. 실제 비교는 동일 입력·Test·기준 결함으로 실행해 별도 표시합니다.
+    먼저 계산 함수를 확인하고, 이어서 **4개 결함 범주와 정상 코드**를 기준으로 사람이 실제 지적을 연결합니다. 문장이 다르다고 다른 결함으로 세지 않고, 모르는 지적을 자동으로 오탐으로 처리하지 않습니다.
     ''')
     code('''
     def learner_review_metrics(predicted, expected):
@@ -562,28 +809,140 @@ def build_notebook() -> dict:
         f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
         return {"tp": tp, "fp": fp, "fn": fn, "precision": precision, "recall": recall, "f1": f1}
 
-    expected_bugs = {"coupon-cap", "shipping-after-discount"}
-    baseline = learner_review_metrics({"coupon-cap", "variable-name-preference"}, expected_bugs)
-    improved = learner_review_metrics({"coupon-cap", "shipping-after-discount"}, expected_bugs)
-    assert baseline["fp"] == 1 and baseline["fn"] == 1
-    assert baseline["f1"] == 0.5 and improved["f1"] == 1.0
-    assert learner_review_metrics([], expected_bugs)["recall"] == 0
+    arithmetic_example = learner_review_metrics({"bug_a", "style"}, {"bug_a", "bug_b"})
+    assert arithmetic_example["fp"] == 1 and arithmetic_example["fn"] == 1
+    assert arithmetic_example["f1"] == 0.5
+    assert learner_review_metrics([], {"bug_a"})["recall"] == 0
     assert learner_review_metrics([], [])["f1"] == 0
-    display(Markdown("| 평가 예제 | 맞는 지적 | 오탐 | 미탐 | Precision | Recall |\\n"
-        "|---|---:|---:|---:|---:|---:|\\n| Baseline | 1 | 1 | 1 | 0.5 | 0.5 |\\n"
-        "| 개선 후보 | 2 | 0 | 0 | 1.0 | 1.0 |"))
-    save_json("07_evaluation.json", {"source": "fixed_teaching_example_not_live_score",
-              "baseline": baseline, "improved": improved})
+    print("집합 계산 Test 통과. 위 값은 실제 모델 성능이 아닌 계산 예제입니다.")
     ''')
     md('''
-    ### 직접 비교 과제
+    ### 사람 채점 기준 · 네 가지 결함
 
-    1. 오탐을 추가해 Precision 변화 확인
-    2. 실제 결함 하나를 빼고 Recall 변화 확인
-    3. 실제 Codex Finding은 파일·줄·재현 조건을 사람이 기준 결함에 연결해 채점. 모델이 붙인 `rule_id`를 정답과 단순 문자열 비교하지 않음
-    4. 점수와 함께 소요시간·중요 결함 누락·입력 범위 확인
+    원 단위 입력 검사는 네 Test로 검증하지만 하나의 결함 범주로 묶습니다. 따라서 Test 9개와 결함 범주 4개는 같은 숫자가 아닙니다. 아래 정답 기준은 사람 채점용이며 모델 payload에 자동으로 넣지 않습니다.
+    ''')
+    code('''
+    from labs.day3.review_copilot.deep_dive import checkout_ground_truth, score_review_findings
 
-    확장: `fixtures/cases.json`의 8개 사례로 보안·예외·네트워크 오류 비교. 예제 점수를 실제 모델 성능으로 보고하지 않습니다.
+    ground_truth = checkout_ground_truth()
+    assert len(ground_truth["bugs"]) == 4
+    for bug in ground_truth["bugs"]:
+        print(bug["id"], "|", bug["title"], "|", bug["reproduction"], "→", bug["expected"])
+    print("정상 입력:", [item["id"] for item in ground_truth["normal_cases"]])
+    print("정상 수정본 기준:", ground_truth["clean_case"])
+    ''')
+    md('''
+    ### TP·FP·미판정
+
+    아래 지적은 채점 절차를 배우기 위한 합성 예제입니다. 실제 CLI 성능으로 보고하지 않습니다.
+
+    - TP: 기준 결함을 재현 조건과 연결해 확인
+    - FP: 근거를 확인했지만 실제 결함이 아님
+    - 미판정: 아직 확인하지 않았거나 기준 밖의 유효한 새 문제
+
+    미판정이 남으면 최종 Precision을 보류합니다. 같은 결함을 두 번 지적해도 TP가 두 배가 되지는 않습니다.
+    ''')
+    code('''
+    scoring_examples = [
+        {"title": "쿠폰이 상품 금액보다 큰 입력의 음수 반환"},
+        {"title": "할인 전 금액으로 무료 배송 처리"},
+        {"title": "금액 입력의 정수·음수 검사 누락"},
+        {"title": "영수증의 적용 할인액이 실제 할인과 다름"},
+        {"title": "total_won 변수 이름이 개인 취향과 다름"},
+        {"title": "15,000원 쿠폰이 10,000원 상품을 초과하는 문제"},
+    ]
+    example_judgments = [
+        {"finding_index": index, "verdict": "expected_bug", "expected_id": bug["id"]}
+        for index, bug in enumerate(ground_truth["bugs"])
+    ] + [{"finding_index": 4, "verdict": "false_positive"}]
+    pending_score = score_review_findings(scoring_examples, example_judgments)
+    assert pending_score["tp"] == 4 and pending_score["fp"] == 1
+    assert pending_score["unjudged"] == 1 and pending_score["precision"] is None
+    print("예제 채점:", pending_score["tp"], "TP /", pending_score["fp"], "FP /",
+          pending_score["unjudged"], "미판정 / 최종 Precision 보류")
+    ''')
+    code('''
+    # 마지막 예제는 첫 번째와 같은 쿠폰 상한 결함으로 사람이 확인했습니다.
+    completed_judgments = [*example_judgments,
+        {"finding_index": 5, "verdict": "expected_bug", "expected_id": "coupon-cap"}]
+    completed_score = score_review_findings(scoring_examples, completed_judgments)
+    assert completed_score["tp"] == 4 and completed_score["duplicate_finding_count"] == 1
+    assert completed_score["precision"] == 0.8 and completed_score["recall"] == 1.0
+    additional_score = score_review_findings(
+        [{"title": "기준 밖에서 추가로 확인한 유효한 문제"}],
+        [{"finding_index": 0, "verdict": "valid_additional"}],
+    )
+    assert additional_score["fp"] == 0 and additional_score["unjudged"] == 1
+    print("예제 중복 지적:", completed_score["duplicate_finding_count"], "/ 고유 TP:", completed_score["tp"])
+    print("새로운 유효한 문제: 오탐 처리 없이 평가 기준 확장 대기")
+    ''')
+    md('''
+    ### 정상 코드의 오탐
+
+    잘못된 코드만 평가하면 정상 코드에서도 무조건 문제를 찾는 리뷰어를 구분하기 어렵습니다. 수정본은 같은 9개 Test를 통과한 정상 사례입니다. 정상 코드에 문체 취향을 지적한 예제와 아무 지적이 없는 예제를 비교합니다.
+    ''')
+    code('''
+    assert after_tests["status"] == "PASSED"
+    clean_no_finding = score_review_findings([], [], expected_ids=[])
+    clean_false_alarm = score_review_findings(
+        [{"title": "정상 코드의 변수명 취향"}],
+        [{"finding_index": 0, "verdict": "false_positive"}], expected_ids=[],
+    )
+    assert clean_no_finding["fp"] == 0 and clean_no_finding["precision"] is None
+    assert clean_false_alarm["fp"] == 1
+    print("정상 사례 / 지적 없음:", clean_no_finding["fp"], "오탐")
+    print("정상 사례 / 문체 취향 지적:", clean_false_alarm["fp"], "오탐")
+    save_json("07_evaluation.json", {"source": "human_scoring_teaching_examples_not_live_score",
+        "ground_truth": ground_truth, "pending": pending_score, "completed": completed_score,
+        "clean_no_finding": clean_no_finding, "clean_false_alarm": clean_false_alarm})
+    ''')
+    md('''
+    ### 실제 Codex 결과의 사람 채점
+
+    4차시 실제 CLI 리뷰를 실행한 경우 아래에서 실제 후보를 확인합니다. `LIVE_JUDGMENTS`에 사람이 확인한 항목만 입력합니다. 모델이 붙인 rule_id를 자동으로 정답과 비교하지 않습니다. 빈 리스트는 “채점 전”이며 성능이 0점이라는 뜻이 아닙니다.
+
+    ```python
+    LIVE_JUDGMENTS = [
+        {"finding_index": 0, "verdict": "expected_bug", "expected_id": "직접 확인한 기준 ID"},
+    ]
+    ```
+    ''')
+    code('''
+    LIVE_JUDGMENTS = []
+    live_score = None
+    if review_result["provider"].get("provider_used") == "codex_cli":
+        actual_findings = review_result["review"]["findings"]
+        for index, finding in enumerate(actual_findings):
+            print(index, finding["title"], "|", finding["path"], finding["line"])
+        live_score = score_review_findings(actual_findings, LIVE_JUDGMENTS)
+        print("실제 결과 중 사람 확인:", live_score["judged_coverage"], "/ 미판정:", live_score["unjudged"])
+        print("최종 Precision:", live_score["precision"])
+        save_json("live_human_scoring.json", live_score)
+    else:
+        print("실제 CLI 리뷰 미실행. 위 합성 채점 예제를 실제 성능으로 사용하지 않습니다.")
+    ''')
+    md('''
+    ### 선택 실험 · 정상 수정본 리뷰
+
+    정상 수정본을 실제 Codex에 보내는 추가 비교입니다. 앞의 Context 비교와 합산하여 Kernel당 최대 3회이며 기본값은 실행하지 않음입니다. 응답이 비어 있거나 지적이 있어도 사람이 내용을 확인한 뒤 평가합니다.
+    ''')
+    code('''
+    RUN_CLEAN_CODE_REVIEW = False
+    clean_live_result = None
+    if RUN_CLEAN_CODE_REVIEW:
+        learner_check_call_budget(CONTEXT_CALLS_USED, 1, MAX_CONTEXT_CALLS)
+        clean_diff = "".join(difflib.unified_diff([], actual_fixed_source.splitlines(True),
+                                                fromfile="a/checkout.py", tofile="b/checkout.py"))
+        clean_payload = build_context_payload(actual_fixed_source, clean_diff,
+            review_context["business_rules"], after_tests, mode="policy_and_tests")
+        CONTEXT_CALLS_USED = learner_check_call_budget(CONTEXT_CALLS_USED, 1, MAX_CONTEXT_CALLS)
+        clean_live_result = run_context_review(clean_payload,
+            provider=CodexCLIReviewProvider(live_opt_in=True, timeout_seconds=180),
+            allow_live=True, allow_fallback=False)
+        print("정상 코드 실제 리뷰:", clean_live_result["status"], "후보", len(clean_live_result.get("candidates", [])))
+        save_json("live_clean_review.json", clean_live_result)
+    else:
+        print("정상 코드 실제 리뷰 미실행 / 예제와 구분")
     ''')
     md('''
     # 8차시 · Localhost와 다음 서비스
@@ -689,6 +1048,12 @@ def build_notebook() -> dict:
         "real_tests_before": before_tests, "real_tests_after": after_tests,
         "provider_used": review_result["provider"].get("provider_used"),
         "live_cli_requested": RUN_CODEX_LIVE, "human_review_decision": REVIEW_DECISION,
+        "context_comparison_calls_used": CONTEXT_CALLS_USED,
+        "context_comparison_modes": list(comparison_results),
+        "repair_stages": stage_history,
+        "repair_mode": "provided_stage_examples" if APPLY_LEARNER_FIX else "student_file_edits",
+        "graph_implementation": "notebook_defined_stategraph",
+        "live_score": live_score,
         "result_files": result_files, "credential_value_recorded": False,
         "external_write": False, "automatic_pr_comment": False, "automatic_merge": False,
     }

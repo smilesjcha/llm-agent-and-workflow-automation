@@ -23,18 +23,47 @@ def test_day3_bundle_allowlist_contains_only_student_code_assets() -> None:
     assert "labs/day3/review_copilot/day3.env.example" in relative
     assert "labs/day3/review_copilot/codex_cli.py" in relative
     assert "labs/day3/review_copilot/exercise.py" in relative
+    assert "labs/day3/review_copilot/deep_dive.py" in relative
     assert "labs/day3/review_copilot/fixtures/checkout/starter/checkout.py" in relative
     assert "labs/day3/review_copilot/fixtures/checkout/solution/checkout.py" in relative
     assert "assets/components/day3/master-code-review-agent.mmd" in relative
     assert "materials/day3/코드리뷰_Agent_아키텍처.md" in relative
     assert "materials/day3/day3_redesign_curriculum.json" in relative
+    assert "materials/day3/day3_global_references.json" in relative
+    assert "materials/day3/글로벌_사례_해설.md" in relative
     assert ".gitignore" in relative
     assert ".github/workflows/day3-pr-quality.yml" in relative
     assert "tests/test_day3_review_copilot.py" in relative
+    assert "tests/test_day3_deep_dive.py" in relative
     assert "materials/day3/day3_review_intelligence_lab.executed.ipynb" not in relative
     assert "materials/day3/2026_Day3_강사용_상세교안.md" not in relative
     assert not any("student-run" in item or item.startswith("output/") for item in relative)
     assert not any(part.startswith(".env") for item in relative for part in Path(item).parts)
+    assert not any(Path(item).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"} for item in relative)
+
+
+def test_deep_dive_and_reference_files_enter_the_actual_archive(tmp_path: Path) -> None:
+    expected = {
+        "labs/day3/review_copilot/deep_dive.py",
+        "tests/test_day3_deep_dive.py",
+        "materials/day3/day3_global_references.json",
+        "materials/day3/글로벌_사례_해설.md",
+    }
+    root = tmp_path / "workspace"
+    selected = []
+    for relative in sorted(expected):
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((ROOT / relative).read_bytes())
+        selected.append(target)
+    destination = root / "dist/deep-dive.zip"
+    result = build_bundle(root, destination, files=selected)
+    assert result["file_count"] == 4
+    with zipfile.ZipFile(destination) as archive:
+        for relative in expected:
+            assert archive.read(f"{BUNDLE_ROOT}/{relative}") == (ROOT / relative).read_bytes()
+        manifest = json.loads(archive.read(f"{BUNDLE_ROOT}/BUNDLE_MANIFEST.json"))
+    assert {entry["path"] for entry in manifest["files"]} == expected
 
 
 def test_bundle_includes_every_code_preflight_file_and_dependency_include() -> None:

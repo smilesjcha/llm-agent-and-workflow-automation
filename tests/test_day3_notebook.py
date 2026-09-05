@@ -19,8 +19,9 @@ def _source(notebook=None):
     return "\n".join("".join(cell["source"]) for cell in (notebook or build_notebook())["cells"])
 
 
-def _learner_function(name):
+def _learner_function(name, extra_scope=None):
     scope = {"Path": Path, "re": re, "json": json}
+    scope.update(extra_scope or {})
     for cell in build_notebook()["cells"]:
         if cell["cell_type"] == "code":
             tree = ast.parse("".join(cell["source"]))
@@ -117,6 +118,107 @@ def test_graph_waits_before_resume_and_carries_actual_review_to_report():
     assert '"commands_executed": []' in source
     assert "--exercise-dir" in source
     assert "150분" in source and "Q&A 30분" in source
+
+
+def test_controlled_context_has_absent_fields_and_detects_missing_policy():
+    check = _learner_function("learner_check_context_mode", {
+        "CONTEXT_MODES": ("code_only", "policy", "policy_and_tests")})
+    assert check({"source": "code"}, "code_only")
+    assert check({"source": "code", "business_rules": "rule"}, "policy")
+    assert check({"source": "code", "business_rules": "rule", "test_evidence": {}}, "policy_and_tests")
+    with pytest.raises(AssertionError):
+        check({"source": "code"}, "policy")
+    with pytest.raises(AssertionError):
+        check({"source": "code", "test_evidence": {}}, "code_only")
+    source = _source()
+    assert "RUN_CONTEXT_COMPARE = False" in source
+    assert "RUN_CLEAN_CODE_REVIEW = False" in source
+    assert "run_context_review(context_payloads[mode]" in source
+
+
+def test_live_comparison_budget_counts_requests_before_provider_calls():
+    reserve = _learner_function("learner_check_call_budget")
+    assert reserve(0, 2, 3) == 2
+    assert reserve(2, 1, 3) == 3
+    with pytest.raises(RuntimeError, match="CONTEXT_CALL_BUDGET_EXCEEDED"):
+        reserve(3, 1, 3)
+    with pytest.raises(ValueError, match="CONTEXT_CALL_COUNT_INVALID"):
+        reserve(-1, 1, 3)
+    with pytest.raises(ValueError, match="CONTEXT_CALL_COUNT_INVALID"):
+        reserve(True, 1, 3)
+
+
+def test_staged_repairs_parse_actual_unittest_evidence():
+    count = _learner_function("learner_failed_tests")
+    assert count({"status": "FAILED", "stderr": "FAILED (failures=5, errors=2)"}) == 7
+    assert count({"status": "PASSED", "stderr": "OK"}) == 0
+    with pytest.raises(ValueError, match="TEST_FAILURE_COUNT_MISSING"):
+        count({"status": "FAILED", "stderr": "process did not finish"})
+    source = _source()
+    assert 'build_stage_source("coupon_cap")' in source
+    assert 'build_stage_source("shipping")' in source
+    assert 'build_stage_source("validated")' in source
+    assert '[item["failed"] for item in stage_history] == [7, 5, 4, 0]' in source
+
+
+def _direct_graph_namespace():
+    from typing import TypedDict
+    from langgraph.graph import StateGraph, START, END
+    from langgraph.checkpoint.memory import InMemorySaver
+    from langgraph.types import interrupt
+    from labs.day3.review_copilot.contracts import ReviewDraft
+    from labs.day3.review_copilot.human_review import apply_human_review
+
+    namespace = dict(TypedDict=TypedDict, StateGraph=StateGraph, START=START, END=END,
+                     InMemorySaver=InMemorySaver, interrupt=interrupt, ReviewDraft=ReviewDraft,
+                     apply_human_review=apply_human_review)
+    names = {"LearnerReviewState", "learner_prepare_review", "learner_human_review",
+             "learner_review_route", "learner_finish_review", "learner_block_review",
+             "build_learner_review_graph"}
+    for cell in build_notebook()["cells"]:
+        if cell["cell_type"] == "code":
+            for node in ast.parse("".join(cell["source"])).body:
+                if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.name in names:
+                    exec(compile(ast.Module(body=[node], type_ignores=[]), "learner-graph", "exec"), namespace)
+    return namespace
+
+
+@pytest.mark.parametrize("bad_edit", [False, True])
+def test_notebook_defined_stategraph_interrupt_edit_and_boundary(bad_edit):
+    from langgraph.types import Command
+    from labs.day3.review_copilot.contracts import ReviewDraft, ReviewFinding
+
+    finding = ReviewFinding(path="checkout.py", line=5, severity="P1", title="쿠폰 상한 누락",
+        impact="쿠폰 초과 시 음수", evidence="return total_won - coupon_won",
+        correction="쿠폰 상한 적용", rule_id="coupon-cap").to_dict()
+    draft = ReviewDraft(status="DRAFT", findings=(ReviewFinding.model_validate(finding),)).to_dict()
+    graph = _direct_graph_namespace()["build_learner_review_graph"]()
+    config = {"configurable": {"thread_id": "learner-test"}}
+    first = graph.invoke({"draft": draft, "audit": []}, config=config)
+    assert "__interrupt__" in first and graph.get_state(config).next == ("human",)
+    edited = {**finding, "title": "검토한 쿠폰 상한"}
+    if bad_edit:
+        edited["line"] = 999
+    final = graph.invoke(Command(resume={"decision": "edit", "reviewer": "learner",
+        "rationale": "Test 재현 확인", "edited_findings": [edited]}), config=config)
+    assert final["external_write"] is False
+    if bad_edit:
+        assert final["status"] == "BLOCKED"
+        assert final["review"]["error_code"] == "EDIT_FINDING_NOT_GROUNDED"
+        assert final["findings"] == []
+    else:
+        assert final["status"] == "DRY_RUN_READY"
+        assert final["findings"][0]["title"] == "검토한 쿠폰 상한"
+
+
+def test_human_scoring_keeps_real_results_unjudged_until_explicit_mapping():
+    source = _source()
+    assert 'len(ground_truth["bugs"]) == 4' in source
+    assert "LIVE_JUDGMENTS = []" in source
+    assert 'pending_score["precision"] is None' in source
+    assert 'additional_score["fp"] == 0' in source
+    assert 'score_review_findings(actual_findings, LIVE_JUDGMENTS)' in source
+    assert "expected_ids=[]" in source
 
 
 def test_checked_in_notebooks_match_builder_and_executed_run():

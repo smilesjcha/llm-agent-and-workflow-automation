@@ -22,9 +22,11 @@ REQUIRED_CODE_FILES = (
     "scripts/build_day3_notebook.py", "scripts/build_day3_student_bundle.py",
     "scripts/run_day3_preflight.py", "scripts/day3_pr_guard.py",
     "materials/day3/day3_review_intelligence_lab.ipynb",
+    "materials/day3/day3_global_references.json", "materials/day3/글로벌_사례_해설.md",
     "labs/day3/__init__.py",
     "labs/day3/review_copilot/cli.py", "labs/day3/review_copilot/codex_cli.py",
     "labs/day3/review_copilot/exercise.py", "labs/day3/review_copilot/day3.env.example",
+    "labs/day3/review_copilot/deep_dive.py",
     "labs/day3/review_copilot/web_app.py",
     "labs/day3/review_copilot/fixtures/cases.json",
     "labs/day3/review_copilot/fixtures/golden_findings.json",
@@ -33,6 +35,7 @@ REQUIRED_CODE_FILES = (
     "labs/day3/review_copilot/fixtures/checkout/starter/checkout.py",
     "labs/day3/review_copilot/fixtures/checkout/solution/checkout.py",
     "tests/test_day3_review_copilot.py", "tests/test_day3_notebook.py",
+    "tests/test_day3_deep_dive.py",
     "tests/test_day3_pr_guard.py", "tests/test_day3_curriculum.py",
     "tests/test_day3_preflight.py", "tests/test_day3_student_bundle.py",
 )
@@ -40,6 +43,8 @@ REQUIRED_CLASSROOM_FILES = (
     "slides/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pptx",
     "output/pdf/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pdf",
     "scripts/slides/build_day3_codex_cli.mjs", "scripts/slides/day3_codex_content.mjs",
+    "scripts/slides/day3_ai_enrichment.mjs",
+    "materials/day3/심화_4개차시_강사운영안.md",
     "materials/day3/day3_review_intelligence_lab.executed.ipynb",
     "materials/day3/2026_Day3_수강생_실습가이드.md",
     "materials/day3/2026_Day3_강사용_상세교안.md",
@@ -53,6 +58,7 @@ REQUIRED_MODULES = (
 )
 OFFLINE_TESTS = (
     "tests/test_day3_review_copilot.py", "tests/test_day3_pr_guard.py",
+    "tests/test_day3_deep_dive.py",
     "tests/test_day3_preflight.py", "tests/test_day3_student_bundle.py",
 )
 CLASSROOM_TESTS = ("tests/test_day3_notebook.py", "tests/test_day3_curriculum.py")

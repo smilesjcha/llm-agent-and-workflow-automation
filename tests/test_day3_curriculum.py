@@ -52,6 +52,7 @@ def test_deck_message_map_has_full_coverage_and_exact_time_budget() -> None:
         pytest.skip("슬라이드 검증 자료는 code-only ZIP에 포함하지 않음")
     data = json.loads(MAP.read_text(encoding="utf-8"))
     count = data["deck"]["slideCount"]
+    assert count >= 200
     covered = [n for b in data["blocks"] for n in range(b["range"][0], b["range"][1] + 1)]
     assert covered == list(range(1, count + 1))
     assert [p["page"] for p in data["slides"]] == covered
@@ -66,6 +67,19 @@ def test_deck_message_map_has_full_coverage_and_exact_time_budget() -> None:
         pages = [p for p in data["slides"] if p["period"] == period]
         assert any(p["lab"] for p in pages)
         assert any(p["type"] == "conversation" for p in pages)
+
+def test_enriched_periods_keep_coding_time_and_optional_reference_pages() -> None:
+    if not MAP.exists():
+        pytest.skip("code-only ZIP does not include the slide map")
+    data = json.loads(MAP.read_text(encoding="utf-8"))
+    for period, lab_minutes in {3:25, 5:30, 6:25, 7:25}.items():
+        pages = [p for p in data["slides"] if p["period"] == period]
+        assert len(pages) >= 30
+        assert sum(p["minutes"] for p in pages) == 50
+        assert sum(p["minutes"] for p in pages if p["lab"]) == lab_minutes
+        assert any(p["delivery"] == "reference" and p["minutes"] == 0 for p in pages)
+        assert any(p.get("source", "").startswith("https://") for p in pages)
+        assert len({p["title"] for p in pages}) == len(pages)
 
 def test_architecture_distinguishes_reviewer_adapter_from_coding_agent() -> None:
     source = (ROOT / "assets/components/day3/master-code-review-agent.mmd").read_text(encoding="utf-8")

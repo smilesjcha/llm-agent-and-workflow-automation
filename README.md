@@ -37,7 +37,7 @@
 - `materials/day2/day2_service_lab.ipynb`: 회의기록 Workflow·Agent·Human Review 실습
 - `materials/day2/day2_service_lab.executed.ipynb`: 실행 완료 참고본
 - `output/course-labs/day2-v2/`: 읽기 전용 기준 결과; 수강생 실행 결과는 `student-run/`과 `run_manifest.json`에 분리
-- `slides/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pptx`: 코드 리뷰 Agent 정본. 오류 재현·Codex 리뷰·코드 수정·Test·LangGraph·Localhost
+- `slides/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pptx`: **206장 코드 리뷰 Agent 정본**. Context 비교·단계별 코드 수정·직접 LangGraph 구현·사람 판정 Eval·Localhost
 - `output/pdf/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pdf`: 같은 장표의 배포·검수용 PDF. 이전 176p 파일은 구버전
 - `slides/IPA_LLM_Agent_업무자동화_Day4_DRAFT_240p.pptx`: GitHub target·권한·LangGraph·승인·dry-run·idempotency
 - `slides/IPA_LLM_Agent_업무자동화_Day5_DRAFT_240p.pptx`: router·LangSmith·dataset eval·human feedback·release/demo
@@ -48,6 +48,9 @@
 - `materials/day3/코드리뷰_Agent_아키텍처.md`: Mermaid 마스터 구조·대화형 Agent와 리뷰 Adapter의 구분
 - `materials/day3/4·5주차_운영안_및_미니프로젝트.md`: GitHub 자동 리뷰·마지막 주 개인 프로젝트 3시간 운영
 - `materials/day3/페이지별_강의_진행.md`: 페이지별 권장 시간·설명·코드·실습 연결
+- `materials/day3/심화_4개차시_강사운영안.md`: 3·5·6·7차시 50분 상세 운영, 필수 실습과 선택 보충 자료
+- `materials/day3/글로벌_사례_해설.md`: Google·Anthropic·CodeRabbit·Sentry·LangGraph·LangSmith의 공식 사례와 코드 연결
+- `materials/day3/day3_global_references.json`: OpenAI 포함 16개 공식 출처·확인일·적용 범위·한계
 - `labs/day3/review_copilot/`: diff·context·provider·review·LangGraph·evaluation·localhost 서비스
 - `output/course-labs/day3-v2/`: 8개 차시 검토 완료 기준 결과
 - `dist/day3-student-code-bundle.zip`: 정본 Notebook·서비스·Fixture·Test만 담은 학생용 코드 묶음

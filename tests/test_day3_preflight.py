@@ -41,6 +41,7 @@ def test_extracted_code_bundle_passes_without_git_or_codex(offline_workspace: tu
     assert report["codex_cli"]["status"] == "NOT_INSTALLED"
     assert len(calls) == 2
     assert set(preflight.OFFLINE_TESTS).issubset(calls[0][0])
+    assert "tests/test_day3_deep_dive.py" in calls[0][0]
     assert not set(preflight.CLASSROOM_TESTS).intersection(calls[0][0])
     assert report["secret_boundary"]["env_values_read"] is False
     assert report["secret_boundary"]["git_metadata_required"] is False
@@ -62,6 +63,21 @@ def test_missing_runtime_file_fails_even_in_code_mode(offline_workspace: tuple) 
 
     assert report["status"] == "FAIL"
     assert report["required_files"]["labs/day3/review_copilot/exercise.py"] is False
+
+
+@pytest.mark.parametrize("relative", [
+    "labs/day3/review_copilot/deep_dive.py",
+    "tests/test_day3_deep_dive.py",
+    "materials/day3/day3_global_references.json",
+    "materials/day3/글로벌_사례_해설.md",
+])
+def test_missing_deep_dive_or_reference_file_fails_code_preflight(offline_workspace: tuple, relative: str) -> None:
+    root, _ = offline_workspace
+    assert relative in preflight.REQUIRED_CODE_FILES
+    (root / relative).unlink()
+    report = preflight.build_report(code_only=True, root=root)
+    assert report["status"] == "FAIL"
+    assert report["required_files"][relative] is False
 
 
 def test_full_classroom_passes_with_all_assets_and_git(offline_workspace: tuple, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -3,7 +3,8 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {Presentation, PresentationFile} from '@oai/artifact-tool';
 import sharp from 'sharp';
-import {OPENING, LESSONS, FUTURE, PERIODS} from './day3_codex_content.mjs';
+import {execFileSync} from 'node:child_process';
+import {OPENING, LESSONS, FUTURE, PERIODS} from './day3_ai_enrichment.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const SKILL='/Users/sungjae-cha/.codex/plugins/cache/openai-primary-runtime/presentations/26.904.11930/skills/presentations';
@@ -25,9 +26,9 @@ function txt(sl,text,x,y,w,h,{size=S.body,color=C.ink,bold=false,font=FONT,align
   return b;
 }
 function line(sl,x,y,w,color=C.line){shape(sl,'line',x,y,w,0,'none',color);}
-function header(sl,title,p,page){
+function header(sl,title,p,page,label=null){
   sl.background.fill=C.paper;
-  txt(sl,p==null?'3주차 · 코드 리뷰 Agent':`3주차 ${p+1}차시 · ${PERIODS[p].time}`,64,28,1130,34,{size:S.label,bold:true,color:C.muted});
+  txt(sl,label??(p==null?'3주차 · 코드 리뷰 Agent':`3주차 ${p+1}차시 · ${PERIODS[p].time}`),64,28,1130,34,{size:S.label,bold:true,color:C.muted});
   txt(sl,title,64,84,1152,77,{size:S.title,bold:true});
   footer(sl,page);
 }
@@ -118,12 +119,21 @@ async function render(d,p,page){
   txt(sl,d.body,64,494,1100,65,{size:36,color:C.paper});
   txt(sl,'차성재 · Agentic AI PM / AI 겸임교수',64,594,1150,42,{size:28,color:C.paper});footer(sl,page,true);return sl;
  }
- header(sl,d.title,p,page);
+ header(sl,d.title,p,page,d.type==='closing'?'쉬는 시간·Q&A · 17:30-18:00':null);
  if(d.type==='table')table(sl,d.headers,d.rows,{widths:d.widths??null});
  else if(d.type==='schedule')schedule(sl,d.half);
  else if(d.type==='architecture')master(sl);
  else if(d.type==='humanflow')human(sl);
  else if(d.type==='futureflow')futureflow(sl);
+ else if(d.type==='process'){
+   d.steps.forEach((label,i)=>{
+     const x=64+i*295;
+     txt(sl,String(i+1).padStart(2,'0'),x,206,265,65,{size:44,bold:true,color:C.muted});
+     node(sl,label,x,308,267,112,i===2);
+     if(i<d.steps.length-1)arrow(sl,x+273,351,18,20);
+   });
+   txt(sl,d.detail,64,526,1152,96,{size:34,bold:true});
+ }
  else if(d.type==='compare'){
    line(sl,64,246,552,C.ink);line(sl,664,246,552,C.ink);
    txt(sl,d.leftTitle,64,186,552,53,{size:34,bold:true});
@@ -133,7 +143,7 @@ async function render(d,p,page){
    const lines=d.code.split('\n');
    const maxline=Math.max(...lines.map(l=>l.length));
    // Long commands get the full width. Concepts sit below rather than shrinking code.
-   const wide=maxline>50;
+   const wide=d.wide||maxline>50;
    shape(sl,'rect',64,190,wide?1152:795,wide?365:430,C.ink);
    txt(sl,d.code,86,212,wide?1108:750,wide?330:385,{size:S.code,font:MONO,color:C.paper});
    if(wide)txt(sl,d.explain.join('  /  '),64,581,1152,70,{size:27});
@@ -178,14 +188,33 @@ async function render(d,p,page){
    txt(sl,d.body,64,189,1152,110,{size:38,bold:true});
    bullets(sl,d.points,64,d.points.length>3?320:344,1130,{gap:d.points.length>3?78:94,size:32});
  }else throw new Error(`Unknown slide type ${d.type}`);
+ if(d.source){
+   const host=new URL(d.source).hostname.replace(/^www\./,'');
+   txt(sl,`공식 참고 · ${host}`,64,638,1152,27,{size:20,color:C.muted});
+ }
  return sl;
 }
-function distribute(items,total){
- const weights=items.map(x=>x.type==='section'?0.6:x.type==='task'?5:x.type==='code'?3:x.type==='conversation'?2.5:1.5);
- const sum=weights.reduce((a,b)=>a+b,0);let result=weights.map(x=>Math.max(1,Math.floor(x/sum*total)));
- let spare=total-result.reduce((a,b)=>a+b,0),i=0;
- while(spare>0){const j=i++%items.length;if(items[j].type==='task'||i>items.length){result[j]++;spare--;}}
- while(spare<0){const j=i++%items.length;if(result[j]>1){result[j]--;spare++;}}
+function distribute(items,total,p){
+ const result=items.map(()=>0),core=items.map((d,i)=>({d,i})).filter(x=>x.d.delivery!=='reference');
+ const checks=core.filter(x=>x.d.activity==='check');
+ const labItems=core.filter(x=>x.d.lab);
+ const check=checks.length?checks.at(-1):labItems.length>1?labItems.at(-1):core.filter(x=>x.d.type==='table').at(-1);
+ if(check)result[check.i]=5;
+ const practices=core.filter(x=>x.d.lab&&x!==check);
+ const instructions=core.filter(x=>!x.d.lab&&x!==check);
+ const practiceMinutes=PERIODS[p].lab;
+ function allocate(group,minutes){
+   if(!group.length&&minutes)throw new Error('Empty timing group');
+   const weight=x=>x.d.type==='task'?5:x.d.type==='code'?2:x.d.type==='conversation'?2:x.d.type==='section'?.5:1;
+   const weightSum=group.reduce((n,x)=>n+weight(x),0);
+   group.forEach(x=>{result[x.i]=Math.max(.5,Math.floor(weight(x)/weightSum*minutes*2)/2);});
+   let remain=minutes-group.reduce((n,x)=>n+result[x.i],0),i=0;
+   const priority=[...group].sort((a,b)=>weight(b)-weight(a));
+   while(remain>0){result[priority[i++%priority.length].i]+=.5;remain-=.5;}
+   while(remain<0){const x=priority[i++%priority.length];if(result[x.i]>.5){result[x.i]-=.5;remain+=.5;}}
+ }
+ allocate(practices,practiceMinutes);
+ allocate(instructions,total-practiceMinutes-(check?5:0));
  return result;
 }
 const plan=[];
@@ -194,7 +223,7 @@ OPENING.forEach((d,i)=>plan.push({d,p:null,minutes:openingMinutes.get(i)??0}));
 const ranges=[];
 LESSONS.forEach((items,p)=>{
  const all=[{type:'section',title:PERIODS[p].title},...items];
- const mins=distribute(all,p===0?40:p===7?41:50),start=plan.length+1;
+ const mins=distribute(all,p===0?40:p===7?41:50,p),start=plan.length+1;
  all.forEach((d,i)=>plan.push({d,p,minutes:mins[i]}));ranges.push([start,plan.length]);
 });
 FUTURE.forEach((d,i)=>plan.push({d,p:7,minutes:i===FUTURE.length-1?30:[2,1,2,2,1,1][i]??0}));
@@ -202,15 +231,20 @@ await fs.mkdir(STAGING,{recursive:true});
 for(let i=0;i<plan.length;i++){
  const {d,p,minutes}=plan[i],page=i+1,sl=await render(d,p,page);
  const actions=d.type==='code'?`코드를 한 줄씩 실행하고 ${d.explain.join(', ')}를 확인합니다.`:d.type==='task'?d.body.map((x,j)=>`${j+1}. ${x}`).join('\n'):d.type==='conversation'?`요청을 Codex에 입력합니다. 답변 확인: ${d.check.join(', ')}.`:d.points?.join('\n')??d.rows?.map(x=>x.join(' / ')).join('\n')??d.body??'';
- const note=[`[강사용 진행]\n권장 시간: ${minutes}분${minutes===0?' (사전 안내·복습 참조, 본 수업 미산정)':''}`,`차시: ${p==null?'시작 안내':`${p+1}차시 ${PERIODS[p].time}`}`,`설명 대상: ${d.title}`,d.note??'',actions,p!=null?`실습 연결: 정본 Notebook의 ${p+1}차시. 구체적 셀 번호와 파일은 수강생 실습가이드 및 페이지별 진행표 참조.`:'',`수업 방식: 온라인 개인 실행. 코드를 수정했다면 출력과 Test를 다시 확인. 의무 발표 없음.`,d.source?`[Sources]\n${d.source}\n[/Sources]`:''].filter(Boolean).join('\n\n');
+ const note=[`[강사용 진행]\n권장 시간: ${minutes}분${minutes===0?' (선택 설명·복습 참조, 기본 50분 미산정)':''}`,`차시: ${p==null?'시작 안내':`${p+1}차시 ${PERIODS[p].time}`}`,`설명 대상: ${d.title}`,d.note??'',actions,p!=null?`실습 연결: 정본 Notebook의 ${p+1}차시. 구체적 셀 번호와 파일은 수강생 실습가이드 및 페이지별 진행표 참조.`:'',`수업 방식: 온라인 개인 실행. 코드를 수정했다면 출력과 Test를 다시 확인. 의무 발표 없음. 선택 참고 장표는 설명 시간을 대체하거나 빠른 진행 시 사용하며 실습 시간을 잠식하지 않습니다.`,d.source?`[Sources]\n${d.source}\n[/Sources]`:''].filter(Boolean).join('\n\n');
  sl.speakerNotes.textFrame.setText(note);sl.speakerNotes.setVisible(true);
- manifest.push({page,period:p==null?null:p+1,title:d.title,type:d.type,minutes,lab:d.lab??false,notes:note,...(d.code?{code:d.code}:{}),...(d.asset?{asset:d.asset}:{})});
+ manifest.push({page,period:p==null?null:p+1,title:d.title,type:d.type,minutes,delivery:minutes===0?'reference':'core',lab:d.lab??false,notes:note,...(d.source?{source:d.source}:{}),...(d.code?{code:d.code}:{}),...(d.asset?{asset:d.asset}:{})});
 }
 const candidate=path.join(STAGING,'candidate.pptx');await (await PresentationFile.exportPptx(deck)).save(candidate);
+// The finalizer limits caller arguments to 96. Run the same immutable validator
+// against every native-table owner first; keep finalizer arguments bounded.
+const allTableValidation=execFileSync(PYTHON,[path.join(SKILL,'container_tools/inspect_presentation_layout_geometry.py'),candidate,'--fail-on-findings','--expected-slide-count',String(plan.length),'--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit','--approved-font-family',FONT,'--approved-font-family',MONO,...owners.flatMap(n=>['--require-native-table-slide',String(n)])],{encoding:'utf8'});
+await fs.writeFile(path.join(STAGING,'all-native-table-validation.json'),allTableValidation);
 const {finalizePresentation}=await import(pathToFileURL(path.join(SKILL,'container_tools/artifact_tool_utils.mjs')).href);
 await fs.mkdir(path.dirname(FINAL),{recursive:true});
 const finalPath=process.env.DAY3_FINAL_PATH??FINAL;
-const validation=await finalizePresentation({workspaceDir:ROOT,candidatePath:candidate,finalPath,pythonExecutable:PYTHON,integrityValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_package_integrity.py'),layoutValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_layout_geometry.py'),layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit',...owners.flatMap(n=>['--require-native-table-slide',String(n)])],requiredNativeTableOwnerSlides:owners,fontPolicy:{basis:'design',families:[FONT,MONO]},verifyArtifactToolImport:true,receiptPath:path.join(STAGING,`${path.basename(finalPath)}.validation.json`)});
+const boundedOwners=owners.slice(0,40);
+const validation=await finalizePresentation({workspaceDir:ROOT,candidatePath:candidate,finalPath,pythonExecutable:PYTHON,integrityValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_package_integrity.py'),layoutValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_layout_geometry.py'),layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit',...boundedOwners.flatMap(n=>['--require-native-table-slide',String(n)])],requiredNativeTableOwnerSlides:boundedOwners,fontPolicy:{basis:'design',families:[FONT,MONO]},verifyArtifactToolImport:true,receiptPath:path.join(STAGING,`${path.basename(finalPath)}.validation.json`)});
 await fs.writeFile(path.join(STAGING,'slide_manifest.json'),JSON.stringify(manifest,null,2));
 const md=['# 3주차 페이지별 강의 진행','',`총 ${plan.length}장. 강의·시연·실습 400분, 마지막 휴식·Q&A 30분. 사전 참고 페이지는 0분으로 표시한다. 차시별 이론·시연·실습·확인 배분은 8개 차시 표지 기준이며, 아래 페이지 시간은 설명과 실행을 합친 진행 가이드다.`,...manifest.map(x=>`\n## ${x.page}. ${x.title}\n\n${x.notes}${x.code?'\n\n```python\n'+x.code+'\n```':''}`)].join('\n');
 await fs.writeFile(path.join(ROOT,'materials/day3/페이지별_강의_진행.md'),md);
