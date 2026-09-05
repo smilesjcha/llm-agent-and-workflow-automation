@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {"id": "unsafe-exec", "diff": "labs/day3/review_copilot/fixtures/cases/01_unsafe_exec.diff"},
+    {"id": "shell-injection", "diff": "labs/day3/review_copilot/fixtures/cases/02_shell_injection.diff"},
+    {"id": "external-write", "diff": "labs/day3/review_copilot/fixtures/cases/03_external_write.diff"},
+    {"id": "broad-exception", "diff": "labs/day3/review_copilot/fixtures/cases/04_broad_exception.diff"},
+    {"id": "path-escape", "diff": "labs/day3/review_copilot/fixtures/cases/05_path_escape.diff"},
+    {"id": "secret-logging", "diff": "labs/day3/review_copilot/fixtures/cases/06_secret_logging.diff"},
+    {"id": "timeout-idempotency", "diff": "labs/day3/review_copilot/fixtures/cases/07_timeout_idempotency.diff"},
+    {"id": "safe-negative", "diff": "labs/day3/review_copilot/fixtures/cases/08_safe_negative.diff"}
+  ]
+}

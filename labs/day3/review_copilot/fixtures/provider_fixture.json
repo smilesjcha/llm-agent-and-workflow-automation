@@ -1,0 +1,75 @@
+{
+  "case_id": "meeting-export",
+  "responses": {
+    "meeting-export": [
+      {
+        "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+        "line": 9,
+        "severity": "P1",
+        "title": "사람 승인 없는 외부 서비스 호출",
+        "impact": "검토되지 않은 회의록이 외부 시스템에 게시될 수 있습니다.",
+        "correction": "dry-run payload를 만든 뒤 human_approved 조건에서만 publisher를 호출하세요.",
+        "rule_id": "external-write-without-approval",
+        "confidence": 0.96
+      },
+      {
+        "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+        "line": 999,
+        "severity": "P1",
+        "title": "근거가 없는 후보",
+        "impact": "존재하지 않는 라인은 검증할 수 없습니다.",
+        "correction": "실제 추가 라인을 사용하세요.",
+        "rule_id": "hallucinated-line",
+        "confidence": 0.40
+      }
+    ],
+    "unsafe-exec": [
+      {
+        "path": "src/template.py", "line": 2, "severity": "P0",
+        "title": "입력 문자열의 코드 실행", "impact": "임의 코드 실행 가능",
+        "correction": "허용 함수 registry 사용", "rule_id": "unsafe-dynamic-execution", "confidence": 0.98
+      }
+    ],
+    "shell-injection": [
+      {
+        "path": "src/export_cli.py", "line": 4, "severity": "P0",
+        "title": "shell=True 명령 주입", "impact": "임의 명령 실행 가능",
+        "correction": "인자 배열과 allowlist 사용", "rule_id": "shell-command-injection", "confidence": 0.98
+      }
+    ],
+    "external-write": [
+      {
+        "path": "src/notion_export.py", "line": 6, "severity": "P1",
+        "title": "사람 승인 없는 외부 서비스 호출", "impact": "검토되지 않은 문서 게시 가능",
+        "correction": "Human Review gate 추가", "rule_id": "external-write-without-approval", "confidence": 0.95
+      }
+    ],
+    "broad-exception": [
+      {
+        "path": "src/provider.py", "line": 10, "severity": "P2",
+        "title": "실패 원인을 지우는 예외 처리", "impact": "장애가 성공으로 오인됨",
+        "correction": "예외별 error_code 반환", "rule_id": "broad-exception-boundary", "confidence": 0.93
+      }
+    ],
+    "secret-logging": [
+      {
+        "path": "src/provider_status.py", "line": 3, "severity": "P1",
+        "title": "로그에 인증정보 노출", "impact": "credential 유출 가능",
+        "correction": "비민감 상태만 기록", "rule_id": "secret-in-log", "confidence": 0.97
+      }
+    ],
+    "timeout-idempotency": [
+      {
+        "path": "src/github_comment.py", "line": 5, "severity": "P2",
+        "title": "네트워크 timeout 누락", "impact": "worker 무기한 대기 가능",
+        "correction": "timeout과 제한된 재시도 추가", "rule_id": "network-timeout-missing", "confidence": 0.91
+      },
+      {
+        "path": "src/github_comment.py", "line": 5, "severity": "P1",
+        "title": "외부 서비스 중복 호출 방지 키 누락", "impact": "중복 comment 생성 가능",
+        "correction": "idempotency key 추가", "rule_id": "idempotency-key-missing", "confidence": 0.94
+      }
+    ],
+    "safe-negative": []
+  }
+}

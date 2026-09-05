@@ -1,0 +1,2048 @@
+{
+  "deck": {
+    "path": "slides/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pptx",
+    "slideCount": 206,
+    "finalSynthesisSlides": [
+      206
+    ]
+  },
+  "blocks": [
+    {
+      "name": "시작 안내",
+      "range": [
+        1,
+        13
+      ]
+    },
+    {
+      "name": "3주차 1차시",
+      "range": [
+        14,
+        25
+      ]
+    },
+    {
+      "name": "3주차 2차시",
+      "range": [
+        26,
+        37
+      ]
+    },
+    {
+      "name": "3주차 3차시",
+      "range": [
+        38,
+        72
+      ]
+    },
+    {
+      "name": "3주차 4차시",
+      "range": [
+        73,
+        84
+      ]
+    },
+    {
+      "name": "3주차 5차시",
+      "range": [
+        85,
+        117
+      ]
+    },
+    {
+      "name": "3주차 6차시",
+      "range": [
+        118,
+        151
+      ]
+    },
+    {
+      "name": "3주차 7차시",
+      "range": [
+        152,
+        184
+      ]
+    },
+    {
+      "name": "3주차 8차시",
+      "range": [
+        185,
+        199
+      ]
+    },
+    {
+      "name": "4·5주차와 미니 프로젝트",
+      "range": [
+        200,
+        206
+      ]
+    }
+  ],
+  "slides": [
+    {
+      "page": 1,
+      "period": null,
+      "title": "코드 리뷰 Agent",
+      "type": "cover",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 2,
+      "period": null,
+      "title": "5주 과정의 현재 위치",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 3,
+      "period": null,
+      "title": "지난 수업과 오늘의 확장",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 4,
+      "period": null,
+      "title": "원본 모듈과 운영 순서",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 5,
+      "period": null,
+      "title": "장바구니 오류의 전후",
+      "type": "demo",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 6,
+      "period": null,
+      "title": "코드 리뷰 Agent 전체 구조",
+      "type": "architecture",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 7,
+      "period": null,
+      "title": "자동화 구성의 Role",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 8,
+      "period": null,
+      "title": "오전 수업과 점심시간",
+      "type": "schedule",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 9,
+      "period": null,
+      "title": "오후 수업과 Q&A",
+      "type": "schedule",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 10,
+      "period": null,
+      "title": "시작 전 준비",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 11,
+      "period": null,
+      "title": "3주차 코드 다운로드",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 12,
+      "period": null,
+      "title": "Python과 Notebook 시작",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 13,
+      "period": null,
+      "title": "Codex CLI 실행 조건",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://learn.chatgpt.com/docs/auth"
+    },
+    {
+      "page": 14,
+      "period": 1,
+      "title": "리뷰 대상과 업무 규칙",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 15,
+      "period": 1,
+      "title": "코드 리뷰의 판단 대상",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 16,
+      "period": 1,
+      "title": "교육용 쇼핑 정책",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 17,
+      "period": 1,
+      "title": "계산 순서의 차이",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 18,
+      "period": 1,
+      "title": "할인 후 금액과 최종 결제",
+      "type": "code",
+      "minutes": 2.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 19,
+      "period": 1,
+      "title": "첫 실행과 오류 재현",
+      "type": "task",
+      "minutes": 16,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 20,
+      "period": 1,
+      "title": "예상값의 근거",
+      "type": "concept",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 21,
+      "period": 1,
+      "title": "직접 구현: 정상 주문과 초과 쿠폰",
+      "type": "code",
+      "minutes": 6,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 22,
+      "period": 1,
+      "title": "Codex 대화: 변경 전 분석",
+      "type": "conversation",
+      "minutes": 2.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 23,
+      "period": 1,
+      "title": "리뷰 지적의 구성",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 24,
+      "period": 1,
+      "title": "지적과 스타일 제안",
+      "type": "compare",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 25,
+      "period": 1,
+      "title": "입력 한 개의 추가 실험",
+      "type": "task",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 26,
+      "period": 2,
+      "title": "Git Diff와 재현 테스트",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 27,
+      "period": 2,
+      "title": "Git Diff의 정보",
+      "type": "concept",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 28,
+      "period": 2,
+      "title": "Diff 기호와 줄 번호",
+      "type": "table",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 29,
+      "period": 2,
+      "title": "Hunk의 시작점",
+      "type": "code",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 30,
+      "period": 2,
+      "title": "직접 구현: 새 줄 번호 계산",
+      "type": "code",
+      "minutes": 7,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 31,
+      "period": 2,
+      "title": "두 구간의 라인 복원",
+      "type": "task",
+      "minutes": 18,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 32,
+      "period": 2,
+      "title": "리뷰 위치의 실패",
+      "type": "compare",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 33,
+      "period": 2,
+      "title": "실제 Test 실행",
+      "type": "code",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 34,
+      "period": 2,
+      "title": "실패 테스트의 읽기 순서",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 35,
+      "period": 2,
+      "title": "Codex 대화: 재현 테스트",
+      "type": "conversation",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 36,
+      "period": 2,
+      "title": "실패 한 건의 최소 재현",
+      "type": "task",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 37,
+      "period": 2,
+      "title": "실행 오류와 제품 오류",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 38,
+      "period": 3,
+      "title": "리뷰 기준과 Context",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 39,
+      "period": 3,
+      "title": "리뷰 Context의 내용",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 40,
+      "period": 3,
+      "title": "생성 모델과 리뷰의 불확실성",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 41,
+      "period": 3,
+      "title": "추론·검색·실행의 구분",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 42,
+      "period": 3,
+      "title": "Context Window와 정보 선택",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+    },
+    {
+      "page": 43,
+      "period": 3,
+      "title": "Prompt Engineering과 Context Engineering",
+      "type": "compare",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 44,
+      "period": 3,
+      "title": "최소 Context Pack",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 45,
+      "period": 3,
+      "title": "리뷰용 Context 구성",
+      "type": "process",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 46,
+      "period": 3,
+      "title": "코드 밖의 제품 지식",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 47,
+      "period": 3,
+      "title": "직접 구현: 허용 정보 선택",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 48,
+      "period": 3,
+      "title": "정책의 우선순위",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 49,
+      "period": 3,
+      "title": "실제 입력의 세 단계",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 50,
+      "period": 3,
+      "title": "Prompt의 네 가지 구성",
+      "type": "concept",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 51,
+      "period": 3,
+      "title": "정책 누락 실험",
+      "type": "task",
+      "minutes": 8,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 52,
+      "period": 3,
+      "title": "관련 없는 정보의 차단",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 53,
+      "period": 3,
+      "title": "Codex 대화: 리뷰 요청 V1",
+      "type": "conversation",
+      "minutes": 2.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 54,
+      "period": 3,
+      "title": "검색 기반 Context 확장",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 55,
+      "period": 3,
+      "title": "저장소 탐색의 범위",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 56,
+      "period": 3,
+      "title": "Codex 대화: 리뷰 요청 V2",
+      "type": "conversation",
+      "minutes": 2.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 57,
+      "period": 3,
+      "title": "직접 읽기와 검색 도구",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 58,
+      "period": 3,
+      "title": "Anthropic의 Context 설계",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+    },
+    {
+      "page": 59,
+      "period": 3,
+      "title": "AGENTS.md와 이번 Task",
+      "type": "compare",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 60,
+      "period": 3,
+      "title": "CodeRabbit의 리뷰 구성",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://www.coderabbit.ai/blog/explainable-reviews-coderabbit-review-context-engine"
+    },
+    {
+      "page": 61,
+      "period": 3,
+      "title": "Instruction과 검토 대상",
+      "type": "compare",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 62,
+      "period": 3,
+      "title": "Review Finding의 구조",
+      "type": "code",
+      "minutes": 2.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 63,
+      "period": 3,
+      "title": "주석 속 지시 문구",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 64,
+      "period": 3,
+      "title": "Prompt Injection 대응의 층",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 65,
+      "period": 3,
+      "title": "LangChain Prompt Template",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 66,
+      "period": 3,
+      "title": "Codex 요청: Context 검사",
+      "type": "conversation",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 67,
+      "period": 3,
+      "title": "AGENTS.md의 지속 규칙",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://learn.chatgpt.com/guides/best-practices"
+    },
+    {
+      "page": 68,
+      "period": 3,
+      "title": "세 가지 Context 입력",
+      "type": "task",
+      "minutes": 8,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 69,
+      "period": 3,
+      "title": "Few-shot 예시의 선택",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 70,
+      "period": 3,
+      "title": "Context 실험의 기록",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 71,
+      "period": 3,
+      "title": "불확실성의 표현",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 72,
+      "period": 3,
+      "title": "3차시 실행 점검",
+      "type": "table",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 73,
+      "period": 4,
+      "title": "Codex CLI 연동",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 74,
+      "period": 4,
+      "title": "Codex CLI의 두 사용 방식",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://learn.chatgpt.com/docs/developer-commands#codex-exec"
+    },
+    {
+      "page": 75,
+      "period": 4,
+      "title": "CLI 설치와 로그인 확인",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://learn.chatgpt.com/docs/auth"
+    },
+    {
+      "page": 76,
+      "period": 4,
+      "title": "로컬 CLI와 API 직접 호출",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://learn.chatgpt.com/docs/auth"
+    },
+    {
+      "page": 77,
+      "period": 4,
+      "title": "한 번의 리뷰 요청",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://learn.chatgpt.com/docs/developer-commands#codex-exec"
+    },
+    {
+      "page": 78,
+      "period": 4,
+      "title": "Python의 CLI 호출 원리",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 79,
+      "period": 4,
+      "title": "응답 처리의 순서",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 80,
+      "period": 4,
+      "title": "실제 Codex 리뷰 실행",
+      "type": "task",
+      "minutes": 25,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 81,
+      "period": 4,
+      "title": "대화형 Agent와 리뷰 Adapter",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 82,
+      "period": 4,
+      "title": "Codex 대화: Adapter 구현",
+      "type": "conversation",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 83,
+      "period": 4,
+      "title": "CLI 실행 문제의 복구",
+      "type": "table",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 84,
+      "period": 4,
+      "title": "Live 응답과 Fixture 재생",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 85,
+      "period": 5,
+      "title": "수정 코드와 회귀 테스트",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 86,
+      "period": 5,
+      "title": "AI 제안의 검증 루프",
+      "type": "process",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 87,
+      "period": 5,
+      "title": "Google의 리뷰 수정 지원",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://research.google/blog/resolving-code-review-comments-with-ml/"
+    },
+    {
+      "page": 88,
+      "period": 5,
+      "title": "Sentry의 오류 해결 흐름",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://docs.sentry.io/product/ai-in-sentry/seer/"
+    },
+    {
+      "page": 89,
+      "period": 5,
+      "title": "회귀 Test와 AI 리뷰",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 90,
+      "period": 5,
+      "title": "AI 테스트의 맹점",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 91,
+      "period": 5,
+      "title": "Test Oracle · 기대값의 기준",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 92,
+      "period": 5,
+      "title": "세 단계의 코드 교정",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 93,
+      "period": 5,
+      "title": "변경 범위와 검토 난도",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 94,
+      "period": 5,
+      "title": "Patch와 계획의 구분",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 95,
+      "period": 5,
+      "title": "Red · Green · Refactor",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 96,
+      "period": 5,
+      "title": "수정 전 Test의 보존",
+      "type": "code",
+      "minutes": 4,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 97,
+      "period": 5,
+      "title": "Codex 요청: 단계별 교정",
+      "type": "conversation",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 98,
+      "period": 5,
+      "title": "쿠폰 상한·영수증 수정",
+      "type": "task",
+      "minutes": 9.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 99,
+      "period": 5,
+      "title": "참고 단계의 비교",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 100,
+      "period": 5,
+      "title": "배송비 계산의 교정",
+      "type": "task",
+      "minutes": 9.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 101,
+      "period": 5,
+      "title": "수정 전후의 계산 결과",
+      "type": "demo",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 102,
+      "period": 5,
+      "title": "무료 배송 경계값",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 103,
+      "period": 5,
+      "title": "경계값의 파라미터 Test",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 104,
+      "period": 5,
+      "title": "입력 검증의 함정",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 105,
+      "period": 5,
+      "title": "직접 구현: 입력 검사",
+      "type": "code",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 106,
+      "period": 5,
+      "title": "직접 구현: 할인과 배송비",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": true
+    },
+    {
+      "page": 107,
+      "period": 5,
+      "title": "Codex 대화: 작은 수정",
+      "type": "conversation",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 108,
+      "period": 5,
+      "title": "Codex 수정 실행 기록",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 109,
+      "period": 5,
+      "title": "단계별 Test 예상값",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 110,
+      "period": 5,
+      "title": "Clean Code의 적용 기준",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 111,
+      "period": 5,
+      "title": "금액 계산의 불변 조건",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 112,
+      "period": 5,
+      "title": "Mutation Testing의 발상",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 113,
+      "period": 5,
+      "title": "Codex 요청: 회귀 방지",
+      "type": "conversation",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 114,
+      "period": 5,
+      "title": "직접 구현: 근거 없는 후보 제외",
+      "type": "code",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 115,
+      "period": 5,
+      "title": "실행 환경 오류와 수정 실패",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 116,
+      "period": 5,
+      "title": "할인 상한의 추가 검증",
+      "type": "task",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": true
+    },
+    {
+      "page": 117,
+      "period": 5,
+      "title": "5차시 실행 점검",
+      "type": "table",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 118,
+      "period": 6,
+      "title": "LangGraph 검토 흐름",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 119,
+      "period": 6,
+      "title": "단일 호출과 상태가 있는 서비스",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 120,
+      "period": 6,
+      "title": "Anthropic의 Agent 분류",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://www.anthropic.com/engineering/building-effective-agents"
+    },
+    {
+      "page": 121,
+      "period": 6,
+      "title": "Workflow와 Agent의 역할",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 122,
+      "period": 6,
+      "title": "사람 검토가 필요한 지점",
+      "type": "concept",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 123,
+      "period": 6,
+      "title": "LangGraph 구성 요소",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 124,
+      "period": 6,
+      "title": "직접 정의하는 State",
+      "type": "code",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 125,
+      "period": 6,
+      "title": "State와 지역 변수",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 126,
+      "period": 6,
+      "title": "Node의 반환 방식",
+      "type": "code",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 127,
+      "period": 6,
+      "title": "직접 구현: 검토자 입력 검증",
+      "type": "code",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 128,
+      "period": 6,
+      "title": "사람 입력의 반환",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 129,
+      "period": 6,
+      "title": "조건에 따른 경로 선택",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 130,
+      "period": 6,
+      "title": "직접 연결하는 검토 흐름",
+      "type": "process",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 131,
+      "period": 6,
+      "title": "Graph의 조립",
+      "type": "code",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 132,
+      "period": 6,
+      "title": "분기·종료·Checkpoint",
+      "type": "code",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 133,
+      "period": 6,
+      "title": "Graph의 뼈대 구현",
+      "type": "task",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 134,
+      "period": 6,
+      "title": "검토 대기와 실행 재개",
+      "type": "humanflow",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 135,
+      "period": 6,
+      "title": "interrupt의 실제 의미",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+    },
+    {
+      "page": 136,
+      "period": 6,
+      "title": "thread_id와 사용자 구분",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 137,
+      "period": 6,
+      "title": "interrupt와 resume",
+      "type": "code",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 138,
+      "period": 6,
+      "title": "재개 시 Node의 재실행",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+    },
+    {
+      "page": 139,
+      "period": 6,
+      "title": "메모리와 영속 Checkpoint",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    },
+    {
+      "page": 140,
+      "period": 6,
+      "title": "수용·수정·제외",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 141,
+      "period": 6,
+      "title": "중단과 재개의 세 경로",
+      "type": "task",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 142,
+      "period": 6,
+      "title": "사람 수정 후 재검증",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 143,
+      "period": 6,
+      "title": "수정된 지적의 검증",
+      "type": "task",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 144,
+      "period": 6,
+      "title": "Approval과 Publish의 분리",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 145,
+      "period": 6,
+      "title": "Idempotency와 중복 처리",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 146,
+      "period": 6,
+      "title": "재시도 가능한 실패",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 147,
+      "period": 6,
+      "title": "Sentry의 실행 종료 지점",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://docs.sentry.io/api/seer/start-seer-issue-fix/"
+    },
+    {
+      "page": 148,
+      "period": 6,
+      "title": "Codex 대화: 검토 노드",
+      "type": "conversation",
+      "minutes": 3,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 149,
+      "period": 6,
+      "title": "Codex 요청: 중복 실행 방지",
+      "type": "conversation",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 150,
+      "period": 6,
+      "title": "업무용 Graph의 확장 기준",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 151,
+      "period": 6,
+      "title": "6차시 실행 점검",
+      "type": "table",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 152,
+      "period": 7,
+      "title": "리뷰 품질과 개선 비교",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 153,
+      "period": 7,
+      "title": "리뷰 품질의 측정",
+      "type": "concept",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 154,
+      "period": 7,
+      "title": "단위 Test와 모델 Eval",
+      "type": "compare",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 155,
+      "period": 7,
+      "title": "교육용 정답 결함 네 종류",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 156,
+      "period": 7,
+      "title": "Precision과 Recall",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 157,
+      "period": 7,
+      "title": "Golden Set의 범위",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 158,
+      "period": 7,
+      "title": "정답 자료의 확인",
+      "type": "code",
+      "minutes": 4,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 159,
+      "period": 7,
+      "title": "Notebook의 평가 예제",
+      "type": "metrics",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 160,
+      "period": 7,
+      "title": "정답 노출과 평가 누수",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 161,
+      "period": 7,
+      "title": "개발용 사례와 확인용 사례",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 162,
+      "period": 7,
+      "title": "직접 구현: 지적과 정답의 비교",
+      "type": "code",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": true
+    },
+    {
+      "page": 163,
+      "period": 7,
+      "title": "사람 판정의 선택",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 164,
+      "period": 7,
+      "title": "실제 지적의 수동 매핑",
+      "type": "task",
+      "minutes": 10.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 165,
+      "period": 7,
+      "title": "Golden Set의 구성",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 166,
+      "period": 7,
+      "title": "같은 결함의 중복 지적",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 167,
+      "period": 7,
+      "title": "Precision의 분모",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 168,
+      "period": 7,
+      "title": "네 결함 기준의 계산 예",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 169,
+      "period": 7,
+      "title": "심각도와 확신의 차이",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 170,
+      "period": 7,
+      "title": "수정본의 Negative Case",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 171,
+      "period": 7,
+      "title": "Prompt와 코드 개선 비교",
+      "type": "task",
+      "minutes": 10.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 172,
+      "period": 7,
+      "title": "정상 코드 재검토",
+      "type": "task",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": true
+    },
+    {
+      "page": 173,
+      "period": 7,
+      "title": "Anthropic의 Agent 평가",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+    },
+    {
+      "page": 174,
+      "period": 7,
+      "title": "실제 실행값의 전후 비교",
+      "type": "code",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 175,
+      "period": 7,
+      "title": "OpenAI의 Eval 권고",
+      "type": "table",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false,
+      "source": "https://developers.openai.com/api/docs/guides/evaluation-best-practices"
+    },
+    {
+      "page": 176,
+      "period": 7,
+      "title": "LLM-as-a-Judge의 한계",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 177,
+      "period": 7,
+      "title": "Codex 대화: 과잉 지적 개선",
+      "type": "conversation",
+      "minutes": 3.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 178,
+      "period": 7,
+      "title": "LangSmith의 Human Evaluation",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false,
+      "source": "https://docs.langchain.com/langsmith/annotation-queues"
+    },
+    {
+      "page": 179,
+      "period": 7,
+      "title": "추적 로그의 최소 항목",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 180,
+      "period": 7,
+      "title": "Offline Eval과 실제 운영",
+      "type": "compare",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 181,
+      "period": 7,
+      "title": "품질·지연·이용량의 균형",
+      "type": "table",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 182,
+      "period": 7,
+      "title": "Codex 요청: 평가 개선",
+      "type": "conversation",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 183,
+      "period": 7,
+      "title": "한 번의 개선과 일반화",
+      "type": "concept",
+      "minutes": 0,
+      "delivery": "reference",
+      "lab": false
+    },
+    {
+      "page": 184,
+      "period": 7,
+      "title": "7차시 실행 점검",
+      "type": "table",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 185,
+      "period": 8,
+      "title": "Localhost와 다음 주 준비",
+      "type": "section",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 186,
+      "period": 8,
+      "title": "사용 가능한 리뷰 서비스",
+      "type": "concept",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 187,
+      "period": 8,
+      "title": "수정 파일의 Localhost 연결",
+      "type": "code",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 188,
+      "period": 8,
+      "title": "장바구니 계산 화면",
+      "type": "screenshot",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false,
+      "asset": "assets/screenshots/day3-codex-cli-checkout.png"
+    },
+    {
+      "page": 189,
+      "period": 8,
+      "title": "같은 테스트의 전후 결과",
+      "type": "screenshot",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false,
+      "asset": "assets/screenshots/day3-codex-cli-tests.png"
+    },
+    {
+      "page": 190,
+      "period": 8,
+      "title": "Codex의 근거와 수정 제안",
+      "type": "screenshot",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false,
+      "asset": "assets/screenshots/day3-codex-cli-review.png"
+    },
+    {
+      "page": 191,
+      "period": 8,
+      "title": "화면에서의 전체 실행",
+      "type": "task",
+      "minutes": 13.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 192,
+      "period": 8,
+      "title": "Codex 대화: 서비스 화면",
+      "type": "conversation",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 193,
+      "period": 8,
+      "title": "Git의 전달 단위",
+      "type": "table",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 194,
+      "period": 8,
+      "title": "GitHub용 서비스 폴더",
+      "type": "task",
+      "minutes": 13.5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 195,
+      "period": 8,
+      "title": "작은 Commit과 Draft PR",
+      "type": "code",
+      "minutes": 1.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 196,
+      "period": 8,
+      "title": "3주차와 4주차의 연결",
+      "type": "compare",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 197,
+      "period": 8,
+      "title": "개인 서비스의 시작점",
+      "type": "task",
+      "minutes": 5,
+      "delivery": "core",
+      "lab": true
+    },
+    {
+      "page": 198,
+      "period": 8,
+      "title": "개선 기록",
+      "type": "concept",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 199,
+      "period": 8,
+      "title": "2주 뒤의 개인 미니 프로젝트",
+      "type": "project_teaser",
+      "minutes": 0.5,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 200,
+      "period": 8,
+      "title": "4주차 수업 계획",
+      "type": "table",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 201,
+      "period": 8,
+      "title": "4주차 GitHub 자동 리뷰",
+      "type": "futureflow",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 202,
+      "period": 8,
+      "title": "5주차 수업 계획",
+      "type": "table",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 203,
+      "period": 8,
+      "title": "미니 프로젝트 3시간 운영",
+      "type": "table",
+      "minutes": 2,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 204,
+      "period": 8,
+      "title": "미니 프로젝트 선택 예시",
+      "type": "compare",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 205,
+      "period": 8,
+      "title": "개선 전후의 공유 양식",
+      "type": "table",
+      "minutes": 1,
+      "delivery": "core",
+      "lab": false
+    },
+    {
+      "page": 206,
+      "period": 8,
+      "title": "Q&A와 실습 복구",
+      "type": "closing",
+      "minutes": 30,
+      "delivery": "core",
+      "lab": false
+    }
+  ],
+  "timing": {
+    "teachingMinutes": 400,
+    "lastBreakAndQAMinutes": 30,
+    "openingMinutes": 10,
+    "periodPageMinutes": [
+      40,
+      50,
+      50,
+      50,
+      50,
+      50,
+      50,
+      41
+    ],
+    "futurePreviewMinutes": 9
+  },
+  "design": {
+    "bodyPoint": 22.5,
+    "tablePoint": 19.5,
+    "codePoint": 18,
+    "titlePoint": 40.5
+  },
+  "requiredNativeTables": [
+    2,
+    4,
+    7,
+    8,
+    9,
+    10,
+    16,
+    23,
+    28,
+    37,
+    41,
+    44,
+    46,
+    48,
+    55,
+    58,
+    60,
+    64,
+    67,
+    70,
+    72,
+    79,
+    83,
+    87,
+    88,
+    91,
+    92,
+    95,
+    102,
+    108,
+    109,
+    110,
+    117,
+    120,
+    123,
+    135,
+    136,
+    140,
+    142,
+    144,
+    146,
+    147,
+    150,
+    151,
+    155,
+    156,
+    160,
+    163,
+    165,
+    166,
+    168,
+    170,
+    173,
+    175,
+    176,
+    178,
+    179,
+    181,
+    184,
+    193,
+    200,
+    201,
+    202,
+    203,
+    205
+  ]
+}

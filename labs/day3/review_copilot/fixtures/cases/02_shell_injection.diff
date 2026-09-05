@@ -1,0 +1,8 @@
+diff --git a/src/export_cli.py b/src/export_cli.py
+index 1111111..2222222 100644
+--- a/src/export_cli.py
++++ b/src/export_cli.py
+@@ -3,2 +3,3 @@ def export(command):
+     validate(command)
++    return subprocess.run(command, shell=True)
+     return None

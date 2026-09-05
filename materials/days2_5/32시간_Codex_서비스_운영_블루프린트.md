@@ -95,26 +95,29 @@ cd desktop-app/meeting-intelligence && ./scripts/test.sh
 
 ### 강사가 먼저 보여줄 전체 흐름
 
-1. `unsafe_pr.diff`에서 `+++` target과 `@@` hunk를 읽는다.
+1. Day 2 회의록 Export 변경인 `meeting_export_pr.diff`에서 `+++` target과 `@@` hunk를 읽는다.
 2. 삭제·context·추가 라인에 따라 new line number가 어떻게 변하는지 보여준다.
 3. `eval`, 외부 쓰기, broad exception의 deterministic finding을 만든다.
-4. path·line·severity·evidence·suggestion·confidence·rule ID를 검증한다.
+4. path·line·severity·evidence·correction·confidence·rule ID를 검증한다.
 5. Codex에게 `AGENTS.md`, 허용 path, focused test를 포함한 작은 구현 요청을 준다.
 6. Codex가 만든 diff와 실제 test 결과를 분리해 사람이 검토한다.
-7. golden finding과 precision·recall·F1을 비교한다.
+7. 8개 golden case의 precision·recall·F1을 비교한다.
+8. Localhost에서 finding을 유지·수정·제외하고 Draft PR·CI로 연결한다.
 
 ### 수강생 실행 파일
 
-- Notebook: `materials/day3/day3_service_lab.ipynb`
-- 핵심 코드: `src/course_services/review_service.py`, `contracts.py`, `codex_harness.py`
-- 입력: `data/day3_review_cases/unsafe_pr.diff`
-- 정답: `data/day5_eval/golden_review_findings.json`
-- 실행 결과: `output/course-labs/day3/01_review_rubric.json`~`08_day3_report.json`
+- Notebook: `materials/day3/day3_review_intelligence_lab.ipynb`
+- 실행 완료본: `materials/day3/day3_review_intelligence_lab.executed.ipynb`
+- 핵심 코드: `labs/day3/review_copilot/`
+- 입력: `labs/day3/review_copilot/fixtures/meeting_export_pr.diff`
+- 정답: `labs/day3/review_copilot/fixtures/golden_findings.json`
+- 실행 결과: `output/course-labs/day3-v2/student-run/01_review_contract.json`~`08_release_evidence.json`
 - 오프닝 teaser: `assets/demo-videos/day3_service_teaser.gif`
 
 ```bash
-.venv312/bin/python -m pytest -q tests/test_course_services.py -k unified_diff
-.venv312/bin/python -m pytest -q tests/test_course_services.py -k codex_harness
+.venv312/bin/python -m pytest -q tests/test_day3_review_copilot.py
+.venv312/bin/python scripts/run_day3_preflight.py
+.venv312/bin/python -m labs.day3.review_copilot.web --port 8765
 ```
 
 ### 좋은 코드 리뷰의 수업 기준
