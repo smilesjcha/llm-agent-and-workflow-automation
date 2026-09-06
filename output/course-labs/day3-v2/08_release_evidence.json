@@ -1,0 +1,123 @@
+{
+  "finding_count": 3,
+  "changed_path_count": 1,
+  "provider_provenance_visible": true,
+  "human_review_required": true,
+  "external_write": false,
+  "rule_baseline_gate": {
+    "gate_name": "rule_baseline_gate",
+    "evaluation_scope": "deterministic_rule_baseline_only",
+    "case_count": 8,
+    "case_passed": 8,
+    "true_positive": 7,
+    "false_positive": 0,
+    "false_negative": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "expected_failure_cases": 1,
+    "expected_failure_cases_passed": 1,
+    "release_decision": "READY",
+    "results": [
+      {
+        "id": "unsafe-exec",
+        "status": "PASS",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      },
+      {
+        "id": "shell-injection",
+        "status": "PASS",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      },
+      {
+        "id": "external-write",
+        "status": "PASS",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      },
+      {
+        "id": "broad-exception",
+        "status": "PASS",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      },
+      {
+        "id": "path-escape",
+        "status": "PASS",
+        "expected_error": "DIFF_PATH_BLOCKED",
+        "actual_error": "DIFF_PATH_BLOCKED"
+      },
+      {
+        "id": "secret-logging",
+        "status": "PASS",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      },
+      {
+        "id": "timeout-idempotency",
+        "status": "PASS",
+        "true_positive": 2,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      },
+      {
+        "id": "safe-negative",
+        "status": "PASS",
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 0,
+        "actual_error": null
+      }
+    ],
+    "external_write": false
+  },
+  "provider_candidate_gate": {
+    "status": "NOT_REQUIRED",
+    "reason": "FIXTURE_OR_RULE_BASELINE_USED"
+  },
+  "github_dry_run": {
+    "status": "DRY_RUN_READY",
+    "target": {
+      "repository": "smilesjcha/llm-agent-and-workflow-automation",
+      "base": "main",
+      "branch": "codex/day3-review-copilot"
+    },
+    "pull_request": {
+      "title": "Day 3 Review Copilot 실습",
+      "body": "## Goal\n\nReview Copilot 검토 결과와 회귀 테스트 증거를 Draft PR로 전달합니다.\n\n## Scope\n\n- Changed files: labs/day3/review_copilot/fixtures/repository/meeting_export.py\n- Intentionally unchanged: 자동 게시, 자동 comment, 자동 merge, 실제 고객 데이터\n\n## Safety and data\n\n- [x] No secret, token, real customer data, or private meeting data is included.\n- [x] File, tool, and external-write boundaries remain explicit.\n- [x] Human approval is preserved for consequential actions.\n\n## Test evidence\n\n~~~text\npython -m pytest -q tests/test_day3_review_copilot.py\n~~~\n- Result: PASSED · exit_code=0\n- Added/updated normal test: golden safe-negative와 허용 workflow\n- Added/updated failure or boundary test: path escape와 Human Review 차단\n\n## Review request\n\n- Risk to inspect: 입력 문자열의 코드 실행\n- Expected behavior: P0 labs/day3/review_copilot/fixtures/repository/meeting_export.py:7 입력 문자열의 코드 실행; P1 labs/day3/review_copilot/fixtures/repository/meeting_export.py:9 사람 승인 없는 외부 서비스 호출; P2 labs/day3/review_copilot/fixtures/repository/meeting_export.py:10 실패 원인을 지우는 예외 처리\n- Human review: APPROVED · 수강생 · 근거 라인과 최소 교정을 확인했습니다.\n- Known limitation: AI review는 merge 승인이 아니며 실제 대상은 사람이 재확인\n\n## Human merge checklist\n\n- [ ] Diff matches the stated goal.\n- [ ] CI is green.\n- [ ] Review findings were fixed or answered with a reason.\n- [ ] AI review output was treated as advice, not approval.\n- [ ] A human checked the final diff and merge target.",
+      "draft": true
+    },
+    "test_evidence": {
+      "status": "PASSED",
+      "command": "python -m pytest -q tests/test_day3_review_copilot.py",
+      "exit_code": 0
+    },
+    "suggested_commands": [
+      "git switch -c codex/day3-review-copilot",
+      "git add -- labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "git diff --cached",
+      "git commit -m \"feat(day3): add reviewed change\"",
+      "git push -u origin codex/day3-review-copilot",
+      "gh pr create --draft --repo smilesjcha/llm-agent-and-workflow-automation --base main --head codex/day3-review-copilot"
+    ],
+    "idempotency_key": "144e3a5c794bd365db3a8a7e",
+    "human_approval_required": true,
+    "external_write": false,
+    "commands_executed": [],
+    "next_step": "사람이 diff·test·target을 다시 확인한 뒤 명령을 한 줄씩 실행"
+  },
+  "decision": "READY_FOR_MANUAL_GITHUB_STEP"
+}

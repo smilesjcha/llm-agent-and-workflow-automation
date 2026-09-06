@@ -395,17 +395,19 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
 
 ### Day 3 — 코드 리뷰 Agent 8시간
 
-| 시각 | Block | 전달 내용 | 따라하기 실습 | 산출물 |
+| 시각 | 차시 | 전달 내용 | 따라하기 실습 | 산출물 |
 |---|---:|---|---|---|
-| 09:00–10:00 | 17 | 좋은 코드 리뷰, severity, 근거, false positive | 리뷰 rubric 작성 | `review_rubric.md` |
-| 10:00–11:00 | 18 | unified diff, hunk, line mapping | diff parser | parsed hunks |
-| 11:00–12:00 | 19 | repo context와 최소 문맥 선택 | 관련 파일·테스트 문맥 구성 | context pack |
-| 12:00–13:00 |  | 점심 |  |  |
-| 13:00–14:00 | 20 | review schema와 structured output | finding model | `ReviewFinding` |
-| 14:00–15:00 | 21 | Prompt baseline과 few-shot | 의도적 bug repo 리뷰 | baseline result |
-| 15:00–16:00 | 22 | 정적 분석과 LLM 결합 | ruff/pytest 결과를 context에 추가 | hybrid review |
-| 16:00–17:00 | 23 | precision/recall 감각, golden set | 8개 diff case 평가 | eval table |
-| 17:00–18:00 | 24 | prompt/model/parameter 비교 | 오류 분석과 개선 | Day 3 report/tag |
+| 09:00–09:50 | 1차시 | Review Contract, severity, 근거, false positive | Pydantic Finding과 오류 코드 | `01_review_contract.json` |
+| 09:50–10:40 | 2차시 | Unified Diff, hunk, 변경 후 line mapping | 안전한 diff parser | `02_parsed_diff.json` |
+| 10:40–11:30 | 3차시 | 최소 context와 data boundary | allowlist·workspace·byte limit | `03_context_pack.json` |
+| 11:30–13:00 |  | 쉬는 시간·점심시간 | 오전 결과 저장 | 1~3차시 결과 |
+| 13:00–13:50 | 4차시 | LangChain Provider Adapter | fixture·Ollama·OpenAI provenance | `04_candidate_review.json` |
+| 13:50–14:40 | 5차시 | 정적 rule·실제 test·선택 LLM 결합 | line-grounded hybrid review | `05_hybrid_review.json` |
+| 14:40–15:00 |  | 쉬는 시간 | Notebook 저장 | 실행 상태 보존 |
+| 15:00–15:50 | 6차시 | LangGraph Human Review | interrupt·approve/edit/reject·resume | `06_human_review.json` |
+| 15:50–16:40 | 7차시 | Precision·Recall·F1, golden set | 8개 diff case 평가 | `07_evaluation.json` |
+| 16:40–17:30 | 8차시 | Localhost·Codex·GitHub Delivery | 작은 변경·Draft PR·CI·선택 AI Review | `08_release_evidence.json` |
+| 17:30–18:00 |  | 쉬는 시간·Q&A·실습 복구 | Merge 판단과 Exit Check | `run_manifest.json` |
 
 #### 코드 리뷰 finding 필수 필드
 
@@ -415,9 +417,10 @@ Harness Engineering은 모델에게 한 번 질문해 코드를 복사하는 방
   "line": 21,
   "severity": "P1",
   "title": "중복 실행으로 외부 쓰기가 두 번 발생할 수 있음",
-  "body": "재시도 시 동일 요청이 다시 실행됩니다.",
+  "impact": "재시도 시 동일 요청이 다시 실행됩니다.",
   "evidence": "retry loop에서 request_id를 기록하지 않음",
-  "suggestion": "idempotency key 저장 후 성공 상태를 재사용",
+  "correction": "idempotency key 저장 후 성공 상태를 재사용",
+  "rule_id": "idempotency-key-missing",
   "confidence": 0.86
 }
 ```

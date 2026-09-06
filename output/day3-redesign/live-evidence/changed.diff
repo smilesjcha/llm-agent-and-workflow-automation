@@ -1,0 +1,19 @@
+--- a/checkout.py
++++ b/checkout.py
+@@ -0,0 +1,16 @@
++"""학습용 초안: 쿠폰과 배송비 계산에서 경계 입력을 놓친 구현."""
++
++
++def payable(total_won: int, coupon_won: int) -> int:
++    return total_won - coupon_won
++
++
++def calculate_checkout(total_won: int, coupon_won: int) -> dict[str, int]:
++    payment = payable(total_won, coupon_won)
++    shipping = 0 if total_won >= 50_000 else 3_000
++    return {
++        "total_won": total_won,
++        "coupon_applied_won": coupon_won,
++        "shipping_won": shipping,
++        "payable_won": payment + shipping,
++    }

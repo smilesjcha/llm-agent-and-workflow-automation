@@ -1,0 +1,73 @@
+{
+  "changed_paths": [
+    "labs/day3/review_copilot/fixtures/repository/meeting_export.py"
+  ],
+  "added_line_count": 6,
+  "test_candidates": [
+    "labs/day3/review_copilot/fixtures/repository/test_meeting_export.py",
+    "tests/test_meeting_export.py"
+  ],
+  "review_focus": [
+    "correctness",
+    "security",
+    "data_loss",
+    "contract_break"
+  ],
+  "ignored_focus": [
+    "style_only",
+    "unrelated_code",
+    "invented_runtime_result"
+  ],
+  "project_context": {
+    "purpose": "회의 요약 초안을 검토한 뒤 승인된 대상에만 전달",
+    "quality_rules": [
+      "모든 외부 서비스 변경은 dry-run과 Human Review 이후 수행",
+      "실패는 SUCCESS로 숨기지 않고 안정적인 error_code로 반환",
+      "finding은 실제 diff의 추가 라인을 근거로 작성"
+    ],
+    "runtime": "Python 3.12",
+    "service_name": "한국어 회의록 Export Service"
+  },
+  "excluded_data": [
+    "credentials",
+    "environment_values",
+    "unrelated_files"
+  ],
+  "redaction_count": 0,
+  "excluded_paths": [],
+  "repository_context": [
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line_start": 3,
+      "line_end": 9,
+      "content": "3: \n4: def validate_payload(payload: dict) -> None:\n5:     if \"request_id\" not in payload: raise ValueError(\"REQUEST_ID_REQUIRED\")\n6: \n7: def prepare_minutes(action: str, payload: dict) -> dict:\n8:     validate_payload(payload)\n9:     return {\"status\": \"DRAFT\", \"action\": action, \"payload\": payload}"
+    }
+  ],
+  "existing_tests": [
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/test_meeting_export.py",
+      "content": "\"\"\"Normal and boundary examples for the safe synthetic base revision.\"\"\"\n\nimport pytest\n\nfrom .meeting_export import prepare_minutes\n\n\ndef test_prepare_minutes_returns_local_draft() -> None:\n    result = prepare_minutes(\"summarize\", {\"request_id\": \"fixture-001\"})\n    assert result[\"status\"] == \"DRAFT\"\n\n\ndef test_prepare_minutes_requires_request_id() -> None:\n    with pytest.raises(ValueError, match=\"REQUEST_ID_REQUIRED\"):\n        prepare_minutes(\"summarize\", {})\n"
+    }
+  ],
+  "applicable_policies": [
+    {
+      "path": "AGENTS.md",
+      "content": "# Repository Guidance\n\n## Working Agreement\n\n- Keep each change focused on one stated objective.\n- Inspect the relevant files before editing and preserve unrelated user changes.\n- Treat generated code as a draft until its diff and test evidence are reviewed.\n- Do not read, print, commit, or capture secrets, tokens, private meeting data, or real customer data.\n\n## Code Review Rules\n\n### Behavior and safety boundary\n\n- Do not allow file access outside the configured workspace. Safe path: resolve the path first, then verify the resolved path remains under the workspace root.\n- Do not add external writes, publishing, email, payment, deletion, or customer-data access without an explicit human approval boundary.\n- Preserve stable result and error contracts. Do not replace a structured expected failure with a raw traceback or broad silent exception.\n- Keep optional LLM/STT providers behind adapters and preserve a deterministic fixture fallback.\n\n### Tests and evidence\n\n- A behavior change must include a focused unit test. Include a normal case and the most consequential boundary or failure case.\n- Do not weaken an existing policy, assertion, or test merely to make CI pass.\n- Prefer deterministic tests for schema, path, permission, state transition, and error-code behavior.\n- Before marking a change complete, run the narrow test and the full Day 1 suite, then report the exact command and result.\n\n### Clean code\n\n- Give each function one clear responsibility and keep side effects at explicit boundaries.\n- Prefer explicit inputs, return types, and named error codes over hidden globals and magic values.\n- Use small functions and domain names that explain why the code exists.\n- Remove duplication only when the shared abstraction is clearer than the repeated code.\n- Comments should explain policy, tradeoff, or intent—not restate the code.\n\n### Review output\n\n- Report only actionable findings tied to a changed line or missing test.\n- State severity, user impact, reproduction condition, and the smallest safe correction.\n- Separate deterministic CI issues from architectural or product judgment.\n- Codex review, another LLM review, and passing tests are inputs to a human merge decision; none is an automatic approval.\n"
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/AGENTS.md",
+      "content": "# Synthetic Review Target\n\n- This directory contains public synthetic classroom code only.\n- Keep export functions side-effect free until a separate Human Review gate approves a target.\n- Do not add real endpoints, credentials, customer text, automatic publishing, or automatic merge.\n- Every behavior change requires a normal test and a failure or boundary test.\n\n"
+    },
+    {
+      "path": "labs/day3/review_copilot/AGENTS.md",
+      "content": "# Review Copilot Lab Rules\n\n## Scope\n\n- Keep implementation changes inside `labs/day3/review_copilot/`.\n- Focused tests belong in `tests/test_day3_review_copilot.py`.\n- Use only synthetic fixtures from `fixtures/`; never use a real customer repository or private diff.\n\n## Contracts and safety\n\n- Every finding must map to an added line in the parsed diff.\n- Preserve named error codes at workflow and HTTP boundaries.\n- Keep fixture fallback provenance explicit; never label a fixture result as Ollama, OpenAI, or Claude.\n- Resolve paths before checking the workspace boundary.\n- GitHub output is dry-run only. Push, PR creation, comment, merge, and external writes require a separate human action.\n- Do not read or log tokens, `.env` values, private meeting data, or customer code.\n\n## Completion evidence\n\n- Add a normal test and the most consequential boundary test.\n- Run `.venv312/bin/python -m pytest -q tests/test_day3_review_copilot.py`.\n- Run `.venv312/bin/python -m pytest -q tests/test_day1_agent.py`.\n- Review `git diff --check` and the exact changed paths before a human merge decision.\n\n"
+    }
+  ],
+  "limits": {
+    "max_bytes": 20000,
+    "max_files": 6,
+    "context_lines": 4
+  },
+  "context_byte_limit": 20000,
+  "context_bytes": 6109
+}

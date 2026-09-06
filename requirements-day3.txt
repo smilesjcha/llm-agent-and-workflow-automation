@@ -1,0 +1,3 @@
+# Day 3 core, Notebook, LangChain adapter, LangGraph Human Review, and tests.
+# The localhost UI itself uses only the Python standard library.
+-r requirements-day1.txt

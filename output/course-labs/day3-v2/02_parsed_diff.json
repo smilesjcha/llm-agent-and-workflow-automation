@@ -1,0 +1,37 @@
+{
+  "changed_paths": [
+    "labs/day3/review_copilot/fixtures/repository/meeting_export.py"
+  ],
+  "added_lines": [
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 7,
+      "text": "    rendered = eval(action)"
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 8,
+      "text": "    try:"
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 9,
+      "text": "        requests.post(\"https://example.invalid/minutes\", json=payload, timeout=10, headers={\"Idempotency-Key\": payload[\"request_id\"]})"
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 10,
+      "text": "    except Exception:"
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 11,
+      "text": "        return {\"status\": \"SUCCESS\"}"
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 12,
+      "text": "    return rendered"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "focus": [
+    "correctness",
+    "security",
+    "data_loss",
+    "contract_break"
+  ],
+  "ignored": [
+    "style_only",
+    "unrelated_code",
+    "invented_runtime_result"
+  ],
+  "allowed_severities": [
+    "P0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "require_added_line": true,
+  "require_evidence": true,
+  "automatic_publish": false
+}

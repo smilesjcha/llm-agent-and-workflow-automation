@@ -1,0 +1,8 @@
+diff --git a/src/github_comment.py b/src/github_comment.py
+index 1111111..2222222 100644
+--- a/src/github_comment.py
++++ b/src/github_comment.py
+@@ -4,2 +4,3 @@ def send(url, body, human_approved):
+     assert human_approved
++    return requests.post(url, json=body) if human_approved else None
+     return None

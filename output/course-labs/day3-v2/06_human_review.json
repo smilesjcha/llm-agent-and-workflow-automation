@@ -1,0 +1,273 @@
+{
+  "status": "APPROVED",
+  "decision": "approve",
+  "requested_decision": "approve",
+  "reviewer": "수강생",
+  "rationale": "근거 라인과 최소 교정을 확인했습니다.",
+  "findings": [
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 7,
+      "severity": "P0",
+      "title": "입력 문자열의 코드 실행",
+      "impact": "외부 입력이 임의 코드 실행으로 이어질 수 있습니다.",
+      "evidence": "rendered = eval(action)",
+      "correction": "허용 함수 registry와 명시적 argument schema로 교체하세요.",
+      "rule_id": "unsafe-dynamic-execution",
+      "source": "rule",
+      "confidence": 0.99,
+      "automatic_publish": false
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 9,
+      "severity": "P1",
+      "title": "사람 승인 없는 외부 서비스 호출",
+      "impact": "잘못된 대상이나 재시도가 실제 게시·수정으로 이어질 수 있습니다.",
+      "evidence": "requests.post(\"https://example.invalid/minutes\", json=payload, timeout=10, headers={\"Idempotency-Key\": payload[\"request_id\"]})",
+      "correction": "dry-run payload와 사람 승인 조건을 외부 서비스 호출 앞에 두세요.",
+      "rule_id": "external-write-without-approval",
+      "source": "rule",
+      "confidence": 0.99,
+      "automatic_publish": false
+    },
+    {
+      "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+      "line": 10,
+      "severity": "P2",
+      "title": "실패 원인을 지우는 예외 처리",
+      "impact": "인증·입력·네트워크 오류가 같은 성공 결과로 숨겨집니다.",
+      "evidence": "except Exception:",
+      "correction": "복구 가능한 예외만 잡고 안정적인 error_code를 반환하세요.",
+      "rule_id": "broad-exception-boundary",
+      "source": "rule",
+      "confidence": 0.99,
+      "automatic_publish": false
+    }
+  ],
+  "human_reviewed": true,
+  "external_write": false,
+  "error_code": null,
+  "langgraph": {
+    "status": "DRY_RUN_READY",
+    "framework": "LangGraph",
+    "thread_id": "day3-workflow-human-review",
+    "interrupted": true,
+    "interrupt_payload": {
+      "question": "finding을 유지·수정·제외하시겠습니까?",
+      "options": [
+        "approve",
+        "edit",
+        "reject"
+      ],
+      "findings": [
+        {
+          "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+          "line": 7,
+          "severity": "P0",
+          "title": "입력 문자열의 코드 실행",
+          "impact": "외부 입력이 임의 코드 실행으로 이어질 수 있습니다.",
+          "evidence": "rendered = eval(action)",
+          "correction": "허용 함수 registry와 명시적 argument schema로 교체하세요.",
+          "rule_id": "unsafe-dynamic-execution",
+          "source": "rule",
+          "confidence": 0.99,
+          "automatic_publish": false
+        },
+        {
+          "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+          "line": 9,
+          "severity": "P1",
+          "title": "사람 승인 없는 외부 서비스 호출",
+          "impact": "잘못된 대상이나 재시도가 실제 게시·수정으로 이어질 수 있습니다.",
+          "evidence": "requests.post(\"https://example.invalid/minutes\", json=payload, timeout=10, headers={\"Idempotency-Key\": payload[\"request_id\"]})",
+          "correction": "dry-run payload와 사람 승인 조건을 외부 서비스 호출 앞에 두세요.",
+          "rule_id": "external-write-without-approval",
+          "source": "rule",
+          "confidence": 0.99,
+          "automatic_publish": false
+        },
+        {
+          "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+          "line": 10,
+          "severity": "P2",
+          "title": "실패 원인을 지우는 예외 처리",
+          "impact": "인증·입력·네트워크 오류가 같은 성공 결과로 숨겨집니다.",
+          "evidence": "except Exception:",
+          "correction": "복구 가능한 예외만 잡고 안정적인 error_code를 반환하세요.",
+          "rule_id": "broad-exception-boundary",
+          "source": "rule",
+          "confidence": 0.99,
+          "automatic_publish": false
+        }
+      ],
+      "external_write": false
+    },
+    "human_input": {
+      "decision": "approve",
+      "reviewer": "수강생",
+      "rationale": "근거 라인과 최소 교정을 확인했습니다."
+    },
+    "final_state": {
+      "draft": {
+        "status": "DRAFT",
+        "findings": [
+          {
+            "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+            "line": 7,
+            "severity": "P0",
+            "title": "입력 문자열의 코드 실행",
+            "impact": "외부 입력이 임의 코드 실행으로 이어질 수 있습니다.",
+            "evidence": "rendered = eval(action)",
+            "correction": "허용 함수 registry와 명시적 argument schema로 교체하세요.",
+            "rule_id": "unsafe-dynamic-execution",
+            "source": "rule",
+            "confidence": 0.99,
+            "automatic_publish": false
+          },
+          {
+            "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+            "line": 9,
+            "severity": "P1",
+            "title": "사람 승인 없는 외부 서비스 호출",
+            "impact": "잘못된 대상이나 재시도가 실제 게시·수정으로 이어질 수 있습니다.",
+            "evidence": "requests.post(\"https://example.invalid/minutes\", json=payload, timeout=10, headers={\"Idempotency-Key\": payload[\"request_id\"]})",
+            "correction": "dry-run payload와 사람 승인 조건을 외부 서비스 호출 앞에 두세요.",
+            "rule_id": "external-write-without-approval",
+            "source": "rule",
+            "confidence": 0.99,
+            "automatic_publish": false
+          },
+          {
+            "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+            "line": 10,
+            "severity": "P2",
+            "title": "실패 원인을 지우는 예외 처리",
+            "impact": "인증·입력·네트워크 오류가 같은 성공 결과로 숨겨집니다.",
+            "evidence": "except Exception:",
+            "correction": "복구 가능한 예외만 잡고 안정적인 error_code를 반환하세요.",
+            "rule_id": "broad-exception-boundary",
+            "source": "rule",
+            "confidence": 0.99,
+            "automatic_publish": false
+          }
+        ],
+        "provider_requested": "fixture",
+        "provider_used": "fixture",
+        "fallback_reason": null,
+        "error_code": null,
+        "automatic_publish": false
+      },
+      "status": "DRY_RUN_READY",
+      "review": {
+        "status": "APPROVED",
+        "decision": "approve",
+        "requested_decision": "approve",
+        "reviewer": "수강생",
+        "rationale": "근거 라인과 최소 교정을 확인했습니다.",
+        "findings": [
+          {
+            "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+            "line": 7,
+            "severity": "P0",
+            "title": "입력 문자열의 코드 실행",
+            "impact": "외부 입력이 임의 코드 실행으로 이어질 수 있습니다.",
+            "evidence": "rendered = eval(action)",
+            "correction": "허용 함수 registry와 명시적 argument schema로 교체하세요.",
+            "rule_id": "unsafe-dynamic-execution",
+            "source": "rule",
+            "confidence": 0.99,
+            "automatic_publish": false
+          },
+          {
+            "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+            "line": 9,
+            "severity": "P1",
+            "title": "사람 승인 없는 외부 서비스 호출",
+            "impact": "잘못된 대상이나 재시도가 실제 게시·수정으로 이어질 수 있습니다.",
+            "evidence": "requests.post(\"https://example.invalid/minutes\", json=payload, timeout=10, headers={\"Idempotency-Key\": payload[\"request_id\"]})",
+            "correction": "dry-run payload와 사람 승인 조건을 외부 서비스 호출 앞에 두세요.",
+            "rule_id": "external-write-without-approval",
+            "source": "rule",
+            "confidence": 0.99,
+            "automatic_publish": false
+          },
+          {
+            "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+            "line": 10,
+            "severity": "P2",
+            "title": "실패 원인을 지우는 예외 처리",
+            "impact": "인증·입력·네트워크 오류가 같은 성공 결과로 숨겨집니다.",
+            "evidence": "except Exception:",
+            "correction": "복구 가능한 예외만 잡고 안정적인 error_code를 반환하세요.",
+            "rule_id": "broad-exception-boundary",
+            "source": "rule",
+            "confidence": 0.99,
+            "automatic_publish": false
+          }
+        ],
+        "human_reviewed": true,
+        "external_write": false,
+        "error_code": null
+      },
+      "findings": [
+        {
+          "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+          "line": 7,
+          "severity": "P0",
+          "title": "입력 문자열의 코드 실행",
+          "impact": "외부 입력이 임의 코드 실행으로 이어질 수 있습니다.",
+          "evidence": "rendered = eval(action)",
+          "correction": "허용 함수 registry와 명시적 argument schema로 교체하세요.",
+          "rule_id": "unsafe-dynamic-execution",
+          "source": "rule",
+          "confidence": 0.99,
+          "automatic_publish": false
+        },
+        {
+          "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+          "line": 9,
+          "severity": "P1",
+          "title": "사람 승인 없는 외부 서비스 호출",
+          "impact": "잘못된 대상이나 재시도가 실제 게시·수정으로 이어질 수 있습니다.",
+          "evidence": "requests.post(\"https://example.invalid/minutes\", json=payload, timeout=10, headers={\"Idempotency-Key\": payload[\"request_id\"]})",
+          "correction": "dry-run payload와 사람 승인 조건을 외부 서비스 호출 앞에 두세요.",
+          "rule_id": "external-write-without-approval",
+          "source": "rule",
+          "confidence": 0.99,
+          "automatic_publish": false
+        },
+        {
+          "path": "labs/day3/review_copilot/fixtures/repository/meeting_export.py",
+          "line": 10,
+          "severity": "P2",
+          "title": "실패 원인을 지우는 예외 처리",
+          "impact": "인증·입력·네트워크 오류가 같은 성공 결과로 숨겨집니다.",
+          "evidence": "except Exception:",
+          "correction": "복구 가능한 예외만 잡고 안정적인 error_code를 반환하세요.",
+          "rule_id": "broad-exception-boundary",
+          "source": "rule",
+          "confidence": 0.99,
+          "automatic_publish": false
+        }
+      ],
+      "audit": [
+        {
+          "node": "validate",
+          "status": "PASS"
+        },
+        {
+          "node": "review",
+          "status": "APPROVED",
+          "decision": "approve"
+        },
+        {
+          "node": "finalize",
+          "write": "none"
+        }
+      ],
+      "external_write": false
+    },
+    "external_write": false
+  }
+}

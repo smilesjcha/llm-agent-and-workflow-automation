@@ -1,0 +1,80 @@
+{
+  "gate_name": "rule_baseline_gate",
+  "evaluation_scope": "deterministic_rule_baseline_only",
+  "case_count": 8,
+  "case_passed": 8,
+  "true_positive": 7,
+  "false_positive": 0,
+  "false_negative": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "expected_failure_cases": 1,
+  "expected_failure_cases_passed": 1,
+  "release_decision": "READY",
+  "results": [
+    {
+      "id": "unsafe-exec",
+      "status": "PASS",
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    },
+    {
+      "id": "shell-injection",
+      "status": "PASS",
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    },
+    {
+      "id": "external-write",
+      "status": "PASS",
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    },
+    {
+      "id": "broad-exception",
+      "status": "PASS",
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    },
+    {
+      "id": "path-escape",
+      "status": "PASS",
+      "expected_error": "DIFF_PATH_BLOCKED",
+      "actual_error": "DIFF_PATH_BLOCKED"
+    },
+    {
+      "id": "secret-logging",
+      "status": "PASS",
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    },
+    {
+      "id": "timeout-idempotency",
+      "status": "PASS",
+      "true_positive": 2,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    },
+    {
+      "id": "safe-negative",
+      "status": "PASS",
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 0,
+      "actual_error": null
+    }
+  ],
+  "external_write": false
+}

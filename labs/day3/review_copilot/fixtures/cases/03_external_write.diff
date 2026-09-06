@@ -1,0 +1,8 @@
+diff --git a/src/notion_export.py b/src/notion_export.py
+index 1111111..2222222 100644
+--- a/src/notion_export.py
++++ b/src/notion_export.py
+@@ -5,2 +5,3 @@ def publish(url, payload, key):
+     validate(payload)
++    return requests.post(url, json=payload, timeout=10, headers={"Idempotency-Key": key})
+     return None

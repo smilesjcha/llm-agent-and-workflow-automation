@@ -1,0 +1,41 @@
+name: day3-pr-quality
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: day3-pr-quality-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out pull request history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate PR evidence and sensitive paths
+        run: python3 scripts/day3_pr_guard.py --event "$GITHUB_EVENT_PATH"
+
+      - name: Check changed lines for whitespace errors
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if ! git diff --check "$BASE_SHA" "$HEAD_SHA" -- >/dev/null; then
+            echo "WHITESPACE_ERROR: changed lines contain whitespace errors."
+            exit 1
+          fi

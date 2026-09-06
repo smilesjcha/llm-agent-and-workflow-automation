@@ -1,0 +1,21 @@
+flowchart LR
+  U["학생의 리뷰 요청"] --> I["로컬 Git Diff<br/>검토할 변경"]
+  I --> P["Python 입력 처리<br/>Diff Parser · 경로 확인"]
+  P --> C["Context Pack<br/>변경 코드 · 업무 규칙 · 관련 Test"]
+  C --> A["로컬 Codex CLI<br/>codex exec · ChatGPT 로그인"]
+  A <--> M["연결된 OpenAI 모델<br/>제공된 Context로 리뷰 판단"]
+  A --> V["Python 결과 검증<br/>Schema · 변경 라인 · 근거"]
+  V --> H{"LangGraph<br/>Human Review"}
+  H -->|지적 수정| V
+  H -->|거절| X["보류 이유 기록"]
+  H -->|검토 완료| R["Markdown 리뷰<br/>Localhost 화면"]
+  R --> B["학생과 Codex 대화<br/>수정 범위 요청"]
+  B <--> T["대화형 Codex의 도구 실행<br/>코드 탐색 · 수정 · Test"]
+  T --> F["학생의 Diff 확인<br/>재실행 · 회귀 Test"]
+  F --> I
+  R -. "4주차 확장" .-> G["GitHub PR 리뷰<br/>사람 확인 후 게시"]
+  G -. "5주차 확장" .-> D["문서 통합 · 운영 기록<br/>개인 미니 프로젝트"]
+  classDef base fill:#FFFFFF,stroke:#191919,color:#191919;
+  classDef current fill:#0B1F3A,stroke:#0B1F3A,color:#FFFFFF;
+  class U,I,P,C,M,B,T,V,H,X,R,F,G,D base;
+  class A current;

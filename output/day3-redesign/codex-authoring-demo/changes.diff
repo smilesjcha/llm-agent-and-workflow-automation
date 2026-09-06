@@ -1,0 +1,24 @@
+--- a/checkout.py
++++ b/checkout.py
+@@ -1 +1,8 @@
+-"""학습용 초안: 쿠폰과 배송비 계산에서 경계 입력을 놓친 구현."""
++"""쿠폰과 할인 후 상품 금액을 기준으로 결제 예정액을 계산한다."""
++
++
++def _validate_money(value: int) -> None:
++    if isinstance(value, bool) or not isinstance(value, int):
++        raise ValueError("MONEY_INTEGER_REQUIRED")
++    if value < 0:
++        raise ValueError("MONEY_NON_NEGATIVE_REQUIRED")
+@@ -5 +12,3 @@ def payable(total_won: int, coupon_won: int) -> int:
+-    return total_won - coupon_won
++    _validate_money(total_won)
++    _validate_money(coupon_won)
++    return total_won - min(total_won, coupon_won)
+@@ -10 +19,2 @@ def calculate_checkout(total_won: int, coupon_won: int) -> dict[str, int]:
+-    shipping = 0 if total_won >= 50_000 else 3_000
++    coupon_applied = total_won - payment
++    shipping = 0 if payment >= 50_000 else 3_000
+@@ -13 +23 @@ def calculate_checkout(total_won: int, coupon_won: int) -> dict[str, int]:
+-        "coupon_applied_won": coupon_won,
++        "coupon_applied_won": coupon_applied,
