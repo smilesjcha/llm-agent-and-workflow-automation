@@ -1,0 +1,37 @@
+# 학습용 비활성 템플릿입니다. 수강생 개인 저장소에서 검토 후
+# .github/workflows/day4-checkout-tests.yml 로 직접 복사해야 활성화됩니다.
+# 준비: 저장소 루트에 exercise/checkout.py와 exercise/test_checkout.py를 둡니다.
+name: Day4 checkout tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: day4-checkout-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checkout-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-09-12
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5, verified 2026-09-12
+        with:
+          python-version: '3.12'
+      - name: Install test dependency
+        run: python -m pip install pytest==8.3.5
+      - name: Run checkout tests
+        working-directory: exercise
+        run: python -m pytest -q test_checkout.py
+
+# 이 job은 테스트만 실행합니다. 리뷰 게시·자동 승인·merge·LLM 호출은 없습니다.
+# secrets를 추가하거나 pull_request_target으로 바꾸지 마세요.

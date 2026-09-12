@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "title": "AI 제품 개발 경력",
+  "source_note": "사용자가 대화에서 제공한 경력으로 구성한 수업 예시. 원본 이력서 아님. 회사 재직 기간, 학위, 연락처는 제공되지 않아 제외. 수치는 사용자 진술이며 외부 검증 전.",
+  "summary": "금융 머신러닝과 의료 딥러닝, 교육 LLM을 거쳐 이커머스 Agent 제품을 설계하고 운영합니다.",
+  "roles": [
+    {
+      "id": "commerce",
+      "company": "무신사",
+      "role": "Agentic AI Side PM",
+      "domain": "이커머스 Agent",
+      "facts": [
+        {"id": "commerce-products", "text": "쇼핑탐색 및 상품상세정보 Agent AID Chat, Voice Agent, AI 해설, SEO/GEO, 모두의AI 서비스 담당 PM", "rewrite": "쇼핑탐색 및 상품상세정보 Agent AID Chat과 Voice Agent 제품 기획 담당"},
+        {"id": "commerce-scope", "text": "AI 해설, SEO/GEO, 모두의AI 서비스 담당 PM", "rewrite": "AI 해설, SEO/GEO, 모두의AI 서비스 기획 담당"}
+      ]
+    },
+    {
+      "id": "education",
+      "company": "크레버스",
+      "role": "AI Engineer 및 AI PM",
+      "domain": "교육 LLMOps",
+      "facts": [
+        {"id": "education-evaluation", "text": "청담어학원 및 에이프릴어학원 약 7만명 대상 영어 말하기와 글쓰기 평가 시스템 총괄 개발 및 운영", "rewrite": "약 7만명 대상 영어 말하기 및 글쓰기 평가 시스템 총괄 개발과 운영", "needs_verification": true},
+        {"id": "education-latency", "text": "원어민 수작업 평가에 3-5일 걸리던 과정을 10초 내외 평가로 개선", "rewrite": "원어민 수작업 평가의 3-5일 소요 과정을 10초 내외 평가로 개선", "needs_verification": true},
+        {"id": "education-aicc", "text": "학원 상담전 상담중 상담후 AI 생산성 향상을 위한 AICC 서비스 총괄 AI PM", "rewrite": "상담 전 준비부터 상담 중 지원과 상담 후 기록까지 AICC 서비스 총괄 기획"}
+      ]
+    },
+    {
+      "id": "medical",
+      "company": "아이넥스코퍼레이션",
+      "role": "AI Engineer",
+      "domain": "의료 Data 및 CVOps",
+      "facts": [
+        {"id": "medical-polyp", "text": "실시간 영상 기반 대장내시경 용종 탐지 및 진단 서비스 총괄 제작 및 운영", "rewrite": "대장내시경 실시간 영상의 용종 탐지 및 진단 AI 서비스 총괄 개발과 운영"}
+      ]
+    },
+    {
+      "id": "finance",
+      "company": "에이젠글로벌",
+      "role": "ML Team Leader 및 AI Engineer",
+      "domain": "금융 AutoML 및 MLOps",
+      "facts": [
+        {"id": "finance-abacus", "text": "AutoML 솔루션 ABACUS 기반 은행 카드 보험사의 AI 개발 프로젝트 참여", "rewrite": "ABACUS AutoML 솔루션 기반 은행 및 카드사와 보험사 AI 개발 프로젝트 참여"},
+        {"id": "finance-lending", "text": "개인대출 시장의 자체 서비스 운영에 활용할 수 있는 ML 기반 제작", "rewrite": "개인대출 서비스 운영에 활용할 ML 기반 개발"}
+      ]
+    }
+  ],
+  "teaching": [
+    "서울시립대학교 및 아주대학교 AI 부문 겸임교수",
+    "DataAnalysis, ML, MLOps, LLMOps 강의",
+    "KT, Kakao 등 기업 AX 강의와 학교 대상 연구 AX 강의",
+    "재직자 및 취업준비생 대상 AI NATIVE 강의와 멘토링",
+    "문제 출제위원 및 심사위원 참여"
+  ]
+}
