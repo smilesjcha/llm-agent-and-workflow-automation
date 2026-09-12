@@ -11,6 +11,16 @@ from labs.day4.office_lab.documents.resume_lab import DocumentLabError, workspac
 from labs.day4.office_lab.sheets.student_excel import calculate_wbs
 
 
+def _delay_followup(tasks: list[dict]) -> str:
+    """Keep the narrative tied to the same calculated rows as the status table."""
+    delayed = [task["id"] for task in tasks if task["status"] == "지연"]
+    if not delayed:
+        return "현재 지연 업무 없음, 다음 점검일과 남은 일정 확인"
+    visible = ", ".join(delayed[:3])
+    remainder = f" 외 {len(delayed) - 3}건" if len(delayed) > 3 else ""
+    return f"{visible}{remainder} 지연 업무의 원인과 변경 일정 확인"
+
+
 def prepare_brief(workspace: Path | str, *, as_of: str = "2026-09-25", tasks: list[dict] | None = None) -> dict:
     root = Path(workspace).resolve()
     wbs_source = "labs/day4/office_lab/sheets/wbs_tasks.json"
@@ -41,7 +51,7 @@ def prepare_brief(workspace: Path | str, *, as_of: str = "2026-09-25", tasks: li
             {"title": "문서 자동화와 출시 일정", "subtitle": "Excel 및 PPT 제작과 출시 점검", "table": [["업무", "기간", "상태", "완료율"], *wbs_rows[7:]]},
             {"title": "코드 리뷰 확인 사항", "subtitle": "checkout.py 수업용 PR의 재현 가능한 오류", "table": [["등급", "오류", "최소 수정"], *review_rows], "note": "findings.json의 결정적 fixture를 재현한 사례입니다. 이번 보고서에서 새로 모델을 호출하거나 실제 PR에 게시하지 않았습니다."},
             {"title": "산출물 검토 기준", "table": [["산출물", "코드 검사", "사람 확인"], ["리뷰 코멘트", "파일 및 변경 줄 일치", "영향과 수정 제안 타당성"], ["Word 이력서", "새 수치 및 원본 보존", "경력 사실과 표현"], ["Excel WBS", "수식 및 날짜 입력 검증", "일정과 담당 Role"], ["PPT 보고서", "원본 수치와 표 일치", "가독성과 의사결정 맥락"]]},
-            {"title": "다음 작업과 승인 사항", "subtitle": "미완료 업무의 일정 조정과 게시 전 검토", "bullets": ["W04 리뷰 초안과 W05 테스트 작업의 지연 원인 확인", "W06 사람 승인 절차와 중복 게시 방지 점검", "W08 Excel 입력을 수정한 뒤 보고서 재생성", "외부 게시와 배포는 담당자 확인 후 별도 진행"]}
+            {"title": "다음 작업과 승인 사항", "subtitle": "미완료 업무의 일정 조정과 게시 전 검토", "bullets": [_delay_followup(tasks), "W06 사람 승인 절차와 중복 게시 방지 점검", "W08 Excel 입력을 수정한 뒤 보고서 재생성", "외부 게시와 배포는 담당자 확인 후 별도 진행"]}
         ]
     }
 
