@@ -5,12 +5,13 @@ import {execFileSync} from 'node:child_process';
 import {Presentation, PresentationFile} from '@oai/artifact-tool';
 import sharp from 'sharp';
 import {OPENING, LESSONS, PERIODS, SOURCES} from './day4_document_content.mjs';
+import {buildDay4Plan} from './day4_plan.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const SKILL='/Users/sungjae-cha/.codex/plugins/cache/openai-primary-runtime/presentations/26.909.12148/skills/presentations';
 const PYTHON='/Users/sungjae-cha/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3';
-const BUILD=path.join(ROOT,'output/qa/day4-document-automation/build');
-const FINAL=process.env.DAY4_FINAL_PATH??path.join(ROOT,'slides/IPA_LLM_Agent_업무자동화_Day4_2026_PR_DOCUMENT.pptx');
+const BUILD=path.join(ROOT,'output/qa/day4-200/build');
+const FINAL=process.env.DAY4_FINAL_PATH??path.join(ROOT,'output/qa/day4-200/final/Day4_200p_v1.pptx');
 process.env.RUNTIME_NODE_MODULES??=await fs.realpath(path.join(ROOT,'node_modules'));
 const {makeNativeBulletParagraphs,finalizePresentation}=await import(pathToFileURL(path.join(SKILL,'container_tools/artifact_tool_utils.mjs')).href);
 const FONT='NanumGothic',MONO='Menlo';
@@ -81,7 +82,7 @@ async function render(d,p,page){
   footer(sl,page,true);return sl;
  }
  const phase=d.activityLabel??({theory:'이론',demo:'시연',lab:'코드·파일 작업',check:'결과 확인'}[d.phase]??'수업 안내');
- const label=d.type==='break'?d.label:`${p==null?'4주차':`4주차 ${p+1}차시 · ${PERIODS[p].time}`}  /  ${d.reference?'선택 확장':phase}`;
+ const label=d.type==='break'?d.label:`${p==null?'4주차':`4주차 ${p+1}차시 · ${PERIODS[p].time}`}  /  ${d.reference?(d.activityLabel??'선택 확장'):phase}`;
  text(sl,label,64,27,1152,34,{size:23,bold:true,color:C.muted});
  text(sl,d.title,64,82,1152,77,{size:50,bold:true});
  footer(sl,page);
@@ -114,9 +115,10 @@ async function render(d,p,page){
   text(sl,'확인할 내용',64,557,214,46,{size:28,bold:true});
   text(sl,d.check,285,557,931,92,{size:29});
  }else if(d.type==='task'){
+  const stepPitch=d.steps.length>3?77:103;
   d.steps.forEach((step,i)=>{
-   text(sl,String(i+1).padStart(2,'0'),64,191+i*103,105,68,{size:47,bold:true});
-   text(sl,step,189,198+i*103,1027,84,{size:32});
+   text(sl,String(i+1).padStart(2,'0'),64,191+i*stepPitch,105,68,{size:47,bold:true});
+   text(sl,step,189,198+i*stepPitch,1027,74,{size:32});
   });
   line(sl,64,513,1152);
   text(sl,d.file,64,537,1152,49,{size:26,color:C.muted});
@@ -139,38 +141,16 @@ async function render(d,p,page){
  return sl;
 }
 
-function allocate(items,minutes,phase){
- const eligible=items.map((d,i)=>({d,i})).filter(x=>!x.d.reference&&x.d.phase===phase);
- const result=new Map();if(!eligible.length&&minutes)throw Error('MISSING_TIMING_PHASE '+phase);
- eligible.forEach(x=>result.set(x.i,.5));
- let remain=minutes-.5*eligible.length;
- const order=[...eligible].sort((a,b)=>({task:6,prompt:4,code:2,image:2}[b.d.type]??1)-({task:6,prompt:4,code:2,image:2}[a.d.type]??1));
- let i=0;while(remain>0){const ix=order[i++%order.length].i;result.set(ix,result.get(ix)+.5);remain-=.5;}
- if(remain<0)throw Error('TOO_MANY_SLIDES_FOR_TIMING');
- return result;
-}
-const plan=[],ranges=[];
-OPENING.forEach((d,i)=>plan.push({d,p:null,minutes:[.5,.5,1,1,1,.5,.5][i]}));
-LESSONS.forEach((items,p)=>{
- const start=plan.length+1;
- plan.push({d:{type:'section',title:PERIODS[p].title},p,minutes:.5});
- const budgets={theory:PERIODS[p].theory-.5-(p===0?3:0),demo:PERIODS[p].demo-(p===0?2:0),lab:25,check:5};
- const times={};Object.entries(budgets).forEach(([phase,mins])=>{for(const [i,v]of allocate(items,mins,phase))times[i]=v;});
- items.forEach((d,i)=>plan.push({d,p,minutes:times[i]??0}));
- ranges.push([start,plan.length]);
- if(p===2)plan.push({d:{type:'break',title:'쉬는 시간 · 점심시간',label:'오전 수업 종료',time:'11:30–13:00',body:'쉬는 시간 11:30–12:00\n점심시간 12:00–13:00'},p,minutes:0});
- if(p===4)plan.push({d:{type:'break',title:'쉬는 시간',label:'4·5차시 수업 종료',time:'14:40–15:00',body:'파일 저장 · 15시 수업 시작'},p,minutes:0});
-});
-plan.push({d:{type:'break',title:'쉬는 시간 · Q&A',label:'4주차 수업 종료',time:'17:30–18:00',body:'질문 · 실행 오류 복구 · 다음 주 개인 과제'},p:7,minutes:0});
-const total=plan.reduce((a,x)=>a+x.minutes,0);if(total!==400)throw Error('TIMING_NOT_400 '+total);
+const {plan,ranges,total}=buildDay4Plan(OPENING,LESSONS,PERIODS);
+if(plan.length!==200)throw Error('DAY4_EXPECTED_200_SLIDES');
 await fs.mkdir(BUILD,{recursive:true});
 for(let i=0;i<plan.length;i++){
  const {d,p,minutes}=plan[i],page=i+1;
  const sl=await render(d,p,page);
- const sources=p==null?[SOURCES.codex,SOURCES.claude,SOURCES.claudeFiles]:p<3?[SOURCES.github,SOURCES.reviews]:p===3?[SOURCES.networkdays,SOURCES.formatting]:p===4?[SOURCES.sheets,SOURCES.appsScript]:p===6?[SOURCES.claudeFiles,SOURCES.codex]:[SOURCES.codex,SOURCES.claude];
+ const sources=d.sources??(p==null?[SOURCES.codex,SOURCES.claude,SOURCES.claudeFiles]:p<3?[SOURCES.github,SOURCES.reviews]:p===3?[SOURCES.networkdays,SOURCES.formatting]:p===4?[SOURCES.sheets,SOURCES.appsScript]:p===6?[SOURCES.claudeFiles,SOURCES.codex]:[SOURCES.codex,SOURCES.claude]);
  const note=[`[강사용 진행]\n권장 시간: ${minutes}분${minutes===0?' · 선택 확장 또는 쉬는 시간, 기본 학습 시간 미산정':''}`,`구간: ${p==null?'시작 안내 (1차시 50분에 포함)':`${p+1}차시 ${PERIODS[p].time}`}`,`화면 주제: ${d.title}`,d.note??'',d.type==='section'?`차시별 자료: ${PERIODS[p].files}. 첫 실행은 강사가 보여주고, 학생은 Notebook 해당 차시에서 직접 코드를 수정한다.`:'',d.type==='task'?`학생 작업:\n${d.steps.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n파일: ${d.file}\n성공 확인: ${d.check}`:'',d.type==='prompt'?'이 문구는 입력할 요청 예시이며 실제 모델 응답이 아니다. 계정·모델의 실행 가능 여부와 사용량을 먼저 확인한다.':'',d.type==='image'?`그림 출처: ${d.asset}\n실제 파일의 렌더 또는 명시된 브라우저 캡처. 서비스의 실행 여부를 이미지보다 넓게 주장하지 않는다.`:'','학습 방식: 온라인 개인 실행. 짝 활동·발표 의무 없음. 설치 지연은 제공 결과 파일로 설명을 이어가고, 실행 미완료를 완료로 표시하지 않는다.',`[Sources]\n${sources.join('\n')}\n[/Sources]`].filter(Boolean).join('\n\n');
  sl.speakerNotes.textFrame.setText(note);sl.speakerNotes.setVisible(true);
- manifest.push({page,period:p==null?1:p+1,title:d.title,type:d.type,phase:d.phase??'guide',minutes,reference:d.reference??false,asset:d.asset??null,notes:note,code:d.code??null});
+ manifest.push({page,period:p==null?1:p+1,title:d.title,type:d.type,phase:d.phase??'guide',minutes,reference:d.reference??false,expanded:d.expanded??false,activityLabel:d.activityLabel??null,asset:d.asset??null,notes:note,code:d.code??null});
 }
 const candidate=path.join(BUILD,'candidate.pptx');
 await (await PresentationFile.exportPptx(deck)).save(candidate);
@@ -178,7 +158,7 @@ const layout=execFileSync(PYTHON,[path.join(SKILL,'container_tools/inspect_prese
 await fs.writeFile(path.join(BUILD,'all-native-table-validation.json'),layout);
 await fs.mkdir(path.dirname(FINAL),{recursive:true});
 const bounded=tableOwners.slice(0,35);
-const receipt=await finalizePresentation({workspaceDir:ROOT,candidatePath:candidate,finalPath:FINAL,pythonExecutable:PYTHON,integrityValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_package_integrity.py'),layoutValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_layout_geometry.py'),layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit',...bounded.flatMap(n=>['--require-native-table-slide',String(n)])],requiredNativeTableOwnerSlides:bounded,fontPolicy:{basis:'design',families:[FONT,MONO]},verifyArtifactToolImport:true,receiptPath:path.join(BUILD,path.basename(FINAL)+'.validation.json')});
+const receipt=await finalizePresentation({workspaceDir:ROOT,candidatePath:candidate,finalPath:FINAL,explicitTotalSlideCount:200,pythonExecutable:PYTHON,integrityValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_package_integrity.py'),layoutValidatorPath:path.join(SKILL,'container_tools/inspect_presentation_layout_geometry.py'),layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit',...bounded.flatMap(n=>['--require-native-table-slide',String(n)])],requiredNativeTableOwnerSlides:bounded,fontPolicy:{basis:'design',families:[FONT,MONO]},verifyArtifactToolImport:true,receiptPath:path.join(BUILD,path.basename(FINAL)+'.validation.json')});
 await fs.writeFile(path.join(BUILD,'slide_manifest.json'),JSON.stringify(manifest,null,2));
 const guide=['# 4주차 페이지별 강의 진행','',`총 ${plan.length}장 · 기본 학습 400분 · 선택 확장 ${manifest.filter(x=>x.reference).length}장. 시작 안내 5분은 1차시에 포함합니다.`, '', '| 차시 | 시간 | 페이지 | 기본 학습 |','|---|---|---:|---:|',...ranges.map((r,i)=>`| ${i+1}차시 | ${PERIODS[i].time} | ${r[0]}–${r[1]} | 50분${i===0?' (시작 안내 포함)':''} |`),'',...manifest.map(x=>`## ${x.page}. ${x.title}\n\n${x.notes}${x.code?'\n\n```text\n'+x.code+'\n```':''}`)].join('\n');
 await fs.writeFile(path.join(ROOT,'materials/day4/페이지별_강의_진행.md'),guide);

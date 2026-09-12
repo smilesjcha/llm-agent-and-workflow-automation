@@ -374,6 +374,21 @@ Claude Code Desktop의 parallel session, Git isolation, integrated terminal, vis
 
 ## 참고 출처
 
+### 2026-09-13 · 4주차 200장 개정 기준
+
+이 개정은 위의 과거 240장 공통 기준보다 4주차에 우선한다.
+
+- PPT·PDF 각각 200페이지, 발표자 노트 200개. 8차시 각 50분, 기본 학습 총 400분.
+- 27개 선택 참고 페이지는 기본 시간과 분리. 36개 프로젝트는 선택 예시이며 의무 과제·완성 서비스 목록 아님.
+- 추가 장표는 파일 위치 → 입력 수정 → 실행 → 정상·오류 확인 → 복구 중 빠진 단계를 보충. 같은 요약·제목 반복 금지.
+- 준비된 코드·응용·새 구현을 구분. 계획 대화를 실제 서비스 실행 증거로 제시하지 않음.
+- 코드 조각은 선행 Notebook 변수·커널·실행 위치 표시. 기존 결과 덮어쓰기 대신 새 버전 파일명 안내.
+- 정상 수치뿐 아니라 보고 문장도 입력 변경에 따라 갱신. W04 완료 후 마지막 장에 W04 지연을 남기지 않음.
+- 제목 명사형, 본문 자연스러운 한국어. 4단계 작업도 글씨 축소 없이 배치하고 전 페이지 실제 렌더 확인.
+- 이론·시연·코드·파일 작업·Ideation 구분. Google 계정 확장은 로컬 필수 실행과 구분하며 원격 미검증 명시.
+- NanumGothic·Menlo 기반 한글 PDF 렌더 및 폰트 포함 확인. PDF는 같은 PPT의 직접 변환본.
+- 날짜·반영 commit·테스트·미검증 범위를 최신 검증 문서로 남기고 과거 검증 기록은 당시 버전의 기록으로 보존.
+
 - OpenAI Codex use cases: https://learn.chatgpt.com/use-cases
 - OpenAI Codex documentation: https://developers.openai.com/codex/
 - Claude Code Desktop: https://code.claude.com/docs/en/desktop

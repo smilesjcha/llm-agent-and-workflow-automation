@@ -1,4 +1,8 @@
 // Student-facing content. Instructor timing and prompts remain in notes.
+import {insertLessonAdditions} from './day4_plan.mjs';
+import {PR_WALKTHROUGH} from './day4_pr_walkthrough.mjs';
+import {OFFICE_WALKTHROUGH} from './day4_office_walkthrough.mjs';
+import {PROJECT_ENRICHMENT} from './day4_project_catalog.mjs';
 const table=(title,headers,rows,note,phase='theory')=>({type:'table',title,headers,rows,note,phase});
 const points=(title,points,note,phase='theory')=>({type:'points',title,points,note,phase});
 const code=(title,code,explain,note,phase='demo')=>({type:'code',title,code,explain,note,phase});
@@ -174,16 +178,48 @@ export const LESSONS=[
 ];
 
 // Slide-specific crops enlarge real evidence, without replacing or editing its source.
+insertLessonAdditions(LESSONS, [...PR_WALKTHROUGH, ...OFFICE_WALKTHROUGH, ...PROJECT_ENRICHMENT]);
+for(const title of ['내 채점표의 Google Sheets 사본','조건부서식 메뉴와 시험 입력']) {
+ const slide=LESSONS[4].find(item=>item.title===title);
+ slide.reference=true;
+ slide.activityLabel='선택 파일 작업 · Google Sheets';
+}
+OPENING[4].explain=['materials/day4/day4_pr_document_automation.ipynb','추가 코드는 해당 차시에 새 코드 셀로 실행'];
+LESSONS[0].find(item=>item.title==='실습 파일의 역할').options={widths:[370,390,392]};
+LESSONS[1].find(item=>item.title==='pytest 메시지의 구분').options={widths:[370,390,392]};
+const referenceTestIndex=LESSONS[2].findIndex(item=>item.title==='참고 구현의 테스트 결과');
+LESSONS[2][referenceTestIndex]=code('참고 구현의 테스트 결과',
+ 'reference_check = check_exercise(ROOT, RUN / "pr/reference-only")\nprint(reference_check["output"])\n# 실제 참고 구현 검증: 5 passed',
+ ['내 작업 폴더가 아닌 별도 참고 구현의 결과','Notebook의 참고 구현 준비 셀 실행 후 비교'],
+ '화면 캡처에서 작게 보이던 실제 테스트 결과를 편집 가능한 텍스트로 표시한다. 결과는 실제 실행 Notebook의 별도 참고 구현 5 passed에 근거한다. 학생 자신의 checkout.py가 통과한 것과 구분한다. 참고 구현 준비가 선행되어야 이 경로에 테스트 파일이 있다.','demo');
+const dependencyTask=LESSONS[3].find(item=>item.title==='선행 일정의 오류');
+dependencyTask.steps=['Python 복사본에서 W04 시작일을 2026-09-18로 변경','validate_wbs(broken_tasks)로 선행 일정 충돌 확인','Excel 복사본 D12도 09/18로 바꾸고 J12 확인','두 입력을 각각 복구하고 다시 확인'];
+dependencyTask.check='Excel 수정과 Python 변수 수정은 자동 연동되지 않음';
+dependencyTask.note='broken_tasks=deepcopy(tasks)로 시작한 뒤 W04의 start를 바꾼다. 제공 기본 목록에서 W04는 [3] 위치다. 예: broken_tasks[3]["start"]="2026-09-18". validate_wbs로 PREDECESSOR_DATE_CONFLICT 확인. Excel 복사본에서는 D12를 같은 날짜로 바꿔 J12를 확인한다. 두 입력은 별개이므로 각각 원래 날짜 2026-09-21로 복구한다.';
+LESSONS[7].find(item=>item.title==='입력 파일의 세 가지 상태').options={widths:[380,420,352]};
+const requestIndex=LESSONS[7].findIndex(item=>item.title==='ChatGPT·Claude의 제작 요청');
+LESSONS[7][requestIndex]=table('계획과 구현 결과의 구분',['대화 응답','아직 확인할 것','다음 요청'],[
+ ['구현 계획만 제시','실제 코드 변경 여부','계획한 함수의 코드 작성'],
+ ['코드 블록 제시','저장 위치·호출 방법','파일 저장과 실행 명령'],
+ ['테스트 통과 주장','실제 명령과 출력','정상·오류 결과 제시'],
+ ['CSV 생성 완료','파일 내용·열 구조','직접 열어 입력과 대조'],
+],'바로 앞의 구체적인 제작 요청 이후 어떤 응답이 왔는지 구분한다. 계획 설명이나 코드 블록만으로 PC에 파일이 생긴 것은 아니다. 실행 권한이 없는 대화 환경에서는 학생이 파일을 저장하고 명령을 실행한다. 이미 실행된 기능을 다시 개발시키지 않고 부족한 다음 단계만 요청한다.','demo');
+const projectOverview=LESSONS[7].find(slide=>slide.title==='개인 프로젝트 선택');
+projectOverview.title='제공 코드의 프로젝트 출발점';
+projectOverview.note='이 다섯 가지는 제공 코드로 시작하기 쉬운 예시다. 선택은 제한되지 않는다. 뒤의 9분야·36개 제안 또는 자신의 반복 업무를 선택할 수 있다. 기본 코드, 응용, 새 구현 범위를 구분한다. 3시간에는 입력 한 종류, 결과 한 종류, 오류 두 가지 정도로 범위를 좁힌다.';
 OPENING[2].headers[0]='수업 시간\n(쉬는 시간)';
 OPENING[2].options={headerH:84,widths:[320,240,592]};
 const evidenceLayout={
- 'PR 리뷰 작업대':{crop:{left:52,top:225,width:1143,height:430},caption:'합성 PR의 변경 코드 확대 · 로컬 화면 · GitHub 게시 없음'},
+ 'PR 리뷰 작업대':{crop:{left:64,top:462,width:715,height:175},caption:'합성 PR의 함수 변경 확대 · 로컬 화면 · GitHub 게시 없음'},
  '실제 Codex 리뷰 응답':{crop:{left:78,top:252,width:1095,height:390},caption:'실제 CLI 응답 일부 확대 · Desktop 대화 UI 아님'},
  '참고 구현의 테스트 결과':{crop:{left:84,top:629,width:635,height:59},caption:'실행 Notebook의 출력 확대 · 별도 참고 구현 5 passed'},
  '입력 열과 계산 열':{asset:'outputs/day4-document-automation/wbs_inputs_zoom.png',caption:'입력 A:F 확대 · 전체 파일의 계산 H:K · 간트 L:AM'},
  '총점과 보류 상태':{asset:'outputs/day4-document-automation/exam_status_zoom.png',headerAsset:'outputs/day4-document-automation/exam_status_header.png',caption:'합성 학생 24–28번 · 총점·등수·미응답·입력 오류 비교'},
  'Word 이력서 개선 전':{crop:{left:110,top:105,width:1190,height:450},caption:'개선 전 상단 확대 · 같은 경력 사실의 긴 문장·중복 표현'},
  'Word 이력서 개선 후':{crop:{left:110,top:105,width:1190,height:430},caption:'개선 후 상단 확대 · 전체 내용은 편집 가능한 DOCX 제공'},
+ 'Notebook의 결과 파일':{crop:{left:185,top:246,width:600,height:330},caption:'생성 파일 목록 일부 확대 · 전체 결과는 index.html에서 확인'},
+ '일정 데이터와 간트 차트':{crop:{left:0,top:80,width:1275,height:460},caption:'9/14~9/28 구간 확대 · 첫 8개 업무 · 전체 일정은 XLSX'},
+ '40문항 자동 채점':{crop:{left:0,top:394,width:1316,height:360},caption:'합성 응답 일부 확대 · 정답행과 1~8번 답안 · 실제 성적 미포함'},
 };
 for(const lesson of LESSONS)for(const slide of lesson)if(evidenceLayout[slide.title])Object.assign(slide,evidenceLayout[slide.title]);
 LESSONS[7].find(slide=>slide.title==='개인 과제의 범위').activityLabel='Ideation · 작업 정의';
