@@ -1,0 +1,8 @@
+{
+  "name": "day4-project-brief-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"build": "node student_ppt.mjs"},
+  "dependencies": {"pptxgenjs": "^4.0.1"}
+}

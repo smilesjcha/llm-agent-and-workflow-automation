@@ -1,0 +1,19 @@
+{
+  "source": "synthetic_fixture",
+  "repo": "training-example/checkout-demo",
+  "number": 42,
+  "title": "쿠폰 할인 기능 추가",
+  "state": "open",
+  "url": "https://github.com/training-example/checkout-demo/pull/42",
+  "base_repo": "training-example/checkout-demo",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "2222222222222222222222222222222222222222",
+  "files": [
+    {
+      "path": "checkout.py",
+      "status": "modified",
+      "patch": "@@ -1,6 +1,6 @@\n-\"\"\"PR 이전 코드: 쿠폰 없음.\"\"\"\n+\"\"\"수강생이 직접 수정하는 합성 쇼핑몰 결제 코드. 고객 데이터 없음.\"\"\"\n \n \n-def checkout_total(price: int, quantity: int) -> int:\n-    \"\"\"상품 가격 × 수량.\"\"\"\n-    return price * quantity\n+def checkout_total(price: int, quantity: int, coupon: int = 0) -> int:\n+    \"\"\"상품 가격 × 수량 - 쿠폰. 잘못된 입력과 초과 쿠폰을 확인하세요.\"\"\"\n+    return price * quantity - coupon"
+    }
+  ],
+  "existing_reviews": []
+}

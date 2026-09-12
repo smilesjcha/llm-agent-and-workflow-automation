@@ -1,0 +1,22 @@
+[
+  {
+    "severity": "P1",
+    "path": "checkout.py",
+    "line": 6,
+    "title": "초과 쿠폰의 음수 결제액",
+    "impact": "1,000원 상품에 5,000원 쿠폰을 적용하면 결제액이 -4,000원입니다.",
+    "reproduction": "checkout_total(1000, 1, 5000) == -4000",
+    "suggestion": "입력 검사 후 반환값을 max(0, ...)으로 제한합니다.",
+    "test": "test_coupon_cannot_make_total_negative"
+  },
+  {
+    "severity": "P2",
+    "path": "checkout.py",
+    "line": 6,
+    "title": "잘못된 수량과 음수 입력",
+    "impact": "수량 0, 음수 가격 또는 음수 쿠폰을 정상 주문처럼 계산합니다.",
+    "reproduction": "checkout_total(1000, 0, 0) == 0",
+    "suggestion": "price < 0, quantity < 1, coupon < 0이면 ValueError를 발생시킵니다.",
+    "test": "test_invalid_input_is_rejected"
+  }
+]
