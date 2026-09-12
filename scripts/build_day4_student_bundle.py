@@ -25,6 +25,8 @@ REQUIRED_FILES = (
     "materials/day4/day4_pr_document_automation.ipynb",
     "materials/day4/day4_pr_document_automation.executed.ipynb",
     "materials/day4/2026_Day4_수강생_실습가이드.md",
+    "materials/day4/실습_단계별_길잡이.md",
+    "materials/day5/업무자동화_프로젝트_선택가이드.md",
     "materials/day4/pr_lab_contract.md",
     "materials/day4/excel_lab_contract.md",
     "materials/day4/document_lab_contract.md",
@@ -120,6 +122,8 @@ npm install --prefix labs/day4/office_lab/presentations
 ## 자료
 
 - [수강생 실습 가이드](materials/day4/2026_Day4_수강생_실습가이드.md)
+- [파일·셀·오류 복구 단계 안내](materials/day4/실습_단계별_길잡이.md)
+- [프로젝트 36개 선택 예시](materials/day5/업무자동화_프로젝트_선택가이드.md)
 - [실습 Notebook](materials/day4/day4_pr_document_automation.ipynb)
 - [실행 결과 비교용 Notebook](materials/day4/day4_pr_document_automation.executed.ipynb)
 - [PR 리뷰와 CI](materials/day4/pr_lab_contract.md)
