@@ -1,0 +1,15 @@
+{
+  "wbs": {
+    "before": "지연",
+    "after": "완료"
+  },
+  "exam": {
+    "scoreBefore": 20,
+    "scoreAfter": 19,
+    "eligibleBefore": 26,
+    "eligibleAfterRepair": 27,
+    "missingKeyResult": "채점 보류"
+  },
+  "engine": "artifact-tool 2.x",
+  "nativeEngine": "pending LibreOffice verification"
+}

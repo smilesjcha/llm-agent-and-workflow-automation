@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-09-12",
+  "engine": "LibreOffice native XLSX recalculation",
+  "reference_engine": "independent Python calculation",
+  "wbs_tasks_checked": 14,
+  "exam_students_checked": 28,
+  "question_rates_checked": 40,
+  "formula_errors": 0,
+  "features": {
+    "WBS_Gantt.xlsx": {"WBS": {"conditional_format_ranges": 3, "freeze_panes": "D9"}},
+    "Exam_Grading.xlsx": {
+      "채점": {"conditional_format_ranges": 4, "freeze_panes": "D10"},
+      "채점내역": {"conditional_format_ranges": 1, "freeze_panes": "D8"}
+    }
+  },
+  "native_input_changes": {
+    "W04_progress_100_percent": {"status": "완료", "late_tasks": 1},
+    "S026_invalid_answer_repaired": {"eligible_count": 27, "score": 24}
+  },
+  "artifact_input_checks": ["answer_key_change", "invalid_response_repair", "missing_key", "text_key", "text_answer"],
+  "unit_test_command": ".venv312/bin/python -m pytest -q tests/test_day4_excel_lab.py tests/test_day1_agent.py tests/test_langchain_langgraph_lab.py tests/test_meeting_agent_workflow.py tests/test_openai_provider.py tests/test_ollama_tool_agent.py",
+  "unit_test_result": "56 passed in 0.64s",
+  "limitations": ["Microsoft Excel UI was not used for these checks", "Google Sheets import not tested", "Public-holiday calendar not included", "Public learner script uses openpyxl for input edits, not formula calculation"]
+}

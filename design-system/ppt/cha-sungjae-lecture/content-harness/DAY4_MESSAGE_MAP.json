@@ -1,0 +1,1498 @@
+{
+  "slideCount": 145,
+  "ranges": [
+    [
+      8,
+      23
+    ],
+    [
+      24,
+      42
+    ],
+    [
+      43,
+      59
+    ],
+    [
+      61,
+      77
+    ],
+    [
+      78,
+      94
+    ],
+    [
+      96,
+      111
+    ],
+    [
+      112,
+      127
+    ],
+    [
+      128,
+      144
+    ]
+  ],
+  "teachingMinutes": 400,
+  "breakAndQAMinutes": 80,
+  "lunchMinutes": 60,
+  "fonts": {
+    "bodyPoint": 22.5,
+    "tablePoint": 19.5,
+    "codePoint": 18,
+    "titlePoint": 37.5
+  },
+  "slides": [
+    {
+      "page": 1,
+      "period": 1,
+      "title": "PR 리뷰 · 문서 자동화",
+      "type": "cover",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 2,
+      "period": 1,
+      "title": "4주차 학습 경로",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 3,
+      "period": 1,
+      "title": "하루 시간표",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 4,
+      "period": 1,
+      "title": "실습 환경",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 5,
+      "period": 1,
+      "title": "Notebook 시작",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 1,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 6,
+      "period": 1,
+      "title": "도구별 작업 공간",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 7,
+      "period": 1,
+      "title": "입력에서 결과 파일까지",
+      "type": "architecture",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 8,
+      "period": 1,
+      "title": "PR 대상과 변경 코드",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 9,
+      "period": 1,
+      "title": "리뷰 결과의 목적지",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 10,
+      "period": 1,
+      "title": "PR 구성",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 11,
+      "period": 1,
+      "title": "AI와 코드의 Role",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 12,
+      "period": 1,
+      "title": "Diff 읽기",
+      "type": "code",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 13,
+      "period": 1,
+      "title": "입력 검증의 순서",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 14,
+      "period": 1,
+      "title": "PR 리뷰 작업대",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 3,
+      "reference": false,
+      "asset": "assets/components/day4/pr-review-workbench.png"
+    },
+    {
+      "page": 15,
+      "period": 1,
+      "title": "합성 PR 로딩",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 3,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 16,
+      "period": 1,
+      "title": "대상 정보 확인",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 17,
+      "period": 1,
+      "title": "잘못된 대상의 차단",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 18,
+      "period": 1,
+      "title": "다른 저장소의 차단",
+      "type": "code",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 19,
+      "period": 1,
+      "title": "로컬 작업 폴더 생성",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 20,
+      "period": 1,
+      "title": "입력과 실행의 구분",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 21,
+      "period": 1,
+      "title": "1차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 22,
+      "period": 1,
+      "title": "API 응답의 누락",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 23,
+      "period": 1,
+      "title": "Context의 우선순위",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 24,
+      "period": 2,
+      "title": "리뷰 초안과 코드 수정",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 25,
+      "period": 2,
+      "title": "리뷰 의견의 구성",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 26,
+      "period": 2,
+      "title": "그럴듯한 의견과 유용한 의견",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 27,
+      "period": 2,
+      "title": "추론 결과의 확인",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 28,
+      "period": 2,
+      "title": "리뷰 요청의 Context",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 29,
+      "period": 2,
+      "title": "Codex 리뷰 요청",
+      "type": "prompt",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 30,
+      "period": 2,
+      "title": "실제 Codex 리뷰 응답",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": "assets/components/day4/codex-live-review.png"
+    },
+    {
+      "page": 31,
+      "period": 2,
+      "title": "모델 의견과 코드 근거",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 32,
+      "period": 2,
+      "title": "초과 쿠폰의 재현",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 33,
+      "period": 2,
+      "title": "결제 입력 규칙",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 34,
+      "period": 2,
+      "title": "실패 테스트 읽기",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 35,
+      "period": 2,
+      "title": "결제 코드 수정",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 36,
+      "period": 2,
+      "title": "최소 수정 예시",
+      "type": "code",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 37,
+      "period": 2,
+      "title": "수정 Diff의 재검토",
+      "type": "prompt",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 38,
+      "period": 2,
+      "title": "승인의 범위",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 39,
+      "period": 2,
+      "title": "게시 전 미리보기",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 40,
+      "period": 2,
+      "title": "2차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 41,
+      "period": 2,
+      "title": "리뷰 품질 평가",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 42,
+      "period": 2,
+      "title": "금액 처리의 확장",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 43,
+      "period": 3,
+      "title": "테스트와 GitHub 연동",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 44,
+      "period": 3,
+      "title": "자동 검사와 AI 리뷰",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 45,
+      "period": 3,
+      "title": "GitHub 연동 구조",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 46,
+      "period": 3,
+      "title": "재실행의 두 가지 위험",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 47,
+      "period": 3,
+      "title": "통과 테스트의 확인",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 3,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 48,
+      "period": 3,
+      "title": "참고 구현의 테스트 결과",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": "assets/components/day4/notebook-tests.png"
+    },
+    {
+      "page": 49,
+      "period": 3,
+      "title": "Actions의 최소 구성",
+      "type": "code",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 50,
+      "period": 3,
+      "title": "권한의 최소 범위",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 51,
+      "period": 3,
+      "title": "테스트 한 건 추가",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 52,
+      "period": 3,
+      "title": "CI 파일 구성",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 53,
+      "period": 3,
+      "title": "오래된 코드의 차단",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 54,
+      "period": 3,
+      "title": "중복 리뷰의 차단",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 55,
+      "period": 3,
+      "title": "GitHub 연결 요청",
+      "type": "prompt",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 56,
+      "period": 3,
+      "title": "개인 PR의 확인 위치",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 57,
+      "period": 3,
+      "title": "3차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 58,
+      "period": 3,
+      "title": "운영 확장 · 네트워크 오류",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 59,
+      "period": 3,
+      "title": "CI의 공급망 위험",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 60,
+      "period": 3,
+      "title": "쉬는 시간 · 점심시간",
+      "type": "break",
+      "phase": "guide",
+      "minutes": 0,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 61,
+      "period": 4,
+      "title": "Excel WBS와 간트 차트",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 62,
+      "period": 4,
+      "title": "일정 데이터와 간트 차트",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 3,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/wbs_gantt.png"
+    },
+    {
+      "page": 63,
+      "period": 4,
+      "title": "WBS의 최소 단위",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 64,
+      "period": 4,
+      "title": "AI 초안과 계산의 분리",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 65,
+      "period": 4,
+      "title": "업무일 계산",
+      "type": "code",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 66,
+      "period": 4,
+      "title": "셀 참조의 방향",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 67,
+      "period": 4,
+      "title": "간트 표시 조건",
+      "type": "code",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 68,
+      "period": 4,
+      "title": "입력 열과 계산 열",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/wbs_inputs_zoom.png"
+    },
+    {
+      "page": 69,
+      "period": 4,
+      "title": "WBS 데이터 로딩",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 70,
+      "period": 4,
+      "title": "진척률 변경",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 71,
+      "period": 4,
+      "title": "일정 변경과 차트 확인",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 72,
+      "period": 4,
+      "title": "선행 일정의 오류",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 73,
+      "period": 4,
+      "title": "Codex의 WBS 확장",
+      "type": "prompt",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 74,
+      "period": 4,
+      "title": "수식 결과의 검증",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 75,
+      "period": 4,
+      "title": "4차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 76,
+      "period": 4,
+      "title": "WBS의 확장 기준",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 77,
+      "period": 4,
+      "title": "템플릿과 생성 코드",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 78,
+      "period": 5,
+      "title": "자동 채점과 문항 분석",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 79,
+      "period": 5,
+      "title": "40문항 자동 채점",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/exam_inputs.png"
+    },
+    {
+      "page": 80,
+      "period": 5,
+      "title": "채점 정책",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 81,
+      "period": 5,
+      "title": "채점 시트의 위치",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 82,
+      "period": 5,
+      "title": "정답 색의 조건",
+      "type": "code",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 83,
+      "period": 5,
+      "title": "동점 순위와 정답률",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 84,
+      "period": 5,
+      "title": "총점과 보류 상태",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/exam_status_zoom.png"
+    },
+    {
+      "page": 85,
+      "period": 5,
+      "title": "Python 기준값",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 86,
+      "period": 5,
+      "title": "정답 변경의 영향",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 87,
+      "period": 5,
+      "title": "입력 오류의 복구",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 88,
+      "period": 5,
+      "title": "예외 입력 테스트",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 89,
+      "period": 5,
+      "title": "문항 분석",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/exam_question_analysis.png"
+    },
+    {
+      "page": 90,
+      "period": 5,
+      "title": "Google Sheets 적용",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 91,
+      "period": 5,
+      "title": "채점 규칙 개선 요청",
+      "type": "prompt",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 92,
+      "period": 5,
+      "title": "5차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 93,
+      "period": 5,
+      "title": "맞춤 수식의 공식 안내",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 0,
+      "reference": true,
+      "asset": "assets/components/day4/google-sheets-custom-formula-reference.png"
+    },
+    {
+      "page": 94,
+      "period": 5,
+      "title": "Apps Script 확장",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 95,
+      "period": 5,
+      "title": "쉬는 시간",
+      "type": "break",
+      "phase": "guide",
+      "minutes": 0,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 96,
+      "period": 6,
+      "title": "Word 이력서와 사실 검증",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 97,
+      "period": 6,
+      "title": "Word 이력서 개선 전",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/render/before-final/page-1.png"
+    },
+    {
+      "page": 98,
+      "period": 6,
+      "title": "경력 문장의 구성",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 3,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 99,
+      "period": 6,
+      "title": "개선과 사실 변경",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 3,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 100,
+      "period": 6,
+      "title": "Fact map",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 3,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 101,
+      "period": 6,
+      "title": "이력서 개선 요청",
+      "type": "prompt",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 102,
+      "period": 6,
+      "title": "Word 이력서 개선 후",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/render/after-final/page-1.png"
+    },
+    {
+      "page": 103,
+      "period": 6,
+      "title": "Word 생성 코드",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 104,
+      "period": 6,
+      "title": "경력 문장 한 개 개선",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 105,
+      "period": 6,
+      "title": "의도한 과장 검사",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 106,
+      "period": 6,
+      "title": "Word 스타일 수정",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 107,
+      "period": 6,
+      "title": "구조와 서식",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 108,
+      "period": 6,
+      "title": "수정 후 비교 요청",
+      "type": "prompt",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 109,
+      "period": 6,
+      "title": "6차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 110,
+      "period": 6,
+      "title": "문서 입력의 위험",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 111,
+      "period": 6,
+      "title": "검사의 한계",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 112,
+      "period": 7,
+      "title": "데이터 기반 PPT 제작",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 113,
+      "period": 7,
+      "title": "보고서의 입력",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 114,
+      "period": 7,
+      "title": "7장 보고서의 흐름",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 115,
+      "period": 7,
+      "title": "좋은 생성 요청의 조건",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 116,
+      "period": 7,
+      "title": "자동화 방식의 차이",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 117,
+      "period": 7,
+      "title": "프로젝트 데이터 준비",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 3,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 118,
+      "period": 7,
+      "title": "학생용 PPT 생성",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 119,
+      "period": 7,
+      "title": "프로젝트 보고서 예시",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 2.5,
+      "reference": false,
+      "asset": "outputs/day4-document-automation/render/ppt-final/slide-2.png"
+    },
+    {
+      "page": 120,
+      "period": 7,
+      "title": "보고서 재생성",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 121,
+      "period": 7,
+      "title": "편집 가능한 표 확인",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 122,
+      "period": 7,
+      "title": "Codex의 레이아웃 수정",
+      "type": "prompt",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 123,
+      "period": 7,
+      "title": "PDF와 화면 검수",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 6,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 124,
+      "period": 7,
+      "title": "숫자·레이아웃 검증",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 2,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 125,
+      "period": 7,
+      "title": "7차시 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 126,
+      "period": 7,
+      "title": "반복 보고의 구조",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 127,
+      "period": 7,
+      "title": "배포 전 확인",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 128,
+      "period": 8,
+      "title": "업무 도구 통합과 개인 프로젝트",
+      "type": "section",
+      "phase": "guide",
+      "minutes": 0.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 129,
+      "period": 8,
+      "title": "업무 자동화의 공통 구조",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 130,
+      "period": 8,
+      "title": "서비스와 일회성 파일",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 131,
+      "period": 8,
+      "title": "Agent가 필요한 지점",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 132,
+      "period": 8,
+      "title": "완성 패키지",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 133,
+      "period": 8,
+      "title": "필수 검증 실행",
+      "type": "code",
+      "phase": "demo",
+      "minutes": 3.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 134,
+      "period": 8,
+      "title": "Notebook의 결과 파일",
+      "type": "image",
+      "phase": "demo",
+      "minutes": 3,
+      "reference": false,
+      "asset": "assets/components/day4/notebook-results.png"
+    },
+    {
+      "page": 135,
+      "period": 8,
+      "title": "다음 주 3시간 제작",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 136,
+      "period": 8,
+      "title": "개인 프로젝트 선택",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 137,
+      "period": 8,
+      "title": "개인 과제의 범위",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 8.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 138,
+      "period": 8,
+      "title": "ChatGPT·Claude의 제작 요청",
+      "type": "prompt",
+      "phase": "demo",
+      "minutes": 3.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 139,
+      "period": 8,
+      "title": "개선 기능의 첫 구현",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 8.5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 140,
+      "period": 8,
+      "title": "실행 안내의 검증",
+      "type": "task",
+      "phase": "lab",
+      "minutes": 8,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 141,
+      "period": 8,
+      "title": "개선 기록",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 1,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 142,
+      "period": 8,
+      "title": "하루의 최종 확인",
+      "type": "table",
+      "phase": "check",
+      "minutes": 5,
+      "reference": false,
+      "asset": null
+    },
+    {
+      "page": 143,
+      "period": 8,
+      "title": "작은 도구의 운영",
+      "type": "table",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 144,
+      "period": 8,
+      "title": "추가 학습 경로",
+      "type": "points",
+      "phase": "theory",
+      "minutes": 0,
+      "reference": true,
+      "asset": null
+    },
+    {
+      "page": 145,
+      "period": 8,
+      "title": "쉬는 시간 · Q&A",
+      "type": "break",
+      "phase": "guide",
+      "minutes": 0,
+      "reference": false,
+      "asset": null
+    }
+  ]
+}
