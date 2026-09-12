@@ -1,0 +1,22 @@
+<!doctype html><html lang="ko"><meta charset="utf-8">
+<title>Codex CLI 실제 리뷰 응답</title>
+<style>body{max-width:1100px;margin:40px auto;padding:0 28px;font:22px/1.6 sans-serif;color:#161616}h1{font-size:36px}header{border-bottom:2px solid #161616;margin-bottom:26px}.meta{color:#555;font-size:18px}pre{font:20px/1.6 sans-serif;white-space:pre-wrap}aside{padding:20px;background:#f1f2f3}</style>
+<header><h1>Codex CLI 실제 리뷰 응답</h1><p class="meta">2026-09-12 · codex-cli 0.151.0 · gpt-5.6-sol · read-only</p>
+<p>저장한 실제 모델 응답의 브라우저 보기입니다. Desktop 대화 화면이 아닙니다.</p></header>
+<aside>사람 확인: 응답의 checkout.py:5는 docstring 위치입니다.<br>실제 계산식은 6행입니다. 아래 원문은 수정하지 않았습니다.</aside><pre>## 리뷰 결과
+
+1. **중요도: 높음 — 초과 쿠폰으로 결제액이 음수가 됨**  
+   - **파일·줄:** `fixtures/checkout.py:5`
+   - **재현 입력:** `checkout_total(1000, 1, 5000)` → 현재 `-4000`
+   - **사용자 영향:** 결제액은 0 이상이어야 하지만 음수 금액이 반환되어 환불·정산·주문 처리 오류로 이어질 수 있습니다.
+   - **최소 수정:** 유효성 검사 후 계산 결과를 `max(0, price * quantity - coupon)`으로 제한합니다.
+   - **기존 테스트:** `test_coupon_cannot_make_total_negative`
+
+2. **중요도: 높음 — 잘못된 가격·수량·쿠폰을 정상 계산함**  
+   - **파일·줄:** `fixtures/checkout.py:5`
+   - **재현 입력:** `checkout_total(-1, 1, 0)`, `checkout_total(1000, 0, 0)`, `checkout_total(1000, 1, -1)`
+   - **사용자 영향:** 음수 가격, 0개 수량, 음수 쿠폰이 거부되지 않아 각각 음수 결제액, 무상품 결제, 결제액 증가를 발생시킵니다.
+   - **최소 수정:** 계산 전에 `price &lt; 0`, `quantity &lt; 1`, `coupon &lt; 0`을 검사하고 해당 입력에는 `ValueError`를 발생시킵니다.
+   - **기존 테스트:** `test_invalid_input_is_rejected`
+
+**테스트는 요청에 따라 실행하지 않았으며, 코드와 기존 테스트를 읽은 결과만으로 검토했습니다.**</pre></html>
