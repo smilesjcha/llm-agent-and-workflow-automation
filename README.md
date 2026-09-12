@@ -1,16 +1,59 @@
 # LLM Agent & 업무자동화
 
-5주 · 40시간 | 회의 기록부터 코드 리뷰까지, 직접 만들며 배우는 업무 자동화
+5주 · 40시간 | 회의 기록 · 코드 리뷰 · 문서 자동화
 
 개념을 익힌 뒤 Notebook에서 코드를 실행하고, 오류를 수정하고, 브라우저에서 서비스를 확인합니다. 아래에서 수업 자료를 고른 후 해당 주차의 실습 가이드 순서대로 진행하세요.
 
-## 이번 수업 · 3주차 코드 리뷰 Agent
+## 이번 수업 · 4주차 GitHub PR 자동 리뷰 · 문서 자동화
 
-주문 서비스의 오류 재현 → Codex 리뷰 → 코드 수정·테스트 → 사람 검토 → 로컬 웹 화면
+PR 리뷰와 테스트를 연결하고, 같은 업무 데이터를 Excel 일정표·채점표, Word 이력서, PPT 보고서로 만듭니다. 입력 변경, 코드 수정, 오류 처리, 실제 파일 확인까지 진행합니다.
 
-**[실습 가이드][day3-guide]** · **[Notebook][day3-notebook]** · **[강의 PDF][day3-pdf]** · **[코드 ZIP 다운로드][day3-zip]**
+**[실습 가이드][day4-guide]** · **[Notebook][day4-notebook]** · **[강의 PPT][day4-ppt]** · **[PDF][day4-pdf]** · **[코드 ZIP 다운로드][day4-zip]**
 
-> 3주차 최신 자료는 `codex/day3-review-intelligence` 브랜치에 있습니다. 아래 링크와 설치 명령은 이 버전을 기준으로 합니다.
+> 아래 실행 명령은 4주차 자료를 모은 `codex/day4-document-automation` 브랜치 기준입니다. 파일명에 `DRAFT`가 붙은 이전 초안은 사용하지 않습니다.
+
+## 4주차 시작
+
+1. [코드 ZIP][day4-zip]을 풀어 VS Code로 열거나, 아래 명령으로 **새 폴더**에 받습니다. 이전 주차에서 수정한 파일은 그대로 보존합니다.
+
+   ```bash
+   git clone --branch codex/day4-document-automation https://github.com/smilesjcha/llm-agent-and-workflow-automation.git llm-agent-week4
+   cd llm-agent-week4
+   ```
+
+2. 기존 Python 가상환경에서 아래 명령을 실행합니다. 새 환경을 만드는 Mac·Windows 안내는 [실습 가이드][day4-guide]에 있습니다. `npm` 명령은 **7차시 PPT 생성**에 필요합니다.
+
+   ```bash
+   python -m pip install -r requirements-day4.txt
+   npm install --prefix labs/day4/office_lab/presentations
+   ```
+
+3. [4주차 Notebook][day4-notebook]을 열고 설치한 가상환경의 **Kernel**을 선택합니다. 첫 셀부터 진행하고, 셀에 출력되는 **이번 실행 결과 폴더**를 사용합니다. 결과 비교에는 [실행 완료 Notebook][day4-executed]을 이용합니다.
+
+기본 코드는 AI API key 없이 실행합니다. Codex·Claude와의 추가 대화는 선택 사항이며 계정 이용 조건을 따릅니다. 문서는 Excel·Word·PowerPoint 또는 LibreOffice에서 열어 확인합니다.
+
+## 4주차 차시별 작업
+
+| 차시 · 시간 | 내용 | 직접 확인할 결과 |
+|---|---|---|
+| **1차시 09:00–09:50** | PR·commit·diff 확인 | 대상 검사와 오류 재현 |
+| **2차시 09:50–10:40** | 코드 수정·리뷰·사람 확인 | 테스트 결과와 HTML 리뷰 작업대 |
+| **3차시 10:40–11:30** | CI·권한·중복 방지 | Actions 설정과 오래된 리뷰 차단 |
+| **4차시 13:00–13:50** | WBS·Gantt 자동화 | 진행률을 바꾼 Excel 일정표 |
+| **5차시 13:50–14:40** | 시험 채점 자동화 | 재채점·오류 표시·통계 비교 |
+| **6차시 15:00–15:50** | 경력 사실·Word 스타일 | 개선 전후 DOCX와 과장 수치 검사 |
+| **7차시 15:50–16:40** | WBS 기반 PPT 생성 | 수정한 입력을 반영한 7장 보고서 |
+| **8차시 16:40–17:30** | 결과 검증·반복 실행 | 결과 목록과 다음 주 프로젝트 범위 |
+
+쉬는 시간은 **11:30–12:00**, **14:40–15:00**, 마지막 **17:30–18:00 휴식·Q&A**입니다. 점심시간은 **12:00–13:00**입니다.
+
+### 참고 파일
+
+| Excel | Word | PPT |
+|---|---|---|
+| [WBS·Gantt][day4-wbs]<br>[합성 답안 채점표][day4-exam] | [개선 전][day4-word-before]<br>[개선 후][day4-word-after] | [프로젝트 보고서][day4-brief]<br>[보고서 PDF][day4-brief-pdf] |
+
+제공 파일은 비교용입니다. 직접 실습에서는 자신의 입력으로 **새 파일을 생성**합니다. Excel 재계산, 한글 글꼴, 예상된 테스트 실패 등은 [문제 해결 안내][day4-guide]에서 확인하세요. 실제 성적·비공개 회사 자료는 사용하지 않습니다.
 
 ## 주차별 자료
 
@@ -19,12 +62,17 @@
 | 1주차 | Agent 기본 · Tool Calling · 회의 자동화 | [가이드][day1-guide] · [차시별 실행 파일][day1-map] | [PDF][day1-pdf] · [PPT][day1-ppt] |
 | 2주차 | 음성·텍스트 입력 · 회의 기록 서비스 | [가이드][day2-guide] · [Notebook][day2-notebook] | [PDF][day2-pdf] · [PPT][day2-ppt] |
 | 3주차 | 코드 리뷰 · 테스트 · LangGraph 승인 흐름 | [가이드][day3-guide] · [Notebook][day3-notebook] | [PDF][day3-pdf] · [PPT][day3-ppt] |
-| 4주차 | GitHub PR 자동 리뷰 · 문서 자동화 | [예정 과정][roadmap] | 준비 중 |
-| 5주차 | Workflow 통합·운영 · 개인 미니 프로젝트 | [예정 과정][roadmap] | 준비 중 |
+| 4주차 | GitHub PR 자동 리뷰 · Excel·Word·PPT 자동화 | [가이드][day4-guide] · [Notebook][day4-notebook] | [PPT][day4-ppt] · [PDF][day4-pdf] |
+| 5주차 | Workflow 통합·운영 · 개인 미니 프로젝트 | [사전 안내][day5-project] · [개선 기록][day5-record] | 준비 중 |
 
-4·5주차 자료는 개편 중입니다. 저장소의 `DRAFT` 파일은 확정 교안이 아니며, 진행 범위는 예정 과정에서 확인할 수 있습니다.
+5주차 마지막 시간은 **15:00–17:30 개인 제작**, **17:30–18:00 휴식·Q&A**입니다. [사전 안내][day5-project]에서 주제와 준비물을 확인하세요. 발표는 필수가 아닙니다. 전체 연결 과정은 [운영안][roadmap]을 참고하며, 저장소의 `DRAFT` 파일은 확정 교안이 아닙니다.
 
-## 3주차 시작하기
+<details>
+<summary><strong>3주차 복습 · 코드 받기와 실행 안내</strong></summary>
+
+## 3주차 시작
+
+3주차 복습은 아래의 `codex/day3-review-intelligence` 브랜치와 전용 설치 명령을 사용합니다. 이번 4주차 실습은 위 안내를 따르세요.
 
 ### 1. 준비물
 
@@ -105,6 +153,8 @@ VS Code에서 실행한다면 `day3_review_intelligence_lab.ipynb`를 열고 오
 | 화면이 내가 수정한 코드와 다름 | Notebook이 출력한 `--exercise-dir` 포함 명령으로 서버를 시작했는지 확인 |
 | 설치 없이 출력부터 확인 | [실행 완료 Notebook][day3-executed] 열기 — 예제 리뷰 기반 참고본 |
 
+</details>
+
 ## 실습 파일과 공유 범위
 
 - 수업에서 제공한 합성·공개 예제를 사용합니다. 실제 고객 데이터나 비공개 회의 기록은 올리지 않습니다.
@@ -113,7 +163,7 @@ VS Code에서 실행한다면 `day3_review_intelligence_lab.ipynb`를 열고 오
 
 ---
 
-강사용 진행안, 자료 제작·검증 명령은 [강사용 자료·저장소 관리][instructor]에 정리되어 있습니다.
+강사용 시간 배분과 시연 순서는 [4주차 강사 운영안][day4-instructor], 기존 자료 제작·검증 명령은 [강사용 자료·저장소 관리][instructor]에 정리되어 있습니다.
 
 [day1-guide]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/materials/day1/수강생용_4-8차시_실습패키지_가이드.md
 [day1-map]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/materials/day1/실행파일_차시별_맵.md
@@ -130,5 +180,20 @@ VS Code에서 실행한다면 `day3_review_intelligence_lab.ipynb`를 열고 오
 [day3-pdf]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/output/pdf/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pdf
 [day3-ppt]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/slides/IPA_LLM_Agent_업무자동화_Day3_2026_CODEX_CLI.pptx
 [day3-zip]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/raw/refs/heads/codex/day3-review-intelligence/dist/day3-student-code-bundle.zip
+[day4-guide]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day4/2026_Day4_수강생_실습가이드.md
+[day4-instructor]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day4/2026_Day4_설계_및_강사운영안.md
+[day4-notebook]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day4/day4_pr_document_automation.ipynb
+[day4-executed]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day4/day4_pr_document_automation.executed.ipynb
+[day4-ppt]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/slides/IPA_LLM_Agent_업무자동화_Day4_2026_PR_DOCUMENT.pptx
+[day4-pdf]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/output/pdf/IPA_LLM_Agent_업무자동화_Day4_2026_PR_DOCUMENT.pdf
+[day4-zip]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/raw/refs/heads/codex/day4-document-automation/dist/day4-student-code-bundle.zip
+[day4-wbs]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/WBS_Gantt.xlsx
+[day4-exam]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/Exam_Grading.xlsx
+[day4-word-before]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/Resume_Before.docx
+[day4-word-after]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/Resume_After.docx
+[day4-brief]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/Project_Brief.pptx
+[day4-brief-pdf]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/Project_Brief.pdf
+[day5-project]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day5/미니프로젝트_사전안내.md
+[day5-record]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day5/개선기록_템플릿.md
 [roadmap]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/materials/day3/4·5주차_운영안_및_미니프로젝트.md
 [instructor]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/docs/INSTRUCTOR_GUIDE.md
