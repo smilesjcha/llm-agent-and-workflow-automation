@@ -90,6 +90,31 @@ def test_ppt_source_uses_edited_notebook_input():
     updated = prepare_brief(ROOT, tasks=edited)
     assert updated["slides"][2]["table"][4][-2:] == ["완료", "100%"]
     assert updated["sources"][0] == "Notebook WBS input snapshot"
+    assert "W04" not in updated["slides"][-1]["bullets"][0]
+    assert "W05" in updated["slides"][-1]["bullets"][0]
+
+
+def test_ppt_delay_narrative_matches_default_rows():
+    brief = prepare_brief(ROOT)
+    assert brief["slides"][-1]["bullets"][0].startswith("W04, W05 ")
+
+
+def test_ppt_delay_narrative_when_all_tasks_complete():
+    tasks = prepare_brief(ROOT)["wbs_snapshot"]
+    for task in tasks:
+        task["progress"] = 1
+    updated = prepare_brief(ROOT, tasks=tasks)
+    assert updated["slides"][-1]["bullets"][0].startswith("현재 지연 업무 없음")
+    assert updated["slides"][1]["table"][3][1] == "0"
+
+
+def test_ppt_delay_narrative_bounds_long_lists():
+    tasks = prepare_brief(ROOT)["wbs_snapshot"]
+    for task in tasks:
+        task["progress"] = 0
+    updated = prepare_brief(ROOT, as_of="2026-12-31", tasks=tasks)
+    assert updated["slides"][1]["table"][3][1] == "14"
+    assert updated["slides"][-1]["bullets"][0].startswith("W01, W02, W03 외 11건 ")
 
 
 def test_ppt_never_silently_omits_extra_tasks():
