@@ -4,7 +4,25 @@
 
 개념을 익힌 뒤 Notebook에서 코드를 실행하고, 오류를 수정하고, 브라우저에서 서비스를 확인합니다. 아래에서 수업 자료를 고른 후 해당 주차의 실습 가이드 순서대로 진행하세요.
 
-## 이번 수업 · 4주차 GitHub PR 자동 리뷰 · 문서 자동화
+## 마지막 수업 · 5주차 업무 자동화 서비스
+
+회의 기록·코드 리뷰·문서 자동화의 공통 원리를 복습하고, 자신의 업무에 맞는 작은 서비스를 제작합니다. **240장 개정 교안**과 **1–5차시 복습 Notebook**을 사용하세요.
+
+**[5주차 시작 안내][day5-guide]** · **[Notebook][day5-notebook]** · **[강의 PPT][day5-ppt]** · **[PDF][day5-pdf]**
+
+| 시간 | 내용 | 휴식·마무리 |
+|---|---|---|
+| 09:00–12:00 | 1–3차시 · 서비스 구조, 회의 기록, 변경 검토 | 11:30–12:00 휴식 |
+| 12:00–13:00 | 점심시간 | 12:55 복귀 |
+| 13:00–15:00 | 4–5차시 · 문서 자동화, 프로젝트 명세 | 14:40–15:00 휴식 |
+| 15:00–17:00 | 6–7차시 · 개인 프로젝트 제작과 강사 시연 | 16:40–17:00 실행 복구·Q&A |
+
+배포용 Notebook은 외부 AI API key 없이 실행합니다. 6–7차시는 자신의 프로젝트에 적용하는 시간이며, 강사의 별도 서비스 시연 기획서·소스코드·데이터는 배포하지 않습니다. 기존 실습 파일을 수정했다면 덮어쓰지 말고 [시작 안내][day5-guide]에 따라 새 폴더에서 받으세요.
+
+<details>
+<summary><strong>4주차 복습 · GitHub PR 자동 리뷰와 문서 자동화</strong></summary>
+
+## 4주차 GitHub PR 자동 리뷰 · 문서 자동화
 
 PR 리뷰와 테스트를 연결하고, 같은 업무 데이터를 Excel 일정표·채점표, Word 이력서, PPT 보고서로 만듭니다. 입력 변경, 코드 수정, 오류 처리, 실제 파일 확인까지 진행합니다.
 
@@ -57,6 +75,8 @@ PR 리뷰와 테스트를 연결하고, 같은 업무 데이터를 Excel 일정�
 
 이번 교안은 **200장**입니다. [단계별 실행 안내](materials/day4/실습_단계별_길잡이.md)에서 파일·셀·오류 복구를, [프로젝트 36개 선택 예시](materials/day5/업무자동화_프로젝트_선택가이드.md)에서 자신의 업무에 가까운 주제를 찾아보세요. 프로젝트 목록에는 새로 구현할 제안도 포함되어 있습니다.
 
+</details>
+
 ## 주차별 자료
 
 | 주차 | 주요 내용 | 실습 자료 | 강의 자료 |
@@ -65,9 +85,9 @@ PR 리뷰와 테스트를 연결하고, 같은 업무 데이터를 Excel 일정�
 | 2주차 | 음성·텍스트 입력 · 회의 기록 서비스 | [가이드][day2-guide] · [Notebook][day2-notebook] | [PDF][day2-pdf] · [PPT][day2-ppt] |
 | 3주차 | 코드 리뷰 · 테스트 · LangGraph 승인 흐름 | [가이드][day3-guide] · [Notebook][day3-notebook] | [PDF][day3-pdf] · [PPT][day3-ppt] |
 | 4주차 | GitHub PR 자동 리뷰 · Excel·Word·PPT 자동화 | [가이드][day4-guide] · [Notebook][day4-notebook] | [PPT][day4-ppt] · [PDF][day4-pdf] |
-| 5주차 | Workflow 통합·운영 · 개인 미니 프로젝트 | [사전 안내][day5-project] · [개선 기록][day5-record] | 준비 중 |
+| 5주차 | 서비스 총정리 · 개인 프로젝트 | [시작 안내][day5-guide] · [Notebook][day5-notebook] | [PPT][day5-ppt] · [PDF][day5-pdf] |
 
-5주차 마지막 시간은 **15:00–17:30 개인 제작**, **17:30–18:00 휴식·Q&A**입니다. [사전 안내][day5-project]에서 주제와 준비물을 확인하세요. 발표는 필수가 아닙니다. 전체 연결 과정은 [운영안][roadmap]을 참고하며, 저장소의 `DRAFT` 파일은 확정 교안이 아닙니다.
+5주차 마지막 시간은 **15:00–16:40 개인 제작**, **16:40–17:00 실행 복구·Q&A**입니다. 발표는 필수가 아닙니다. 과거 사전 안내나 `DRAFT` 파일과 시간이 다르면 위 최신 시간표를 따릅니다.
 
 <details>
 <summary><strong>3주차 복습 · 코드 받기와 실행 안내</strong></summary>
@@ -197,5 +217,9 @@ VS Code에서 실행한다면 `day3_review_intelligence_lab.ipynb`를 열고 오
 [day4-brief-pdf]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/outputs/day4-document-automation/Project_Brief.pdf
 [day5-project]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day5/미니프로젝트_사전안내.md
 [day5-record]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day4-document-automation/materials/day5/개선기록_템플릿.md
+[day5-guide]: materials/day5/README.md
+[day5-notebook]: materials/day5/day5_finale_recap.ipynb
+[day5-ppt]: slides/IPA_LLM_Agent_업무자동화_Day5_FINALE_240p_v02.pptx
+[day5-pdf]: output/pdf/IPA_LLM_Agent_업무자동화_Day5_FINALE_240p_v02.pdf
 [roadmap]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/materials/day3/4·5주차_운영안_및_미니프로젝트.md
 [instructor]: https://github.com/smilesjcha/llm-agent-and-workflow-automation/blob/codex/day3-review-intelligence/docs/INSTRUCTOR_GUIDE.md
